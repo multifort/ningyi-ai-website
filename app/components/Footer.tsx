@@ -57,7 +57,7 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <div className="mb-4">
               <Image
-                src="/images/logo-white.png"
+                src="/images/logo.png"
                 alt="宁翼智能科技"
                 width={160}
                 height={45}
