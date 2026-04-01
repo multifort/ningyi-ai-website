@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 interface FooterLink {
   name: string;
@@ -14,28 +15,28 @@ const footerSections: FooterSection[] = [
   {
     title: "产品",
     links: [
-      { name: "AI 生产管家", href: "#capability" },
-      { name: "多 Agent 系统", href: "#capability" },
-      { name: "Skill 执行平台", href: "#capability" },
-      { name: "产品架构", href: "#architecture" },
+      { name: "AI 生产管家", href: "/capability" },
+      { name: "多 Agent 系统", href: "/capability" },
+      { name: "Skill 执行平台", href: "/capability" },
+      { name: "产品架构", href: "/#architecture" },
     ],
   },
   {
     title: "解决方案",
     links: [
-      { name: "汽车制造", href: "#solution" },
-      { name: "电子制造", href: "#solution" },
-      { name: "智能装配", href: "#solution" },
-      { name: "私有化部署", href: "#solution" },
+      { name: "汽车制造", href: "/solution" },
+      { name: "电子制造", href: "/solution" },
+      { name: "智能装配", href: "/solution" },
+      { name: "私有化部署", href: "/solution" },
     ],
   },
   {
     title: "公司",
     links: [
-      { name: "关于我们", href: "#about" },
-      { name: "成功案例", href: "#case" },
-      { name: "联系我们", href: "#cta" },
-      { name: "加入我们", href: "#careers" },
+      { name: "关于我们", href: "/#about" },
+      { name: "成功案例", href: "/case" },
+      { name: "联系我们", href: "/cta" },
+      { name: "加入我们", href: "/#careers" },
     ],
   },
 ];
@@ -106,12 +107,12 @@ export default function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
-                    <a
+                    <Link
                       href={link.href}
                       className="text-sm text-gray-300 hover:text-accent1 transition-all duration-200"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
