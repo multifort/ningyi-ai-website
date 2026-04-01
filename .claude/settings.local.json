@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/lining/程序/workspace/ningyi-ai/ningyi-website/src/assets)",
+      "Bash(mkdir -p /Users/lining/程序/workspace/ningyi-ai/ningyi-website/src/components)",
+      "Bash(mkdir -p /Users/lining/程序/workspace/ningyi-ai/ningyi-website/src/router)",
+      "Bash(mkdir -p /Users/lining/程序/workspace/ningyi-ai/ningyi-website/src/pages)",
+      "Bash(mkdir -p /Users/lining/程序/workspace/ningyi-ai/ningyi-website/public)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npm create:*)",
+      "Bash(rm -rf ningyi-ai-website)",
+      "Bash(mkdir ningyi-ai-website:*)",
+      "Bash(npm init:*)",
+      "Bash(node:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(pkill -f vite)",
+      "Bash(curl -s http://localhost:5173/about)",
+      "Bash(tail -50 package-*.json)",
+      "Bash(grep:*)",
+      "Bash(curl -s http://localhost:5173/products)",
+      "Bash(npm list:*)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(for page:*)",
+      "Bash(do echo:*)",
+      "Bash(curl -sI \"http://localhost:5173$page\")",
+      "Bash(done)",
+      "Bash(curl -sI http://localhost:5173)",
+      "Bash(claude mcp:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}
