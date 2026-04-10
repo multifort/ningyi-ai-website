@@ -15,15 +15,32 @@ export async function GET() {
     `).get();
 
     // 获取轮播图
-    const images = sqlite.prepare(`
+    let images: any[] = sqlite.prepare(`
       SELECT * FROM hero_images WHERE is_active = 1 ORDER BY sort_order ASC
     `).all();
+
+    // 如果数据库中没有图片，返回默认图片路径
+    if (images.length === 0) {
+      images = [
+        { id: 1, image_path: '/images/hero-bg/hero-1.jpg', sort_order: 0, is_active: 1 },
+        { id: 2, image_path: '/images/hero-bg/hero-2.jpg', sort_order: 1, is_active: 1 },
+        { id: 3, image_path: '/images/hero-bg/hero-3.jpg', sort_order: 2, is_active: 1 },
+        { id: 4, image_path: '/images/hero-bg/hero-4.jpg', sort_order: 3, is_active: 1 },
+      ];
+    }
+
+    // 格式化字段名以匹配前端
+    const formattedImages = images.map((img: any) => ({
+      imagePath: img.image_path || img.imagePath,
+      isActive: Boolean(img.is_active ?? img.isActive),
+      sortOrder: img.sort_order || img.sortOrder,
+    }));
 
     return NextResponse.json({
       success: true,
       data: {
         config,
-        images,
+        images: formattedImages,
       },
     });
   } catch (error) {
