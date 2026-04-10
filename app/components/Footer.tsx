@@ -1,53 +1,65 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface FooterConfig {
+  companyDescription: string;
+  email: string;
+  phone: string;
+  address: string;
+  copyright: string;
+}
 
 interface FooterLink {
-  name: string;
+  title: string;
   href: string;
 }
 
-interface FooterSection {
-  title: string;
-  links: FooterLink[];
-}
-
-const footerSections: FooterSection[] = [
-  {
-    title: "产品",
-    links: [
-      { name: "AI 生产管家", href: "/capability" },
-      { name: "多 Agent 系统", href: "/capability" },
-      { name: "Skill 执行平台", href: "/capability" },
-      { name: "产品架构", href: "/#architecture" },
-    ],
-  },
-  {
-    title: "解决方案",
-    links: [
-      { name: "汽车制造", href: "/solution" },
-      { name: "电子制造", href: "/solution" },
-      { name: "智能装配", href: "/solution" },
-      { name: "私有化部署", href: "/solution" },
-    ],
-  },
-  {
-    title: "公司",
-    links: [
-      { name: "关于我们", href: "/#about" },
-      { name: "成功案例", href: "/case" },
-      { name: "联系我们", href: "/cta" },
-      { name: "加入我们", href: "/#careers" },
-    ],
-  },
-];
-
-const socialLinks = [
-  { name: "微信公众号", icon: "💬" },
-  { name: "LinkedIn", icon: "💼" },
-  { name: "知乎", icon: "📖" },
-];
-
 export default function Footer() {
+  const [config, setConfig] = useState<FooterConfig>({
+    companyDescription: "",
+    email: "",
+    phone: "",
+    address: "",
+    copyright: "",
+  });
+  const [links, setLinks] = useState({
+    product: [] as FooterLink[],
+    solution: [] as FooterLink[],
+    company: [] as FooterLink[],
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFooterConfig();
+  }, []);
+
+  const fetchFooterConfig = async () => {
+    try {
+      const res = await fetch("/api/content/footer");
+      const data = await res.json();
+      if (data.success) {
+        setConfig(data.data.config);
+        setLinks(data.data.links);
+      }
+    } catch (error) {
+      console.error("获取 Footer 配置失败:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <footer className="bg-primary text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
+          加载中...
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="bg-primary text-white pt-12 pb-6">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -65,53 +77,62 @@ export default function Footer() {
               />
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-4 max-w-md">
-              宁翼智能科技是一家专注于企业级 AI 系统的科技公司，致力于通过人工智能技术，帮助企业实现智能化升级。让企业从"人驱动"走向"AI 驱动"，构建未来数字员工组织。
+              {config.companyDescription}
             </p>
             
             {/* 联系方式 */}
             <div className="space-y-2">
-              <div className="flex items-center space-x-3 text-sm text-gray-300">
-                <span className="text-accent1">📧</span>
-                <span>contact@ningyi-ai.com</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-300">
-                <span className="text-accent1">📞</span>
-                <span>400-xxx-xxxx</span>
-              </div>
-              <div className="flex items-center space-x-3 text-sm text-gray-300">
-                <span className="text-accent1">📍</span>
-                <span>上海市浦东新区张江高科技园区</span>
-              </div>
+              {config.email && (
+                <div className="flex items-center space-x-3 text-sm text-gray-300">
+                  <span className="text-accent1">📧</span>
+                  <span>{config.email}</span>
+                </div>
+              )}
+              {config.phone && (
+                <div className="flex items-center space-x-3 text-sm text-gray-300">
+                  <span className="text-accent1">📞</span>
+                  <span>{config.phone}</span>
+                </div>
+              )}
+              {config.address && (
+                <div className="flex items-center space-x-3 text-sm text-gray-300">
+                  <span className="text-accent1">📍</span>
+                  <span>{config.address}</span>
+                </div>
+              )}
             </div>
 
             {/* 社交媒体 */}
             <div className="flex space-x-4 mt-6">
-              {socialLinks.map((social, index) => (
+              {["💬", "💼", "📖"].map((icon, index) => (
                 <button
                   key={index}
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-accent1 transition-all duration-300 flex items-center justify-center text-lg"
-                  aria-label={social.name}
                 >
-                  {social.icon}
+                  {icon}
                 </button>
               ))}
             </div>
           </div>
 
           {/* 链接区块 */}
-          {footerSections.map((section, index) => (
-            <div key={index}>
+          {[
+            { title: "产品", key: "product" },
+            { title: "解决方案", key: "solution" },
+            { title: "公司", key: "company" },
+          ].map((section) => (
+            <div key={section.key}>
               <h3 className="text-base font-semibold mb-4 text-white">
                 {section.title}
               </h3>
               <ul className="space-y-2">
-                {section.links.map((link, linkIndex) => (
+                {links[section.key as keyof typeof links].map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <Link
                       href={link.href}
                       className="text-sm text-gray-300 hover:text-accent1 transition-all duration-200"
                     >
-                      {link.name}
+                      {link.title}
                     </Link>
                   </li>
                 ))}
@@ -125,7 +146,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* 版权信息 */}
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} 宁翼智能科技。All rights reserved.
+              {config.copyright || `© ${new Date().getFullYear()} 宁翼智能科技。All rights reserved.`}
             </p>
 
             {/* 备案信息 */}

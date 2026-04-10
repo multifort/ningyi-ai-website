@@ -1,29 +1,44 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
-const solutions = [
-  {
-    title: "制造业智能运营",
-    pain: "数据分散、分析滞后、异常发现晚",
-    solution: "自动生产分析、实时异常预警、智能决策建议",
-    icon: "🏭",
-  },
-  {
-    title: "企业数字化升级",
-    pain: "系统多、难使用、数据孤岛严重",
-    solution: "统一 AI 入口、打通多系统、简化操作流程",
-    icon: "📊",
-  },
-  {
-    title: "私有化部署方案",
-    pain: "本地模型部署需求",
-    solution: "支持私有化部署、数据安全保障",
-    icon: "🔒",
-  },
-];
+interface Scenario {
+  id: number;
+  icon: string;
+  title: string;
+  slug: string;
+  subtitle: string;
+  pain: string;
+  solution: string;
+  heroImage: string;
+}
 
 export default function SolutionTabs() {
   const [active, setActive] = useState(0);
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchScenarios();
+  }, []);
+
+  const fetchScenarios = async () => {
+    try {
+      const res = await fetch("/api/content/scenarios");
+      const data = await res.json();
+      if (data.success) {
+        setScenarios(data.data);
+      }
+    } catch (error) {
+      console.error("获取场景失败:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || scenarios.length === 0) {
+    return null;
+  }
 
   return (
     <section id="solution-tabs" className="py-8 bg-gradient-to-b from-white via-blue-50/30 to-white flex flex-col items-center relative overflow-hidden">
@@ -56,9 +71,9 @@ export default function SolutionTabs() {
 
         {/* 标签页按钮 */}
         <div className="flex flex-wrap justify-center gap-3 mb-10 relative">
-          {solutions.map((s, i) => (
+          {scenarios.map((s, i) => (
             <button
-              key={i}
+              key={s.id}
               onClick={() => setActive(i)}
               className={`group relative px-6 py-3 rounded-full font-medium transition-all duration-300 transform hover:scale-105 ${
                 active === i 
@@ -106,13 +121,13 @@ export default function SolutionTabs() {
                   active === 1 ? 'from-purple-500 to-pink-400' :
                   'from-orange-500 to-red-400'
                 } flex items-center justify-center text-3xl shadow-lg`}>
-                  {solutions[active].icon}
+                  {scenarios[active].icon}
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-primary">
-                    {solutions[active].title}
+                    {scenarios[active].title}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">Industry Solution</p>
+                  <p className="text-sm text-gray-500 mt-1">{scenarios[active].subtitle || 'Industry Solution'}</p>
                 </div>
               </div>
 
@@ -127,7 +142,7 @@ export default function SolutionTabs() {
                   <span className="text-sm font-semibold text-red-500">核心痛点</span>
                 </div>
                 <p className="text-base text-gray-700 pl-11 leading-relaxed">
-                  {solutions[active].pain}
+                  {scenarios[active].pain}
                 </p>
               </div>
 
@@ -142,18 +157,30 @@ export default function SolutionTabs() {
                   <span className="text-sm font-semibold text-green-500">解决方案</span>
                 </div>
                 <p className="text-base text-gray-700 pl-11 leading-relaxed">
-                  {solutions[active].solution}
+                  {scenarios[active].solution}
                 </p>
               </div>
 
               {/* CTA 按钮 */}
               <div className="mt-8 pt-6 border-t border-gray-100">
-                <button className="group w-full md:w-auto px-8 py-3 bg-gradient-to-r from-accent1 to-accent2 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-accent1/30 transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2">
-                  <span>了解详细方案</span>
-                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                {scenarios[active].slug ? (
+                  <Link 
+                    href={`/solution/${scenarios[active].slug}`} 
+                    className="group w-full md:w-auto px-8 py-3 bg-gradient-to-r from-accent1 to-accent2 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-accent1/30 transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>了解详细方案</span>
+                    <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <button className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-accent1 to-accent2 text-white font-semibold rounded-xl opacity-50 cursor-not-allowed flex items-center justify-center space-x-2">
+                    <span>了解详细方案</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -1,13 +1,37 @@
 "use client"
 import { useEffect, useState, useRef } from "react";
 
+interface ValueStat {
+  id?: number;
+  label: string;
+  value: number;
+  suffix: string;
+}
+
 export default function ValueNumber() {
   const [inView, setInView] = useState(false);
+  const [stats, setStats] = useState<ValueStat[]>([]);
   const [animatedValues, setAnimatedValues] = useState<number[]>([0, 0, 0]);
+  const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // 获取统计数据
+    fetch("/api/content/stats")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStats(data.data);
+          setAnimatedValues(data.data.map(() => 0));
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("获取统计数据失败:", err);
+        setLoading(false);
+      });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !inView) {
@@ -22,7 +46,7 @@ export default function ValueNumber() {
 
   // 数字增长动画
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || stats.length === 0) return;
 
     const targetValues = stats.map(s => s.value);
     const durations = [2000, 2000, 2000]; // 每个数字的动画时长（毫秒）
@@ -56,13 +80,15 @@ export default function ValueNumber() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [inView]);
+  }, [inView, stats]);
 
-  const stats = [
-    { label: "生产日报生成效率提升", value: 95, suffix: "%" },
-    { label: "关键异常识别效率提升", value: 3, suffix: "倍" },
-    { label: "管理决策响应速度提升", value: 10, suffix: "倍" },
-  ];
+  if (loading) {
+    return (
+      <section id="value" aria-label="核心价值数据" className="py-12 bg-bgGray flex flex-col items-center">
+        <div className="text-gray-500">加载中...</div>
+      </section>
+    );
+  }
 
   return (
     // 使用 semantic HTML

@@ -34,3 +34,6 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# 数据库文件
+data/

@@ -11,3 +11,214 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* 富文本内容样式优化 */
+.rich-text-content {
+  @apply max-w-4xl mx-auto;
+}
+
+.rich-text-content h1,
+.rich-text-content h2,
+.rich-text-content h3,
+.rich-text-content h4,
+.rich-text-content h5,
+.rich-text-content h6 {
+  @apply font-bold text-primary mt-8 mb-4;
+  line-height: 1.4;
+}
+
+.rich-text-content h1 {
+  @apply text-3xl md:text-4xl;
+}
+
+.rich-text-content h2 {
+  @apply text-2xl md:text-3xl border-b-2 border-gray-200 pb-3 text-center;
+}
+
+.rich-text-content h3 {
+  @apply text-xl md:text-2xl text-center font-bold mb-6 pb-3 border-b-2;
+  line-height: 1.4;
+}
+
+/* 为 h3 标题添加不同色彩 */
+.rich-text-content h3:nth-of-type(1) {
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.rich-text-content h3:nth-of-type(2) {
+  color: #f093fb;
+  border-color: #f093fb;
+}
+
+.rich-text-content h3:nth-of-type(3) {
+  color: #4facfe;
+  border-color: #4facfe;
+}
+
+.rich-text-content h3:nth-of-type(4) {
+  color: #43e97b;
+  border-color: #43e97b;
+}
+
+.rich-text-content h3:nth-of-type(5) {
+  color: #fa709a;
+  border-color: #fa709a;
+}
+
+.rich-text-content h3:nth-of-type(6) {
+  color: #30cfd0;
+  border-color: #30cfd0;
+}
+
+.rich-text-content p {
+  @apply text-base md:text-lg text-gray-700 mb-4 leading-relaxed text-center;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  margin-left: 0;
+  list-style: none;
+  padding-left: 0;
+}
+
+@media (min-width: 768px) {
+  .rich-text-content ul,
+  .rich-text-content ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .rich-text-content ul,
+  .rich-text-content ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.rich-text-content li {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0;
+  line-height: 1.6;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 110px;
+  backdrop-filter: blur(10px);
+}
+
+/* 为列表项添加科技风渐变背景区分 - 淡雅色系 */
+.rich-text-content li:nth-child(1) {
+  background: linear-gradient(135deg, #a8c0ff 0%, #c2b6f3 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:nth-child(2) {
+  background: linear-gradient(135deg, #fbc2eb 0%, #f8d7e8 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:nth-child(3) {
+  background: linear-gradient(135deg, #a1e8ff 0%, #b8f0d4 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:nth-child(4) {
+  background: linear-gradient(135deg, #ffd6a5 0%, #ffe4c9 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:nth-child(5) {
+  background: linear-gradient(135deg, #c7d2fe 0%, #ddd6fe 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:nth-child(6) {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #4a5568;
+}
+
+.rich-text-content li:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* 移除默认的列表符号 */
+.rich-text-content ul li::before,
+.rich-text-content ol li::before {
+  content: none !important;
+  display: none;
+}
+
+.rich-text-content strong,
+.rich-text-content b {
+  @apply font-semibold text-gray-900;
+}
+
+.rich-text-content em,
+.rich-text-content i {
+  @apply italic text-gray-800;
+}
+
+.rich-text-content a {
+  @apply text-accent1 hover:text-accent1/80 underline transition-colors duration-200;
+}
+
+.rich-text-content blockquote {
+  @apply border-l-4 border-accent1 bg-accent1/5 pl-6 py-4 my-6 rounded-r-lg;
+}
+
+.rich-text-content blockquote p {
+  @apply text-gray-700 italic mb-0;
+}
+
+.rich-text-content code {
+  @apply bg-gray-100 text-accent1 px-2 py-1 rounded text-sm font-mono;
+}
+
+.rich-text-content pre {
+  @apply bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto my-6;
+}
+
+.rich-text-content pre code {
+  @apply bg-transparent text-gray-100 px-0 py-0;
+}
+
+.rich-text-content img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-6;
+}
+
+.rich-text-content table {
+  @apply w-full border-collapse my-6 bg-white rounded-lg overflow-hidden shadow-sm;
+}
+
+.rich-text-content th,
+.rich-text-content td {
+  @apply border border-gray-200 px-4 py-3 text-left;
+}
+
+.rich-text-content th {
+  @apply bg-primary text-white font-semibold;
+}
+
+.rich-text-content tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.rich-text-content hr {
+  @apply border-gray-200 my-8;
+}

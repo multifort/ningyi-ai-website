@@ -1,11 +1,39 @@
-import { FC } from "react";
+"use client";
+import { FC, useEffect, useState } from "react";
+
+interface CapabilityModule {
+  id?: number;
+  icon: string;
+  title: string;
+  desc: string;
+}
 
 const ProductCapability: FC = () => {
-  const modules = [
-    { icon: "🤖", title: "AI生产管家", desc: "统一交互入口，理解需求并调度任务" },
-    { icon: "🤝", title: "多Agent系统", desc: "模拟企业岗位角色，实现协同决策" },
-    { icon: "🛠️", title: "Skill执行平台", desc: "打通ERP/MES，实现数据获取与自动执行" },
-  ];
+  const [modules, setModules] = useState<CapabilityModule[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/content/capability")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setModules(data.data.map((m: any) => ({ ...m, description: m.desc })));
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("获取能力模块失败:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="capability" className="py-8 bg-bgLight flex flex-col items-center">
+        <div className="text-gray-500">加载中...</div>
+      </section>
+    );
+  }
 
   return (
     <section id="capability" className="py-8 bg-bgLight flex flex-col items-center">
@@ -13,10 +41,10 @@ const ProductCapability: FC = () => {
       </h2>
       <div className="grid md:grid-cols-3 gap-6 w-full max-w-4xl">
         {modules.map((m) => (
-          <div key={m.title} className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
+          <div key={m.id || m.title} className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
             <div className="text-4xl mb-4 text-accent2">{m.icon}</div>
             <div className="text-xl font-semibold text-primary">{m.title}</div>
-            <div className="mt-2 text-sm text-textGray text-center">{m.desc}</div>
+            <div className="mt-2 text-sm text-textGray text-center">{m.description || m.desc}</div>
           </div>
         ))}
       </div>

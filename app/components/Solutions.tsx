@@ -1,54 +1,37 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 interface Solution {
+  id?: number;
   icon: string;
   title: string;
+  slug: string;
   description: string;
   features: string[];
 }
 
-const solutions: Solution[] = [
-  {
-    icon: "🚗",
-    title: "汽车制造",
-    description: "生产调度与质量分析智能化",
-    features: [
-      "生产计划智能排程优化",
-      "质量数据实时分析预警",
-      "供应链协同管理",
-      "设备预测性维护",
-    ],
-  },
-  {
-    icon: "🔌",
-    title: "电子制造",
-    description: "良率监控与异常定位自动化",
-    features: [
-      "SMT 产线良率实时监控",
-      "异常根因自动分析",
-      "工艺参数智能优化",
-      "物料追溯与管理",
-    ],
-  },
-  {
-    icon: "🏭",
-    title: "装配产线",
-    description: "节拍优化与效率提升",
-    features: [
-      "产线节拍平衡分析",
-      "工位效率实时监控",
-      "瓶颈工序智能识别",
-      "产能利用率优化",
-    ],
-  },
-];
-
 export default function Solutions() {
   const [isVisible, setIsVisible] = useState(false);
+  const [solutions, setSolutions] = useState<Solution[]>([]);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // 获取解决方案数据
+    fetch("/api/content/solutions")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setSolutions(data.data);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("获取解决方案失败:", err);
+        setLoading(false);
+      });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -73,6 +56,10 @@ export default function Solutions() {
       className="py-8 bg-gradient-to-b from-gray-50 via-blue-50 to-white"
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6">
+        {loading ? (
+          <div className="text-center py-12 text-gray-500">加载中...</div>
+        ) : (
+          <>
         {/* 标题区 */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
           {/* 装饰性标签 */}
@@ -172,12 +159,24 @@ export default function Solutions() {
                   </ul>
 
                   {/* 按钮 */}
-                  <button className="group/btn w-full py-3 rounded-xl border-2 border-accent1 text-accent1 text-sm font-semibold hover:bg-accent1 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2">
-                    <span>了解详情</span>
-                    <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                  {solution.slug ? (
+                    <Link 
+                      href={`/solution/${solution.slug}`} 
+                      className="group/btn w-full py-3 rounded-xl border-2 border-accent1 text-accent1 text-sm font-semibold hover:bg-accent1 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
+                    >
+                      <span>了解详情</span>
+                      <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  ) : (
+                    <button className="w-full py-3 rounded-xl border-2 border-accent1 text-accent1 text-sm font-semibold opacity-50 cursor-not-allowed flex items-center justify-center space-x-2">
+                      <span>了解详情</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -189,14 +188,16 @@ export default function Solutions() {
           <div className="relative inline-block">
             {/* 光晕背景 */}
             <div className="absolute inset-0 bg-accent1/20 blur-2xl rounded-full"></div>
-            <button className="relative px-10 py-4 bg-gradient-to-r from-accent1 to-accent2 text-white text-lg font-semibold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center space-x-3">
+            <Link href="/solution" className="relative px-10 py-4 bg-gradient-to-r from-accent1 to-accent2 text-white text-lg font-semibold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center space-x-3">
               <span>获取完整解决方案清单</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* 底部装饰波浪 */}

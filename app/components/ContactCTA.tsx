@@ -62,10 +62,18 @@ const ContactCTA: FC = () => {
     setSubmitStatus('idle');
 
     try {
-      // 模拟 API 调用
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const res = await fetch("/api/content/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
       
-      console.log("Form submitted:", formData);
+      if (!res.ok) {
+        throw new Error(data.error || '提交失败');
+      }
+      
       setSubmitStatus('success');
       
       // 清空表单
