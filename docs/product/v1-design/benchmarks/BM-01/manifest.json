@@ -147,7 +147,7 @@
     },
     {
       "path": "expected/product-api-catalog.json",
-      "sha256": "56df0745015ab0ff95a47a44cfd1e82e2c0b6adfd3096b92a3d495b9de05ca8c",
+      "sha256": "d4dc3440c01e4c4b828824d8378ce5bb3d187d0dcce6376b21a7de32cbd9dda1",
       "category": "content",
       "format": "json",
       "licenseStatus": "synthetic"

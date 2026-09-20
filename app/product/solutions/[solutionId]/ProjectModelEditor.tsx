@@ -29,7 +29,7 @@ const sectionNames: Record<string, string> = {
   solution: "整体解决方案", workload: "工作量与成本依据", implementation: "实施计划与交付安排", risks: "风险与待确认事项",
 };
 
-export default function ProjectModelEditor({ solutionId, onExecuted }: { solutionId: string; onExecuted: () => void }) {
+export default function ProjectModelEditor({ solutionId, understandingReady, onExecuted }: { solutionId: string; understandingReady: boolean; onExecuted: () => void }) {
   const [state, setState] = useState<ProjectModelState | null>(null);
   const [selectedKey, setSelectedKey] = useState("");
   const [primaryText, setPrimaryText] = useState("");
@@ -88,13 +88,14 @@ export default function ProjectModelEditor({ solutionId, onExecuted }: { solutio
   }, [solutionId]);
 
   useEffect(() => {
+    if (!understandingReady) { setConfirmedFacts([]); return; }
     let live = true;
     fetch(productApi.understanding(solutionId)).then(async (response) => {
       const payload = await response.json().catch(() => null);
       if (live && response.ok && payload?.success) setConfirmedFacts((payload.data?.userFacts || []).filter((fact: ConfirmedFact) => fact.status === "active"));
     }).catch(() => { if (live) setConfirmedFacts([]); });
     return () => { live = false; };
-  }, [solutionId]);
+  }, [solutionId, understandingReady]);
 
   useEffect(() => {
     if (!selected || !modelItem) return;

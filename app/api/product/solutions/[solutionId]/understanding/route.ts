@@ -6,12 +6,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   const auth = await requireProductSession(request);
   if ("response" in auth) return auth.response;
   const { solutionId } = await context.params;
+  const owned = productSqlite.prepare("SELECT id FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, auth.session.userId);
+  if (!owned) return NextResponse.json({ success: false, error: { code: "SOLUTION_NOT_FOUND", message: "方案不存在或无法访问。", retryable: false } }, { status: 404 });
   const understanding = productSqlite.prepare(`SELECT u.summary, u.facts_json AS factsJson, u.knowledge_json AS knowledgeJson, u.source_block_count AS sourceBlockCount, u.status,
       a.analysis_json AS analysisJson, a.origin AS analysisOrigin, a.model AS analysisModel, a.input_tokens AS inputTokens, a.output_tokens AS outputTokens
-    FROM solution_understandings u JOIN product_solutions s ON s.id = u.solution_id
+    FROM solution_understandings u
     LEFT JOIN free_analyses a ON a.solution_id = u.solution_id AND a.status = 'ready'
-    WHERE u.solution_id = ? AND s.owner_user_id = ? AND s.status NOT IN ('deletion_pending', 'deleted')`).get(solutionId, auth.session.userId) as { summary: string; factsJson: string; sourceBlockCount: number; status: string } | undefined;
-  if (!understanding) return NextResponse.json({ success: false, error: { code: "UNDERSTANDING_NOT_READY", message: "初步理解仍在形成。", retryable: true } }, { status: 404 });
+    WHERE u.solution_id = ?`).get(solutionId) as { summary: string; factsJson: string; sourceBlockCount: number; status: string } | undefined;
+  if (!understanding) return NextResponse.json({ success: true, data: null, meta: { status: "pending" } });
   const row = understanding as any;
   const userFacts = productSqlite.prepare("SELECT id, text, status, created_at AS createdAt FROM project_user_facts WHERE solution_id = ? AND user_id = ? AND status = 'active' ORDER BY created_at, id").all(solutionId, auth.session.userId);
   const sourceBlocks = productSqlite.prepare(`SELECT b.id, b.block_type AS blockType, b.source_format AS sourceFormat,

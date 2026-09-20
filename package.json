@@ -14,7 +14,8 @@
     "test": "node --test scripts/*.test.mjs",
     "provider:check": "node scripts/product-provider-check.mjs",
     "config:check": "node scripts/product-production-check.mjs",
-    "contracts:check": "python3 scripts/validate-product-contracts.py",
+    "contracts:check": "uv --cache-dir .uv-cache run --group dev python scripts/validate-product-contracts.py",
+    "quality:check": "pnpm lint && pnpm typecheck && pnpm test && pnpm api:check && pnpm contracts:check && pnpm benchmark:verify",
     "test:change-impact": "node --test scripts/product-change-impact.test.mjs",
     "test:project-model-state": "node --test scripts/product-project-model-state.test.mjs",
     "test:project-model-draft": "node --test scripts/product-project-model-draft.test.mjs",
@@ -26,7 +27,7 @@
     "test:recovery-status": "node --test scripts/product-recovery-status.test.mjs",
     "templates:preview": "node scripts/product-template-preview.mjs",
     "acceptance:campaign": "node scripts/product-acceptance-campaign.mjs",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings=36",
     "content:refresh": "sqlite3 data/cms.db < scripts/refresh-content.sql"
   },
   "dependencies": {
@@ -49,6 +50,8 @@
     "react-dom": "^18.3.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@eslint/js": "^9.39.5",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/dompurify": "^3.0.0",
@@ -57,6 +60,8 @@
     "@types/react": "^18.3.0",
     "autoprefixer": "^10.4.14",
     "drizzle-kit": "^0.31.10",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "15.5.23",
     "postcss": "^8.4.24",
     "postcss-import": "^15.1.0",
     "tailwindcss": "^3.4.0",

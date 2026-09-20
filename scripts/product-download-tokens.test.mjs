@@ -38,7 +38,17 @@ test("历史版本令牌不能复用到当前成果或其他历史版本", () =>
 test("签名被篡改或令牌格式异常时拒绝访问", () => {
   const issued = issueDownloadToken(scope);
   const [encoded, signature] = issued.token.split(".");
-  assert.equal(verifyDownloadToken(`${encoded}.${signature.slice(0, -1)}x`, scope), false);
+  const changedSignature = `${signature[0] === "A" ? "B" : "A"}${signature.slice(1)}`;
+  assert.equal(verifyDownloadToken(`${encoded}.${changedSignature}`, scope), false);
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const lastIndex = alphabet.indexOf(signature.at(-1));
+  const equivalentLastCharacter = alphabet[(lastIndex & ~3) | 1];
+  const nonCanonicalSignature = `${signature.slice(0, -1)}${equivalentLastCharacter}`;
+  assert.notEqual(nonCanonicalSignature, signature);
+  assert.deepEqual(Buffer.from(nonCanonicalSignature, "base64url"), Buffer.from(signature, "base64url"));
+  assert.equal(verifyDownloadToken(`${encoded}.${nonCanonicalSignature}`, scope), false);
+
   assert.equal(verifyDownloadToken(`${issued.token}.extra`, scope), false);
   assert.equal(verifyDownloadToken("not-a-token", scope), false);
 });

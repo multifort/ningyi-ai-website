@@ -4,6 +4,7 @@
 
 - 产品接口统一位于 `/api/product/*`，与现有 `/api/auth/login` 管理员认证完全隔离。
 - 登录后的用户身份只从 HttpOnly 产品 Session 获取；方案接口禁止接受客户端 `userId` 作为授权依据。
+- `GET /api/product/auth/session` 在未登录时返回 `success: true` 和 `data.user: null`，供公开产品页无噪声探测登录态；真正受保护的产品接口仍返回 401。
 - 登录前文件不上传；登录后上传到产品专用私有存储，不复用现有写入 `public/uploads` 的 CMS 图片接口。
 - 前端不创建项目或任务、不选择模型。`handoff_intake` 和有效内容文件上传会自动推进处理。
 - 所有响应使用 `{ success, data }` 或 `{ success, error: { code, message, retryable } }`，界面不解析任意错误字符串。
@@ -26,7 +27,7 @@
 13. 用户可通过 `GET /api/product/solutions/:solutionId/source-package` 下载当前已上传输入文件、原始描述和已确认事实组成的输入包；项目材料、企业模板和品牌素材在包内按目录分开，清单会记录每个原始文件对应的导出路径和 SHA-256 校验值，并附带说明文件和整体输入快照指纹。该接口仅从私有存储读取文件，不调用模型或供应商。
 14. 用户可通过 `POST /api/product/solutions/:solutionId/brands` 追加 Logo 与品牌素材，并复用私有上传接口。PNG Logo 仅在本地提取主题色，其他品牌素材安全保存并回退企业模板或平台默认主题；已有成果只重新渲染，不进入材料理解或内容模型。
 15. 已上传品牌素材可通过 `DELETE /api/product/solutions/:solutionId/brands/:fileId` 移除。系统会撤销其存储引用并以较早品牌、企业模板或平台默认主题重新渲染已有成果，不改变项目内容。
-16. `GET /api/product/solutions/:solutionId/understanding` 在项目理解就绪后同时返回受权限保护的来源块摘录、文件名和定位信息，供用户核对；该响应不会返回私有存储路径或下载链接。
+16. `GET /api/product/solutions/:solutionId/understanding` 在项目理解就绪后同时返回受权限保护的来源块摘录、文件名和定位信息，供用户核对；仍在形成时返回 `success: true`、`data: null` 和 `meta.status: pending`，不存在或越权项目仍返回 404。该响应不会返回私有存储路径或下载链接。
 17. `GET /api/product/account/export` 下载当前账号的数据清单，其中包含项目、文件/成果元数据、用户确认事实和最近项目变更；原始文件与成果正文仍通过项目输入包或成果包下载。
 18. 用户可通过 `POST /api/product/solutions/:solutionId/duplicate` 将项目说明、已上传输入文件、模板/品牌配置及有效用户确认事实复制成独立新项目；理解、成果和历史版本不复制，且新项目不会自动开始处理。
 19. 用户可通过 `POST /api/product/solutions/:solutionId/understanding/facts` 保存确认或纠正信息。它以独立“用户确认”来源进入统一知识，不覆盖原始材料；受影响成果进入重新形成状态。

@@ -54,11 +54,16 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
   const descriptionInitialized = useRef(false);
   useEffect(() => {
     let active = true;
+    let timer: number | undefined;
+    const stopPolling = () => {
+      if (timer !== undefined) window.clearInterval(timer);
+      timer = undefined;
+    };
     const load = async () => {
       const response = await fetch(productApi.progress(solutionId));
       if (!active) return;
-      if (response.status === 401) { setState("unauthorized"); return; }
-      if (!response.ok) { setState("missing"); return; }
+      if (response.status === 401) { setState("unauthorized"); stopPolling(); return; }
+      if (!response.ok) { setState("missing"); stopPolling(); return; }
       const payload = await response.json();
       setProgress(payload.data); setState("ready");
       if (!descriptionInitialized.current) { setDescriptionDraft(payload.data.intake?.needDescription || ""); descriptionInitialized.current = true; }
@@ -68,8 +73,8 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
       }
     };
     load();
-    const timer = window.setInterval(load, 10000);
-    return () => { active = false; window.clearInterval(timer); };
+    timer = window.setInterval(load, 10000);
+    return () => { active = false; stopPolling(); };
   }, [solutionId]);
 
   if (state === "loading") return <div className="grid min-h-screen place-items-center bg-[#f4f7fb] text-sm text-slate-500">正在读取方案进度…</div>;
@@ -388,7 +393,7 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
         </div></section>
         <aside className="rounded-3xl border border-slate-200 bg-white p-7"><h2 className="text-xl font-bold text-primary">已接收材料</h2><p className="mt-2 text-sm text-slate-500">系统只显示属于当前账号的文件。</p><div className="mt-6 space-y-3">{progress.files.length ? progress.files.map((file) => <div key={file.id} className="rounded-2xl bg-slate-50 p-4"><div className="flex items-start justify-between gap-3"><p className="break-all text-sm font-semibold text-primary">{file.displayName}</p><span className={`shrink-0 text-xs font-semibold ${file.templateStatus === "fallback" ? "text-amber-600" : "text-emerald-600"}`}>{file.category === "template" && file.templateStatus ? file.templateStatus === "fallback" ? "已回退" : file.templateStatus === "theme_applied" ? "主题已应用" : "已识别" : file.status === "uploaded" ? "已接收" : "待上传"}</span></div><p className="mt-2 text-xs uppercase text-slate-400">{fileCategory(file.category)} · {file.detectedFormat || "等待识别"}</p>{file.category === "template" && file.templateNotice && <p className="mt-2 text-xs leading-5 text-slate-500">{file.templateNotice}</p>}</div>) : <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">本次通过文字说明开始，没有上传附件。</p>}</div></aside>
       </div>
-      <ProjectModelEditor solutionId={solutionId} onExecuted={refreshAfterModelRevision} />
+      <ProjectModelEditor solutionId={solutionId} understandingReady={Boolean(understanding)} onExecuted={refreshAfterModelRevision} />
     </div>
   </main>;
 }

@@ -25,8 +25,9 @@ export function verifyDownloadToken(token: string, expected: DownloadTokenScope)
     const [encoded, suppliedSignature, extra] = token.split(".");
     if (!encoded || !suppliedSignature || extra) return false;
     const expectedSignature = sign(encoded);
-    const supplied = Buffer.from(suppliedSignature, "base64url");
-    const signature = Buffer.from(expectedSignature, "base64url");
+    if (!/^[A-Za-z0-9_-]+$/.test(suppliedSignature) || suppliedSignature.length !== expectedSignature.length) return false;
+    const supplied = Buffer.from(suppliedSignature, "utf8");
+    const signature = Buffer.from(expectedSignature, "utf8");
     if (supplied.length !== signature.length || !timingSafeEqual(supplied, signature)) return false;
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as DownloadTokenPayload;
     return payload.version === 1

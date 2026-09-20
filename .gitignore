@@ -41,6 +41,9 @@ coverage/
 # Python 缓存
 __pycache__/
 *.py[cod]
+.venv/
+.uv-cache/
+.playwright-cli/
 
 # 数据库文件
 data/

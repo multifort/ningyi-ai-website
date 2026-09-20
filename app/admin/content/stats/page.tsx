@@ -146,7 +146,7 @@ export default function StatsPage() {
           <div>
             <div className="font-medium text-blue-900">提示</div>
             <div className="text-sm text-blue-700 mt-1">
-              直接在表格中编辑数据，修改完成后点击"保存修改"按钮即可。
+              直接在表格中编辑数据，修改完成后点击“保存修改”按钮即可。
             </div>
           </div>
         </div>

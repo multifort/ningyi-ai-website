@@ -22,6 +22,10 @@ CASES = (
     ("project-model.schema.json", "examples/minimal-project-model.json"),
     ("task-runtime.schema.json", "examples/task-runtime.example.json"),
     ("change-impact-plan.schema.json", "examples/change-impact-plan.example.json"),
+    (
+        "product-api-catalog.schema.json",
+        "../benchmarks/BM-01/expected/product-api-catalog.json",
+    ),
 )
 
 

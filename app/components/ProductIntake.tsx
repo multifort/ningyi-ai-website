@@ -343,13 +343,13 @@ function IntakeStep({ number, title, required = false, children }: { number: str
 function DeliverableIcon({ index }: { index: number }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
   const icons = [
-    <svg {...common}><path d="M4 4h10v16H4zM7 8h4M7 12h3"/><circle cx="17" cy="15" r="3"/><path d="m19.2 17.2 2 2"/></svg>,
-    <svg {...common}><path d="M9 6h11M9 12h11M9 18h11"/><path d="m4 6 1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>,
-    <svg {...common}><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>,
-    <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h2M14 14h2M8 18h2"/></svg>,
-    <svg {...common}><path d="M3 12 12 3h7l2 2v7l-9 9z"/><circle cx="16.5" cy="7.5" r="1.2"/></svg>,
-    <svg {...common}><path d="m12 3 9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>,
-    <svg {...common}><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 13V9M11 13V7M15 13v-3"/></svg>,
+    <svg key="analysis" {...common}><path d="M4 4h10v16H4zM7 8h4M7 12h3"/><circle cx="17" cy="15" r="3"/><path d="m19.2 17.2 2 2"/></svg>,
+    <svg key="checklist" {...common}><path d="M9 6h11M9 12h11M9 18h11"/><path d="m4 6 1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>,
+    <svg key="schedule" {...common}><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>,
+    <svg key="calendar" {...common}><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h2M14 14h2M8 18h2"/></svg>,
+    <svg key="quote" {...common}><path d="M3 12 12 3h7l2 2v7l-9 9z"/><circle cx="16.5" cy="7.5" r="1.2"/></svg>,
+    <svg key="architecture" {...common}><path d="m12 3 9 5-9 5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg>,
+    <svg key="presentation" {...common}><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 13V9M11 13V7M15 13v-3"/></svg>,
   ];
   return icons[index] || icons[0];
 }

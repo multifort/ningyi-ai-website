@@ -32,20 +32,25 @@ export default function ProductWorkspace() {
 
   const load = async () => {
     const session = await fetch(productApi.session).then((response) => response.json());
-    if (!session.success) { setLoading(false); return; }
+    if (!session.success || !session.data?.user) { setSignedInAs(""); setSolutions([]); setLoading(false); return false; }
     setSignedInAs(session.data.user.username);
     const list = await fetch(productApi.solutions).then((response) => response.json());
     if (list.success) setSolutions(list.data.solutions);
     setLoading(false);
+    return true;
   };
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    if (!signedInAs) return;
     const refresh = () => { if (document.visibilityState === "visible") load(); };
     const timer = window.setInterval(refresh, 15000);
     document.addEventListener("visibilitychange", refresh);
     return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
-  }, []);
+  }, [signedInAs]);
 
   const authenticate = async (event: FormEvent) => {
     event.preventDefault();

@@ -14,7 +14,7 @@
 
 ## 本地启动
 
-建议使用 Node.js 22 LTS 和 pnpm 10。
+建议使用 Node.js 22 LTS、pnpm 10 和 uv 0.11+。uv 只用于锁定并运行 Python 契约校验依赖，不污染系统 Python。
 
 ```bash
 corepack enable
@@ -36,16 +36,19 @@ pnpm worker:product
 ## 代码与文档一致性检查
 
 ```bash
+pnpm quality:check
 pnpm typecheck
 pnpm test
 pnpm api:check
+pnpm contracts:check
 pnpm benchmark:verify
 ```
 
+- `quality:check` 是本地与 CI 的统一入口，依次执行 lint、类型检查、测试、API 同步、契约和基准校验。
 - `api:check` 扫描全部 `app/api/product/**/route.ts`，并与产品 API 目录逐项比对；新增、删除或修改路由时必须同步目录。
 - `benchmark:verify` 默认聚合校验仓库中已有的 BM-01—BM-07，也可以追加单个 `manifest.json` 路径。
-- `contracts:check` 会校验机器可读 JSON Schema；当前需要本机 Python 环境提供 `jsonschema`。
-- `lint` 尚待补齐非交互式 ESLint 配置，不属于当前可用质量门。
+- `contracts:check` 通过 `uv.lock` 自动建立隔离环境并校验机器可读 JSON Schema，无需手工安装 `jsonschema`。
+- `lint` 使用非交互式 ESLint 9 配置；当前警告预算为 36，新增警告会使质量门失败。
 
 ## 主要目录
 
@@ -70,5 +73,5 @@ data/                        本地 SQLite 数据（运行时文件不提交）
 - PostgreSQL 与私有对象存储迁移；
 - BM-08—BM-18 实体样本和 30 次连续无人值守验收；
 - 多用户并发、租约竞争、崩溃恢复和供应商限流压测；
-- 浏览器端到端回归、恶意文件扫描、共享限流和安全开放门；
-- 非交互式 lint、项目级 Python 契约依赖和 CI 质量门收口。
+- 将已完成的主流程浏览器冒烟扩展为可重复的全状态回归，并补齐恶意文件扫描、共享限流和安全开放门；
+- 清理现有 lint 警告，并完成 Worker 故障注入与多用户并发验证。

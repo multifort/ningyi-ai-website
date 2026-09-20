@@ -1,0 +1,11 @@
+[project]
+name = "ningyi-ai-website-tooling"
+version = "0.1.0"
+description = "Development tooling for product contract validation"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "jsonschema>=4.25,<5",
+]
