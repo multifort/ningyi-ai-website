@@ -21,7 +21,9 @@
 
 ## 机器可读契约与基准
 
-- 核心非基准契约校验：运行 `npm run contracts:check`，检查正式项目模型和任务运行时 Schema 及对应示例；本命令需要 Python 包 `jsonschema`。
+- 核心非基准契约校验：运行 `pnpm contracts:check`，检查正式项目模型和任务运行时 Schema 及对应示例；本命令需要 Python 包 `jsonschema`。
+- 产品 API 与代码同步校验：运行 `pnpm api:check`，检查机器可读 API 目录是否与 `app/api/product/**/route.ts` 双向一致。
+- 基准包聚合校验：运行 `pnpm benchmark:verify`，默认检查仓库中已有的 BM-01—BM-07；也可追加单个 manifest 路径。
 
 - `contracts/project-model.schema.json`：正式项目模型 V1。
 - `contracts/benchmark-manifest.schema.json`：基准输入清单 V1。

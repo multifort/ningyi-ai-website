@@ -17,7 +17,7 @@
         "required": ["id", "method", "path", "auth", "requestFields", "responseContract", "autoStartsProcessing", "implementation"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
-          "method": {"enum": ["GET", "POST", "DELETE"]},
+          "method": {"enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]},
           "path": {"type": "string", "pattern": "^/api/product/"},
           "auth": {"enum": ["public", "product_session", "worker_bearer"]},
           "requestFields": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},

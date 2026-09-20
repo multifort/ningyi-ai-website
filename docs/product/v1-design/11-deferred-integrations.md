@@ -47,7 +47,7 @@
 - 免费初步分析：`PRODUCT_FREE_MODEL_PROVIDER` 与 `PRODUCT_FREE_MODEL`，默认低成本槽位为 `openai` / `gpt-5.4-nano`；无密钥或调用失败时明确使用 `deterministic_fallback`，不得冒充模型结果。
 - 正式分析：使用独立的 `PRODUCT_FORMAL_MODEL_PROVIDER` 与 `PRODUCT_FORMAL_MODEL`，不得因为免费槽位成功而自动复用低成本模型生成正式交付内容。
 - 当前要求：模型调用记录供应商、模型、输入/输出 Token 和可配置成本估算；密钥只通过服务端环境变量提供，不写入数据库或前端。
-- 交接方式：复制仓库根目录的 `.env.product.example` 到本地 `.env.local` 或部署密钥存储并填写真实值。产品 Worker、`config:check` 和 `provider:check` 都会读取 `.env.local`，部署环境中已注入的变量默认优先；若桌面环境注入了无关密钥，本地 `.env.local` 可显式设为 `PRODUCT_ENV_FILE_OVERRIDE=true`。获得 Key 后，先运行 `npm run config:check` 完成纯本地配置预检；只有获得明确授权后，才运行会向供应商发送最小请求的 `npm run provider:check`。
+- 交接方式：复制仓库根目录的 `.env.product.example` 到本地 `.env.local` 或部署密钥存储并填写真实值。产品 Worker、`config:check` 和 `provider:check` 都会读取 `.env.local`，部署环境中已注入的变量默认优先；若桌面环境注入了无关密钥，本地 `.env.local` 可显式设为 `PRODUCT_ENV_FILE_OVERRIDE=true`。获得 Key 后，先运行 `pnpm config:check` 完成纯本地配置预检；只有获得明确授权后，才运行会向供应商发送最小请求的 `pnpm provider:check`。
 - 夜间价差：启用 `PRODUCT_MODEL_EXECUTION_WINDOW_ENABLED=true` 后，初步理解、OCR、视觉和正式文本模型调用只在 `PRODUCT_MODEL_EXECUTION_TIMEZONE` 的 `[PRODUCT_MODEL_EXECUTION_START_HOUR, PRODUCT_MODEL_EXECUTION_END_HOUR)` 内执行；默认是 `Asia/Shanghai` 的 00:00–05:59:59。校验位于 Worker 消费路径内，手动 tick、重试和故障恢复都不能绕过；窗口外 OCR、视觉、正式文本任务保留排队状态且不计入失败重试，初步理解明确记录为 `night_window_deterministic_fallback`，不会冒充模型结果。
 
 ## PPT-VISUAL-001 视觉优先的可编辑 PPT

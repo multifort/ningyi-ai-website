@@ -31,15 +31,15 @@
 
 ## 4. 自动验证基线
 
-2026-09-20 的只读扫描结果：
+2026-09-20 的仓库基线校验结果：
 
-- `pnpm exec tsc --noEmit --incremental false`：通过。
-- `pnpm exec node --test scripts/*.test.mjs`：21 项通过，0 项失败。
-- BM-01—BM-07 的 manifest 单独校验：全部通过。
+- `pnpm typecheck`：通过。
+- `pnpm test`：21 项通过，0 项失败。
+- `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
+- `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-07 的 manifest 与文件摘要。
 - `pnpm contracts:check`：当前环境缺少 Python `jsonschema`，未形成可重复的项目级依赖安装方式。
-- `pnpm benchmark:verify`：脚本当前要求显式 manifest 路径，package script 未提供默认路径。
 - `pnpm lint`：尚未落地 ESLint 配置，会进入交互式初始化并失败。
-- 生产构建和真实模型端到端链路不计入本次只读扫描结论，需在配置隔离的验收环境执行。
+- 生产构建和真实模型端到端链路不计入本次基线结论，需在配置隔离的验收环境执行。
 
 ## 5. 设计阶段映射
 
@@ -58,7 +58,7 @@
 
 ## 6. 文档与代码同步规则
 
-1. 新增或变更产品 API 时，同时更新路由实现、`product-api-catalog.json`、`10-product-api.md` 和相关自动测试。
+1. 新增或变更产品 API 时，同时更新路由实现、`product-api-catalog.json`、`10-product-api.md` 和相关自动测试；提交前运行 `pnpm api:check`，禁止目录与实际路由双向缺失。
 2. 新增或变更数据状态时，同时更新 `lib/product/db.ts`、JSON Schema、`04-data-contract.md` 和迁移/恢复说明。
 3. 新增成果或质量规则时，同时更新 `03-deliverable-spec.md`、基准 expected 文件、验收代码和渲染测试。
 4. 完成一项路线任务时，在本文更新状态、验证命令与证据位置；不得只修改“已完成”文字而没有自动证据。
@@ -66,7 +66,7 @@
 
 ## 7. 下一批研发顺序
 
-1. 固化仓库基线并修复 lint、契约校验、基准聚合校验和 CI 入口。
+1. 补齐非交互式 lint、项目级 Python 契约依赖和 CI 质量门入口。
 2. 建立产品主流程浏览器 E2E、跨用户隔离和 Worker 故障回归。
 3. 补齐 BM-08—18 的材料、期望事实、评分规则和绑定流程。
 4. 迁移 PostgreSQL 与 S3 兼容对象存储，并完成备份、恢复和删除审计。
