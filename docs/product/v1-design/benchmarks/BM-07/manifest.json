@@ -1,0 +1,120 @@
+{
+  "benchmarkId": "BM-07",
+  "benchmarkVersion": "1.0",
+  "title": "售后服务平台建设项目",
+  "projectType": "software",
+  "difficulty": "L1",
+  "coverageTags": [
+    "service_ticket_lifecycle",
+    "ticket_state_machine",
+    "first_human_response_sla",
+    "resolution_clock_pause",
+    "priority_escalation",
+    "customer_confirmation",
+    "work_order_source_traceability",
+    "deliverable_readability"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 10,
+      "max": 30
+    },
+    "features": {
+      "min": 10,
+      "max": 34
+    },
+    "solutionCharacters": {
+      "min": 9000,
+      "max": 26000
+    },
+    "slideCount": {
+      "min": 8,
+      "max": 18
+    }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "priority_sla_preserved",
+    "automatic_receipt_excluded_from_first_response",
+    "waiting_customer_pauses_resolution_only",
+    "p1_escalates_immediately",
+    "customer_confirmation_before_close",
+    "reopen_preserves_audit_history",
+    "missing_information_and_calendar_limits_disclosed",
+    "no_out_of_scope_automation_claims",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "0f154b4255c049d0dce62aa43a82a91c5de167a0d7a4d77f1ee6f129cd637121",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "d6b41ed7191fd51962c21ed6c76477d9e432977ba61d3f50ffc28a18cc7298d5",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "f06a775e6c82842bb1fb90d0241f6b20333b255d79ba26f1efd83caa7d936d2b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "a0a6c06f4e90afbe1e43d97fe2ff28f74f3cb97fef8c15cdaf48c34b1d94af81",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "de91433149b8a78cb60ee041a0c531ba52b8e9f60c2823da93e47f7f67b9fdd7",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "0ddb7765826eb17bb97ea9898da63ac751e9e7ca8444845673111b854ca04ff6",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "7adb09332e54c743091a35b44fee0f862a65a4b4b79e34dc652dacc1d22ad848",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/service-manual.docx",
+      "sha256": "5ac3a845b9d7e91610e90e62b3d5f42456aafc1f2bc1466a37c945a96da22451",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/ticket-flow.png",
+      "sha256": "e81a605ee3df75dc27948b4e178bf741fa6bea3bf0e64468facd16d4293d16f5",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/work-orders.csv",
+      "sha256": "3ecd370dd308f9f90043dba2e55677f1db8dc50b43684f099b742ed4607ec34b",
+      "category": "content",
+      "format": "csv",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

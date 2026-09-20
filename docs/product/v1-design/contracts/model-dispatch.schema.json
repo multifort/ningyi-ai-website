@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/model-dispatch/v1.json",
+  "title": "Ningyi Model Dispatch Decision V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskType", "status", "slotId", "qualityTier", "inputTokens", "requestedOutputTokens", "weightedCost", "remainingBudgetBefore", "remainingBudgetAfter", "reasonCodes"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "taskType": {"type": "string", "minLength": 1},
+    "status": {"enum": ["ready", "deterministic", "split_required", "deferred_budget"]},
+    "slotId": {"type": ["string", "null"]},
+    "qualityTier": {"enum": ["deterministic", "economy", "quality"]},
+    "inputTokens": {"type": "integer", "minimum": 0},
+    "requestedOutputTokens": {"type": "integer", "minimum": 0},
+    "weightedCost": {"type": "number", "minimum": 0},
+    "remainingBudgetBefore": {"type": "number", "minimum": 0},
+    "remainingBudgetAfter": {"type": "number", "minimum": 0},
+    "reasonCodes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

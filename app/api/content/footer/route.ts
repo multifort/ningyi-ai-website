@@ -32,7 +32,13 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        config: config || {},
+        config: {
+          companyDescription: config?.company_description || '',
+          email: config?.email || '',
+          phone: config?.phone || '',
+          address: config?.address || '',
+          copyright: config?.copyright || '',
+        },
         links,
       },
     });
@@ -49,8 +55,8 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const { requireAuth } = await import('../../../../lib/middleware');
-    const authResult = requireAuth(request);
-    if (authResult && 'status' in authResult) {
+    const authResult = await requireAuth(request);
+    if ('status' in authResult) {
       return authResult;
     }
 

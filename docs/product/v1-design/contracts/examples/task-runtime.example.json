@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "tasks": [
+    {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "idempotencyKey": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "taskType": "source_ingestion",
+      "scope": "solution:50000000-0000-4000-8000-000000000001",
+      "dependencyIds": [],
+      "inputHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "outputHash": null,
+      "status": "leased",
+      "attemptCount": 1,
+      "maxAttempts": 5,
+      "leaseOwner": "worker-local-01",
+      "leaseUntil": 1789600000,
+      "availableAt": 1789599700,
+      "lastErrorCode": null
+    }
+  ],
+  "attempts": [
+    {
+      "taskId": "40000000-0000-4000-8000-000000000001",
+      "attemptNo": 1,
+      "workerId": "worker-local-01",
+      "startedAt": 1789599700,
+      "endedAt": null,
+      "status": "running",
+      "errorCode": null,
+      "outputHash": null
+    }
+  ]
+}

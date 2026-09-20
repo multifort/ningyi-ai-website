@@ -6,7 +6,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "worker:product": "node scripts/product-worker.mjs",
+    "benchmark:product": "node scripts/product-benchmark-run.mjs",
+    "benchmark:verify": "node docs/product/v1-design/benchmarks/tools/verify-manifest.mjs",
+    "provider:check": "node scripts/product-provider-check.mjs",
+    "config:check": "node scripts/product-production-check.mjs",
+    "contracts:check": "python3 scripts/validate-product-contracts.py",
+    "test:change-impact": "node --test scripts/product-change-impact.test.mjs",
+    "test:project-model-state": "node --test scripts/product-project-model-state.test.mjs",
+    "test:project-model-draft": "node --test scripts/product-project-model-draft.test.mjs",
+    "test:quote-parameters": "node --test scripts/product-quote-parameters.test.mjs",
+    "test:deliverable-package": "node --test scripts/product-deliverable-package.test.mjs",
+    "test:download-tokens": "node --test scripts/product-download-tokens.test.mjs",
+    "test:storage-maintenance": "node --test scripts/product-storage-maintenance.test.mjs",
+    "test:deletion-worker": "node --test scripts/product-deletion-worker.test.mjs",
+    "test:recovery-status": "node --test scripts/product-recovery-status.test.mjs",
+    "templates:preview": "node scripts/product-template-preview.mjs",
+    "acceptance:campaign": "node scripts/product-acceptance-campaign.mjs",
+    "lint": "next lint",
+    "content:refresh": "sqlite3 data/cms.db < scripts/refresh-content.sql"
   },
   "dependencies": {
     "@tiptap/extension-image": "^2.0.0",
@@ -15,10 +33,15 @@
     "@tiptap/starter-kit": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.8.0",
+    "docx": "^9.5.1",
     "dompurify": "^3.0.0",
     "drizzle-orm": "^0.45.2",
+    "exceljs": "^4.4.0",
     "jose": "^6.2.2",
+    "jszip": "^3.10.1",
     "next": "^15.0.0",
+    "pdfkit": "^0.20.1",
+    "pptxgenjs": "^4.0.1",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   },
@@ -27,6 +50,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/dompurify": "^3.0.0",
     "@types/node": "^22.0.0",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.3.0",
     "autoprefixer": "^10.4.14",
     "drizzle-kit": "^0.31.10",
@@ -34,5 +58,12 @@
     "postcss-import": "^15.1.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.6.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild",
+      "sharp"
+    ]
   }
 }

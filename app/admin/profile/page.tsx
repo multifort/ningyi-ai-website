@@ -54,7 +54,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-primary mb-6">修改密码</h1>
+        <h1 className="text-2xl font-bold text-primary mb-6">账号安全</h1>
 
         {message.text && (
           <div

@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-06",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.14,
+    "requirements_features": 0.14,
+    "procurement_controls": 0.18,
+    "supplier_governance": 0.14,
+    "deterministic_data": 0.14,
+    "traceability": 0.10,
+    "deliverable_quality": 0.10,
+    "runtime_cost": 0.06
+  }
+}

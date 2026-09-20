@@ -1,0 +1,21 @@
+{
+  "benchmark_id": "BM-03",
+  "minimum_structured_items": {"requirement": 10, "feature": 10, "phase": 2, "risk": 3},
+  "maximum_runtime_seconds": 1800,
+  "required_patterns": [
+    {"id": "offline_sync", "patterns": ["离线", "联网后.{0,8}同步|恢复网络.{0,8}同步", "原始操作时间"]},
+    {"id": "lead_to_opportunity", "patterns": ["线索.{0,6}商机", "来源关系|原线索编号", "不删除.{0,6}线索|保留.{0,6}线索"]},
+    {"id": "customer_permission", "patterns": ["本人及获授权客户", "本区域(?:客户)?", "批量导出"]},
+    {"id": "audit_fields", "patterns": ["原负责人", "新负责人", "操作人", "原因"]},
+    {"id": "deterministic_targets", "patterns": ["(?:90%|0[.]9\\s*%?|首期目标值\\s*0[.]9)", "15.{0,4}分钟", "(?:95%|0[.]95\\s*%?|首期目标值\\s*0[.]95)", "(?:99%|0[.]99\\s*%?|首期目标值\\s*0[.]99)", "(?:100%|1(?:[.]0)?\\s*%?|首期目标值\\s*1(?:[.]0)?)"]},
+    {"id": "phase_one_boundary", "patterns": ["不包括|不包含", "订单处理", "库存查询", "回款核销", "佣金结算"]},
+    {"id": "mobile_ui_evidence", "patterns": ["到店签到", "记录沟通", "创建商机"]}
+  ],
+  "prohibited_commitment_patterns": [
+    {"id": "erp_order_committed", "pattern": "一期.{0,18}(?<!不)(包含|支持|交付).{0,10}ERP.{0,5}订单"},
+    {"id": "inventory_committed", "pattern": "一期.{0,18}(?<!不)(包含|支持|交付).{0,10}库存查询"},
+    {"id": "payment_committed", "pattern": "一期.{0,18}(?<!不)(包含|支持|交付).{0,10}回款核销"},
+    {"id": "commission_committed", "pattern": "一期.{0,18}(?<!不)(包含|支持|交付).{0,10}佣金结算"},
+    {"id": "false_zero_baseline", "pattern": "离线记录同步成功率.{0,12}(当前|现状).{0,6}(0%|为0)"}
+  ]
+}

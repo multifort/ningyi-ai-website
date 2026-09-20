@@ -1,0 +1,19 @@
+{
+  "benchmark_id": "BM-06",
+  "source_of_truth": "sources/procurement-policy.pdf; sources/supplier-register.xlsx",
+  "quote_thresholds_cny": [
+    {"minimum_exclusive": 0, "maximum_exclusive": 20000, "valid_quotes_min": 1},
+    {"minimum_inclusive": 20000, "maximum_exclusive": 100000, "valid_quotes_min": 2},
+    {"minimum_inclusive": 100000, "valid_quotes_min": 3}
+  ],
+  "supplier_score_weights": {"quality": 0.4, "delivery": 0.3, "service": 0.2, "compliance": 0.1},
+  "supplier_score_action_threshold": 60,
+  "credential_expiry_reminder_days": 30,
+  "emergency_documentation_due_work_days": 2,
+  "supplier_records": [
+    {"supplier_id": "SUP-1042", "name": "海岳精密部件（合成）", "status": "qualified", "score": 82},
+    {"supplier_id": "SUP-1088", "name": "启辰工业服务（合成）", "status": "credential_pending", "score": 74},
+    {"supplier_id": "SUP-1120", "name": "远峰机电（合成）", "status": "remediation_watch", "score": 58},
+    {"supplier_id": "SUP-1176", "name": "北辰机材（合成）", "status": "paused_pending_review", "score": 67}
+  ]
+}

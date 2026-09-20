@@ -1,0 +1,10 @@
+{
+  "benchmark_id": "BM-07",
+  "source_of_truth": "sources/service-manual.docx; sources/work-orders.csv",
+  "first_response_targets": {"P1": 10, "P2": 30, "P3": 240, "P4": "1 business day"},
+  "clock_rules": {"first_human_response_excludes_auto_receipt": true, "waiting_customer_pauses_resolution_clock": true, "waiting_customer_pauses_first_response_clock": false},
+  "required_ticket_states": ["待受理", "待分级", "待派工", "处理中", "等待客户", "待客户确认", "已关闭"],
+  "reopen_behavior": "保留原工单审计记录并关联重开工单；不得覆盖已关闭记录",
+  "sample_work_orders": {"count": 7, "missing_contact_reference": "WO-SYN-204", "calendar_dependent_reference": "WO-SYN-203", "auto_receipt_reference": "WO-SYN-202"},
+  "budget_cny": {"minimum": 420000, "maximum": 760000, "excludes": ["传感器", "现场网络改造", "差旅费用"]}
+}

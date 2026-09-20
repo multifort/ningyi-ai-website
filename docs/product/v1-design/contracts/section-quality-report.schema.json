@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/section-quality-report/v1.json",
+  "title": "Ningyi Section Quality Report V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "sectionId", "status", "checks", "metrics"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "sectionId": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pass", "fail"]},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "passed", "message", "blockIds"],
+        "properties": {
+          "code": {"enum": ["QG-CITATION", "QG-CONTEXT", "QG-SCOPE", "QG-CONFLICT", "QG-DUPLICATION", "QG-TERMINOLOGY"]},
+          "severity": {"enum": ["error", "warning"]},
+          "passed": {"type": "boolean"},
+          "message": {"type": "string", "minLength": 1},
+          "blockIds": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blocks", "sourcedFactBlocks", "citedFactBlocks", "citationCoverage", "duplicateBlocks"],
+      "properties": {
+        "blocks": {"type": "integer", "minimum": 0},
+        "sourcedFactBlocks": {"type": "integer", "minimum": 0},
+        "citedFactBlocks": {"type": "integer", "minimum": 0},
+        "citationCoverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "duplicateBlocks": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

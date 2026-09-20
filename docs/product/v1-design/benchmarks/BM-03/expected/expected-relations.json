@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-03",
+  "relations": [
+    {"from": "离线拜访记录", "relation": "联网后同步到", "to": "服务端", "required_detail": "保留原始操作时间"},
+    {"from": "线索", "relation": "转化为", "to": "商机", "required_detail": "保留原线索编号且不删除原线索"},
+    {"from": "跟进记录", "relation": "必须关联", "to": "客户", "required_detail": "关联商机为可选"},
+    {"from": "普通销售", "relation": "仅可查看", "to": "本人及获授权客户", "required_detail": "不得批量导出客户明细"},
+    {"from": "区域经理", "relation": "可查看", "to": "本区域客户", "required_detail": "可导出客户明细"},
+    {"from": "客户归属变更", "relation": "产生", "to": "审计记录", "required_detail": "原负责人、新负责人、操作人、时间和原因"},
+    {"from": "现有 CRM", "relation": "提供", "to": "客户和商机主数据", "required_detail": "按员工编号匹配用户"},
+    {"from": "销售指标表", "relation": "确定", "to": "量化目标和商机阶段概率", "required_detail": "不得从其他材料推测"}
+  ]
+}

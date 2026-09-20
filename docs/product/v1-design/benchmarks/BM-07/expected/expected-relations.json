@@ -1,0 +1,11 @@
+{
+  "benchmark_id": "BM-07",
+  "relations": [
+    {"from": "生产停线", "to": "P1", "type": "priority_rule", "source": "sources/service-manual.docx"},
+    {"from": "P1", "to": "10分钟内首次人工响应", "type": "sla", "source": "sources/service-manual.docx"},
+    {"from": "自动回执", "to": "不计首次人工响应", "type": "measurement_rule", "source": "sources/service-manual.docx; sources/work-orders.csv"},
+    {"from": "等待客户", "to": "暂停解决时钟但不暂停首响时钟", "type": "clock_rule", "source": "sources/service-manual.docx"},
+    {"from": "客户确认维修结果", "to": "允许关闭工单", "type": "state_transition", "source": "sources/service-manual.docx; sources/ticket-flow.png"},
+    {"from": "工单关闭后同一故障再发", "to": "重开并保留原记录", "type": "state_transition", "source": "sources/service-manual.docx"}
+  ]
+}

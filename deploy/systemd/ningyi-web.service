@@ -1,0 +1,25 @@
+[Unit]
+Description=Ningyi website and product API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ningyi
+Group=ningyi
+WorkingDirectory=/opt/ningyi-ai-website
+EnvironmentFile=/etc/ningyi/product.env
+Environment=NODE_ENV=production
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStartPre=/usr/bin/env node scripts/product-production-check.mjs
+ExecStart=/usr/bin/env pnpm start -p 3000
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+KillSignal=SIGTERM
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/context-pack/v1.json",
+  "title": "Ningyi Context Pack V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "taskType", "sectionId", "query", "budget", "continuity", "evidence", "omitted"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "taskType": {"enum": ["free_analysis", "formal_analysis", "section_generation", "revision", "quality_review"]},
+    "sectionId": {"type": "string", "minLength": 1},
+    "query": {"type": "string", "minLength": 1},
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxInputTokens", "reservedOutputTokens", "safetyMarginTokens", "estimatedInputTokens", "utilization"],
+      "properties": {
+        "maxInputTokens": {"type": "integer", "minimum": 1},
+        "reservedOutputTokens": {"type": "integer", "minimum": 0},
+        "safetyMarginTokens": {"type": "integer", "minimum": 0},
+        "estimatedInputTokens": {"type": "integer", "minimum": 0},
+        "utilization": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "continuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projectSpine", "lockedDecisions", "priorSectionSummary"],
+      "properties": {
+        "projectSpine": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "lockedDecisions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "priorSectionSummary": {"type": ["string", "null"]}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceBlockId", "sourcePath", "locator", "text", "estimatedTokens", "score", "selectionReasons"],
+        "properties": {
+          "sourceBlockId": {"type": "string", "format": "uuid"},
+          "sourcePath": {"type": "string", "minLength": 1},
+          "locator": {"type": "object"},
+          "text": {"type": "string", "minLength": 1},
+          "estimatedTokens": {"type": "integer", "minimum": 1},
+          "score": {"type": "number", "minimum": 0},
+          "selectionReasons": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+        }
+      }
+    },
+    "omitted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidateBlocks", "duplicateBlocks", "budgetExcludedBlocks"],
+      "properties": {
+        "candidateBlocks": {"type": "integer", "minimum": 0},
+        "duplicateBlocks": {"type": "integer", "minimum": 0},
+        "budgetExcludedBlocks": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

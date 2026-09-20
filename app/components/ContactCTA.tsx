@@ -1,243 +1,145 @@
-"use client"
-import { FC, FormEvent, useState } from "react";
+"use client";
 
-const ContactCTA: FC = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    phone: '',
-    need: ''
-  });
+import { ChangeEvent, FormEvent, useState } from "react";
+import Link from "next/link";
+
+type FormData = {
+  name: string;
+  company: string;
+  phone: string;
+  description: string;
+};
+
+const emptyForm: FormData = { name: "", company: "", phone: "", description: "" };
+
+export default function ContactCTA() {
+  const [formData, setFormData] = useState(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^1[3-9]\d{9}$/;
-    return phoneRegex.test(phone);
+  const validate = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!formData.name.trim()) nextErrors.name = "请填写姓名";
+    if (!formData.company.trim()) nextErrors.company = "请填写公司或团队名称";
+    if (!/^1[3-9]\d{9}$/.test(formData.phone)) nextErrors.phone = "请输入有效的 11 位手机号码";
+    if (!formData.description.trim()) nextErrors.description = "请简要说明当前项目情况";
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = '姓名不能为空';
-    }
-
-    if (!formData.company.trim()) {
-      newErrors.company = '公司名称不能为空';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = '电话号码不能为空';
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = '请输入有效的 11 位手机号码';
-    }
-
-    if (!formData.need.trim()) {
-      newErrors.need = '需求描述不能为空';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+    if (errors[name]) setErrors((current) => ({ ...current, [name]: "" }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // 清除错误信息
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!validate()) return;
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
-
+    setStatus("submitting");
     try {
-      const res = await fetch("/api/content/reservations", {
+      const response = await fetch("/api/content/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || '提交失败');
-      }
-      
-      setSubmitStatus('success');
-      
-      // 清空表单
-      setFormData({ name: '', company: '', phone: '', need: '' });
-      
-      // 3 秒后重置状态
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
-    } catch (error) {
-      console.error("Submit error:", error);
-      setSubmitStatus('error');
-      
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
-    } finally {
-      setIsSubmitting(false);
+      if (!response.ok) throw new Error("submit failed");
+      setFormData(emptyForm);
+      setStatus("success");
+    } catch {
+      setStatus("error");
     }
   };
 
+  const fieldClass = (name: keyof FormData) =>
+    `w-full rounded-xl border bg-white/[0.06] px-4 py-3.5 text-sm text-white placeholder:text-slate-400 transition focus:border-accent2 focus:bg-white/[0.09] focus:outline-none ${
+      errors[name] ? "border-rose-400" : "border-white/15"
+    }`;
+
   return (
-    <section id="cta" aria-label="联系表单" className="py-8 bg-primary text-white flex flex-col items-center">
-      <div className="text-center mb-10">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">获取您的专属 AI 管家方案</h2>
-        <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-          我们将根据您的企业规模与业务需求，为您定制 AI 员工体系
-        </p>
-      </div>
-        
-      <div className="max-w-3xl w-full mb-8">
-        <form 
-          onSubmit={handleSubmit} 
-          aria-label="预约演示表单"
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          {/* 姓名 */}
-          <div>
-            <input 
-              type="text" 
-              name="name" 
-              placeholder="姓名 *"
-              aria-label="您的姓名"
-              aria-required="true"
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? 'name-error' : undefined}
-              value={formData.name}
-              onChange={handleChange}
-              required 
-              className={`w-full p-3 rounded-lg bg-white/10 border ${
-                errors.name ? 'border-red-500' : 'border-white/20'
-              } text-white placeholder-gray-400 focus:outline-none focus:border-accent1 transition-colors`}
-            />
-            {errors.name && (
-              <p id="name-error" className="text-red-400 text-xs mt-1 ml-1" role="alert">{errors.name}</p>
-            )}
-          </div>
-  
-          {/* 公司 */}
-          <div>
-            <input 
-              type="text" 
-              name="company" 
-              placeholder="公司名称 *"
-              aria-label="公司名称"
-              aria-required="true"
-              aria-invalid={!!errors.company}
-              aria-describedby={errors.company ? 'company-error' : undefined}
-              value={formData.company}
-              onChange={handleChange}
-              required 
-              className={`w-full p-3 rounded-lg bg-white/10 border ${
-                errors.company ? 'border-red-500' : 'border-white/20'
-              } text-white placeholder-gray-400 focus:outline-none focus:border-accent1 transition-colors`}
-            />
-            {errors.company && (
-              <p id="company-error" className="text-red-400 text-xs mt-1 ml-1" role="alert">{errors.company}</p>
-            )}
-          </div>
-          
-          {/* 电话 */}
-          <div>
-            <input 
-              type="tel" 
-              name="phone" 
-              placeholder="手机号码 *"
-              aria-label="手机号码"
-              aria-required="true"
-              aria-invalid={!!errors.phone}
-              aria-describedby={errors.phone ? 'phone-error' : undefined}
-              value={formData.phone}
-              onChange={handleChange}
-              required 
-              className={`w-full p-3 rounded-lg bg-white/10 border ${
-                errors.phone ? 'border-red-500' : 'border-white/20'
-              } text-white placeholder-gray-400 focus:outline-none focus:border-accent1 transition-colors`}
-            />
-            {errors.phone && (
-              <p id="phone-error" className="text-red-400 text-xs mt-1 ml-1" role="alert">{errors.phone}</p>
-            )}
-          </div>
-          
-          {/* 需求 */}
-          <div>
-            <input 
-              type="text" 
-              name="need" 
-              placeholder="需求描述 *"
-              aria-label="需求描述"
-              aria-required="true"
-              aria-invalid={!!errors.need}
-              aria-describedby={errors.need ? 'need-error' : undefined}
-              value={formData.need}
-              onChange={handleChange}
-              required 
-              className={`w-full p-3 rounded-lg bg-white/10 border ${
-                errors.need ? 'border-red-500' : 'border-white/20'
-              } text-white placeholder-gray-400 focus:outline-none focus:border-accent1 transition-colors`}
-            />
-            {errors.need && (
-              <p id="need-error" className="text-red-400 text-xs mt-1 ml-1" role="alert">{errors.need}</p>
-            )}
-          </div>
-  
-          {/* 提交按钮 */}
-          <button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="col-span-2 bg-accent1 hover:bg-accent1/90 text-white py-3 rounded-full font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {isSubmitting ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <section id="cta" className="relative overflow-hidden bg-primary py-14 text-white md:py-20" aria-labelledby="cta-title">
+      <div className="absolute inset-0 project-grid opacity-35" aria-hidden="true" />
+      <div className="absolute -right-40 top-0 h-[30rem] w-[30rem] rounded-full bg-accent1/20 blur-[120px]" aria-hidden="true" />
+
+      <div className="section-shell relative z-10 grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="section-heading">
+          <div className="section-kicker section-kicker-dark">从当前项目开始</div>
+          <h2 id="cta-title" className="!text-white lg:!text-[2rem]">直接开始形成你的方案</h2>
+          <p className="!text-slate-300">
+            从一段问题描述或一份已有材料开始，系统会保存项目、展示理解结果，并持续形成可查看和下载的成果。
+          </p>
+
+          <div className="mt-6 space-y-3.5 text-sm text-slate-300">
+            {[
+              "一份需求、一张功能表或几段会议纪要都可以成为起点",
+              "登录后项目与成果持续保留，可随时回来查看",
+              "建议先对客户名称、联系人、金额和系统地址进行脱敏",
+            ].map((item) => (
+              <div key={item} className="flex gap-3">
+                <svg className="mt-0.5 h-5 w-5 shrink-0 text-accent2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                提交中...
-              </>
-            ) : (
-              '提交申请'
-            )}
-          </button>
+                <span className="leading-6">{item}</span>
+              </div>
+            ))}
+          </div>
+          <Link href="/product/start" className="mt-7 inline-flex items-center rounded-xl bg-accent1 px-6 py-3.5 text-sm font-bold text-white shadow-[0_14px_36px_rgba(31,111,255,.32)] transition hover:-translate-y-0.5 hover:bg-blue-600">开始生成方案 <span className="ml-2" aria-hidden="true">→</span></Link>
+          <p className="mt-3 text-xs leading-5 text-slate-400">无需先提交姓名、公司或手机号；这些信息仅在需要商务协助时填写。</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-white/10 bg-white/[0.055] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7" noValidate>
+          <div className="mb-5"><p className="text-sm font-bold text-white">需要商务协助？</p><p className="mt-1 text-xs leading-5 text-slate-400">留下联系方式，我们会协助评估企业采购、部署或合作事宜。</p></div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {[
+              { name: "name", label: "姓名", placeholder: "您的姓名" },
+              { name: "company", label: "公司或团队", placeholder: "公司或团队名称" },
+              { name: "phone", label: "手机号码", placeholder: "用于联系确认分析方式", type: "tel" },
+            ].map((field) => (
+              <label key={field.name} className={field.name === "phone" ? "md:col-span-2" : ""}>
+                <span className="mb-2 block text-xs font-semibold text-slate-300">{field.label}</span>
+                <input
+                  type={field.type || "text"}
+                  name={field.name}
+                  value={formData[field.name as keyof FormData]}
+                  onChange={handleChange}
+                  placeholder={field.placeholder}
+                  className={fieldClass(field.name as keyof FormData)}
+                  aria-invalid={Boolean(errors[field.name])}
+                />
+                {errors[field.name] && <span className="mt-1.5 block text-xs text-rose-300" role="alert">{errors[field.name]}</span>}
+              </label>
+            ))}
+
+            <label className="md:col-span-2">
+              <span className="mb-2 block text-xs font-semibold text-slate-300">当前项目情况</span>
+              <textarea
+                name="description"
+                rows={4}
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="例如：软件定制 / 系统集成 / 数字化升级；目前有哪些资料；希望何时提交方案"
+                className={`${fieldClass("description")} resize-y`}
+                aria-invalid={Boolean(errors.description)}
+              />
+              {errors.description && <span className="mt-1.5 block text-xs text-rose-300" role="alert">{errors.description}</span>}
+            </label>
+
+            <button
+              type="submit"
+              disabled={status === "submitting"}
+              className="md:col-span-2 inline-flex items-center justify-center rounded-xl bg-accent1 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_36px_rgba(31,111,255,0.32)] transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {status === "submitting" ? "正在提交…" : "提交商务联系"}
+            </button>
+          </div>
+
+          <div className="mt-4 min-h-6 text-center text-xs" aria-live="polite">
+            {status === "success" && <span className="text-emerald-300">提交成功。我们会尽快联系您了解采购、部署或合作需求。</span>}
+            {status === "error" && <span className="text-rose-300">提交未完成，请检查网络后重试，或发送邮件至 contact@ningyi-ai.com。</span>}
+          </div>
         </form>
-  
-        {/* 提交结果提示 */}
-        {submitStatus === 'success' && (
-          <div className="mt-4 p-4 bg-green-500/20 border border-green-500 rounded-lg text-center animate-pulse">
-            <p className="text-green-300 font-semibold">✅ 提交成功！我们会尽快与您联系</p>
-          </div>
-        )}
-  
-        {submitStatus === 'error' && (
-          <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-center animate-pulse">
-            <p className="text-red-300 font-semibold">❌ 提交失败，请稍后重试</p>
-          </div>
-        )}
-      </div>
-        
-      <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-        <a href="#demo" className="px-8 py-3 bg-accent1 text-white rounded-full font-semibold hover:bg-accent1/90 transition-all duration-300 shadow-lg text-center">立即体验 AI 管家</a>
-        <a href="#solution" className="px-8 py-3 border border-accent1 text-accent1 rounded-full font-semibold hover:bg-accent1/10 transition-all duration-300 text-center">预约演示</a>
       </div>
     </section>
   );
-};
-
-export default ContactCTA;
+}

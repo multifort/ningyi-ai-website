@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/task-runtime/v1.json",
+  "title": "Ningyi Task Runtime V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "tasks", "attempts"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "idempotencyKey", "taskType", "scope", "dependencyIds", "inputHash", "outputHash", "status", "attemptCount", "maxAttempts", "leaseOwner", "leaseUntil", "availableAt", "lastErrorCode"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "idempotencyKey": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "taskType": {"type": "string", "minLength": 1},
+          "scope": {"type": "string", "minLength": 1},
+          "dependencyIds": {"type": "array", "uniqueItems": true, "items": {"type": "string", "format": "uuid"}},
+          "inputHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "outputHash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "status": {"enum": ["queued", "leased", "retry_wait", "succeeded", "failed", "cancelled", "deferred_budget"]},
+          "attemptCount": {"type": "integer", "minimum": 0},
+          "maxAttempts": {"type": "integer", "minimum": 1},
+          "leaseOwner": {"type": ["string", "null"]},
+          "leaseUntil": {"type": ["integer", "null"], "minimum": 0},
+          "availableAt": {"type": "integer", "minimum": 0},
+          "lastErrorCode": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["taskId", "attemptNo", "workerId", "startedAt", "endedAt", "status", "errorCode", "outputHash"],
+        "properties": {
+          "taskId": {"type": "string", "format": "uuid"},
+          "attemptNo": {"type": "integer", "minimum": 1},
+          "workerId": {"type": "string", "minLength": 1},
+          "startedAt": {"type": "integer", "minimum": 0},
+          "endedAt": {"type": ["integer", "null"], "minimum": 0},
+          "status": {"enum": ["running", "succeeded", "retry_wait", "failed", "lease_expired", "deferred_budget"]},
+          "errorCode": {"type": ["string", "null"]},
+          "outputHash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  }
+}

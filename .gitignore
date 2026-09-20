@@ -1,11 +1,14 @@
 # 依赖
 node_modules/
 package-lock.json
+.pnpm-store/
 
 # Next.js 构建输出
 .next/
 out/
 build/
+tmp/
+.chart-data-*/
 
 # 生产环境
 npm-debug.log*
@@ -34,6 +37,10 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Python 缓存
+__pycache__/
+*.py[cod]
 
 # 数据库文件
 data/

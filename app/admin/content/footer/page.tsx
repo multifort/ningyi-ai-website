@@ -93,7 +93,7 @@ export default function FooterPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">Footer 配置管理</h1>
+        <h1 className="text-3xl font-bold text-primary">页脚信息管理</h1>
         <button
           onClick={handleSave}
           disabled={saving}
@@ -180,7 +180,7 @@ export default function FooterPage() {
           <div key={category} className="mb-6 last:mb-0">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-medium text-gray-700">
-                {category === "product" ? "产品" : category === "solution" ? "解决方案" : "公司"}
+                {category === "product" ? "交付能力" : category === "solution" ? "项目场景" : "公司信息"}
               </h3>
               <button
                 onClick={() => addLink(category)}

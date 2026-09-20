@@ -1,0 +1,36 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-03",
+  "project_name": "销售移动端建设项目",
+  "customer_facing_name": "销售随行工作台",
+  "customer_type": "跨区域工业品销售企业",
+  "target_users": ["一线销售", "区域经理", "销售运营", "系统管理员"],
+  "primary_goal": "形成可用于立项评审和供应商沟通的销售移动端整体方案",
+  "secondary_goal": "明确客户、拜访、商机和跟进闭环，并给出实施计划、工作量与报价依据",
+  "need_description": "销售人员在外出时需要直接处理客户、拜访、商机和跟进信息，网络不稳定时仍能记录，联网后同步；管理人员需要按区域掌握进展。",
+  "desired_product_form": ["响应式移动 Web", "Web 管理后台", "企业微信工作台入口"],
+  "budget": {
+    "available": true,
+    "range_cny": {"min": 320000, "max": 580000},
+    "confidence": "tentative",
+    "note": "预算为首期立项参考，接口调研后调整。"
+  },
+  "schedule": {
+    "desired_start": "2026-11-01",
+    "desired_go_live": "2027-03-31",
+    "flexibility": "可按 CRM 接口联调范围调整"
+  },
+  "output_preferences": {
+    "primary_audience": "销售负责人、销售运营负责人和信息化负责人",
+    "language": "zh-CN",
+    "packages": ["立项评审包", "实施交接包"],
+    "template_files": []
+  },
+  "constraints": [
+    "量化目标和商机阶段概率必须以销售指标表为确定性来源",
+    "离线记录必须保留原始操作时间并在联网后同步",
+    "普通销售不得批量导出客户明细",
+    "一期不包含 ERP 订单处理、库存查询、回款核销、自动报价审批和销售佣金结算",
+    "未经授权不得向第三方平台发送数据"
+  ]
+}

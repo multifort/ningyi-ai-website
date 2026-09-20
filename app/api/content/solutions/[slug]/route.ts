@@ -3,11 +3,11 @@ import { sqlite } from '../../../../../lib/db';
 
 // GET: 根据 slug 获取解决方案详情
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // 查询解决方案
     let solution = sqlite.prepare(`
@@ -40,7 +40,7 @@ export async function GET(
       icon: solution.icon,
       title: solution.title,
       slug: solution.slug,
-      description: solution.description,
+      description: solution.description || solution.solution || solution.subtitle || '',
       heroImage: solution.hero_image,
       painPoints: solution.pain_points,
       solutionDetail: solution.solution_detail,

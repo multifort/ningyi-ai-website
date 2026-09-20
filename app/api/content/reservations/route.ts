@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { requireAuth } = await import('../../../../lib/middleware');
-    const authResult = requireAuth(request);
-    if (authResult && 'status' in authResult) {
+    const authResult = await requireAuth(request);
+    if ('status' in authResult) {
       return authResult;
     }
 
@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { requireAuth } = await import('../../../../lib/middleware');
-    const authResult = requireAuth(request);
-    if (authResult && 'status' in authResult) {
+    const authResult = await requireAuth(request);
+    if ('status' in authResult) {
       return authResult;
     }
 

@@ -1,139 +1,87 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-interface FooterConfig {
-  companyDescription: string;
-  email: string;
-  phone: string;
-  address: string;
-  copyright: string;
-}
+type FooterLink = { title: string; href: string };
 
-interface FooterLink {
-  title: string;
-  href: string;
-}
+const fallbackConfig = {
+  companyDescription: "宁翼智能科技提供企业项目方案与成果智能交付服务，帮助软件公司、系统集成商和数字化服务团队，把零散客户资料转化为结构清晰、口径一致、可继续修改的项目成果。",
+  email: "contact@ningyi-ai.com",
+  phone: "",
+  address: "成都市高新区新川科技园",
+  copyright: `© ${new Date().getFullYear()} 宁翼智能科技。All rights reserved.`,
+};
+
+const fallbackLinks = {
+  product: [
+    { title: "项目理解与需求分析", href: "/#demo" },
+    { title: "方案与功能规划", href: "/#capability" },
+    { title: "工作量与报价建议", href: "/#capability" },
+    { title: "多成果一致性", href: "/#architecture" },
+  ],
+  solution: [
+    { title: "软件定制项目", href: "/solution/software-customization" },
+    { title: "系统集成项目", href: "/solution/system-integration-project" },
+    { title: "企业数字化升级", href: "/solution/digital-transformation" },
+  ],
+  company: [
+    { title: "交付成果", href: "/case" },
+    { title: "免费分析项目", href: "/#cta" },
+    { title: "联系宁翼", href: "mailto:contact@ningyi-ai.com" },
+  ],
+};
 
 export default function Footer() {
-  const [config, setConfig] = useState<FooterConfig>({
-    companyDescription: "",
-    email: "",
-    phone: "",
-    address: "",
-    copyright: "",
-  });
-  const [links, setLinks] = useState({
-    product: [] as FooterLink[],
-    solution: [] as FooterLink[],
-    company: [] as FooterLink[],
-  });
-  const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState(fallbackConfig);
+  const [links, setLinks] = useState(fallbackLinks);
 
   useEffect(() => {
-    fetchFooterConfig();
+    fetch("/api/content/footer")
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!payload.success) return;
+        const remoteConfig = payload.data?.config;
+        if (remoteConfig) {
+          setConfig({
+            companyDescription: remoteConfig.companyDescription || fallbackConfig.companyDescription,
+            email: remoteConfig.email || fallbackConfig.email,
+            phone: remoteConfig.phone || "",
+            address: remoteConfig.address || fallbackConfig.address,
+            copyright: remoteConfig.copyright || fallbackConfig.copyright,
+          });
+        }
+        if (payload.data?.links) setLinks(payload.data.links);
+      })
+      .catch(() => undefined);
   }, []);
 
-  const fetchFooterConfig = async () => {
-    try {
-      const res = await fetch("/api/content/footer");
-      const data = await res.json();
-      if (data.success) {
-        setConfig(data.data.config);
-        setLinks(data.data.links);
-      }
-    } catch (error) {
-      console.error("获取 Footer 配置失败:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <footer className="bg-primary text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-          加载中...
-        </div>
-      </footer>
-    );
-  }
-
   return (
-    <footer className="bg-primary text-white pt-12 pb-6">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
-        {/* 主内容区 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-          {/* 公司信息 */}
-          <div className="lg:col-span-2">
-            <div className="mb-4">
-              <Image
-                src="/images/logo-white.png"
-                alt="宁翼智能科技"
-                width={160}
-                height={45}
-                className="object-contain"
-              />
-            </div>
-            <p className="text-gray-300 text-sm leading-relaxed mb-4 max-w-md">
-              {config.companyDescription}
-            </p>
-            
-            {/* 联系方式 */}
-            <div className="space-y-2">
-              {config.email && (
-                <div className="flex items-center space-x-3 text-sm text-gray-300">
-                  <span className="text-accent1">📧</span>
-                  <span>{config.email}</span>
-                </div>
-              )}
-              {config.phone && (
-                <div className="flex items-center space-x-3 text-sm text-gray-300">
-                  <span className="text-accent1">📞</span>
-                  <span>{config.phone}</span>
-                </div>
-              )}
-              {config.address && (
-                <div className="flex items-center space-x-3 text-sm text-gray-300">
-                  <span className="text-accent1">📍</span>
-                  <span>{config.address}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 社交媒体 */}
-            <div className="flex space-x-4 mt-6">
-              {["💬", "💼", "📖"].map((icon, index) => (
-                <button
-                  key={index}
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-accent1 transition-all duration-300 flex items-center justify-center text-lg"
-                >
-                  {icon}
-                </button>
-              ))}
+    <footer className="border-t border-white/10 bg-[#041426] pb-6 pt-10 text-white">
+      <div className="section-shell">
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr]">
+          <div>
+            <Image src="/images/logo-white.png" alt="宁翼智能科技" width={160} height={46} className="h-11 w-auto object-contain" />
+            <p className="mt-5 max-w-md text-sm leading-7 text-slate-400">{config.companyDescription}</p>
+            <div className="mt-6 space-y-2 text-sm text-slate-400">
+              {config.email && <a href={`mailto:${config.email}`} className="block hover:text-white">{config.email}</a>}
+              {config.phone && <a href={`tel:${config.phone}`} className="block hover:text-white">{config.phone}</a>}
+              {config.address && <p>{config.address}</p>}
             </div>
           </div>
 
-          {/* 链接区块 */}
           {[
-            { title: "产品", key: "product" },
-            { title: "解决方案", key: "solution" },
-            { title: "公司", key: "company" },
-          ].map((section) => (
-            <div key={section.key}>
-              <h3 className="text-base font-semibold mb-4 text-white">
-                {section.title}
-              </h3>
-              <ul className="space-y-2">
-                {links[section.key as keyof typeof links].map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-300 hover:text-accent1 transition-all duration-200"
-                    >
-                      {link.title}
-                    </Link>
+            ["成果能力", "product"],
+            ["项目场景", "solution"],
+            ["宁翼科技", "company"],
+          ].map(([title, key]) => (
+            <div key={key}>
+              <h3 className="text-sm font-semibold text-white">{title}</h3>
+              <ul className="mt-4 space-y-3">
+                {(links[key as keyof typeof links] || []).map((link: FooterLink) => (
+                  <li key={`${link.title}-${link.href}`}>
+                    <Link href={link.href} className="text-sm text-slate-400 transition hover:text-accent2">{link.title}</Link>
                   </li>
                 ))}
               </ul>
@@ -141,27 +89,9 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* 底部分割线 */}
-        <div className="border-t border-white/10 pt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            {/* 版权信息 */}
-            <p className="text-sm text-gray-400">
-              {config.copyright || `© ${new Date().getFullYear()} 宁翼智能科技。All rights reserved.`}
-            </p>
-
-            {/* 备案信息 */}
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-accent1 transition-all duration-200">
-                隐私政策
-              </a>
-              <a href="#" className="hover:text-accent1 transition-all duration-200">
-                服务条款
-              </a>
-              <a href="#" className="hover:text-accent1 transition-all duration-200">
-                沪 ICP 备 xxxxxxxx 号
-              </a>
-            </div>
-          </div>
+        <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pt-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>{config.copyright}</p>
+          <p>企业项目方案与成果智能交付服务</p>
         </div>
       </div>
     </footer>

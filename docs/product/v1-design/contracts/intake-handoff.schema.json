@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/intake-handoff/v1.json",
+  "title": "Ningyi Intake Login Handoff V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "draftId", "status", "ownerUserId", "solutionId", "purposePrimary", "needDescription", "formData", "fileSelections", "bindingNonceHash", "quickUnderstandingStarted"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "draftId": {"type": "string", "format": "uuid"},
+    "status": {"enum": ["local", "awaiting_auth", "bound", "uploading", "processing", "expired"]},
+    "ownerUserId": {"type": ["string", "null"], "format": "uuid"},
+    "solutionId": {"type": ["string", "null"], "format": "uuid"},
+    "purposePrimary": {"type": ["string", "null"]},
+    "needDescription": {"type": "string"},
+    "formData": {"type": "object"},
+    "fileSelections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "category", "displayName", "sizeBytes", "lastModified", "localState", "uploadState", "privateObjectKey"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "category": {"enum": ["content", "template", "brand"]},
+          "displayName": {"type": "string", "minLength": 1},
+          "sizeBytes": {"type": "integer", "minimum": 0},
+          "lastModified": {"type": "integer", "minimum": 0},
+          "localState": {"enum": ["selected", "reselect_required"]},
+          "uploadState": {"enum": ["not_started", "uploading", "uploaded", "failed"]},
+          "privateObjectKey": {"type": ["string", "null"], "pattern": "^private/"}
+        }
+      }
+    },
+    "bindingNonceHash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "quickUnderstandingStarted": {"type": "boolean"}
+  }
+}

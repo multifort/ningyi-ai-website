@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-03",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.15,
+    "requirements_features": 0.15,
+    "offline_sync_and_data_integrity": 0.15,
+    "permissions_and_scope": 0.15,
+    "deterministic_data": 0.15,
+    "traceability": 0.1,
+    "deliverable_quality": 0.1,
+    "runtime_cost": 0.05
+  }
+}

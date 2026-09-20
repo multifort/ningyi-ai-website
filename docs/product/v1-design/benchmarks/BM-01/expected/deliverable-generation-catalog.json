@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "modules": [
+    {"id": "project_understanding", "taskType": "formal_analysis", "inputTokens": 2200, "outputTokens": 1400, "deliverables": ["DEL-REQ", "DEL-FUN", "DEL-EST", "DEL-PLAN", "DEL-QUOTE", "DEL-SOLUTION", "DEL-SLIDE"]},
+    {"id": "requirement_baseline", "taskType": "section_generation", "inputTokens": 3200, "outputTokens": 4200, "deliverables": ["DEL-REQ", "DEL-FUN", "DEL-SOLUTION", "DEL-SLIDE"]},
+    {"id": "function_architecture", "taskType": "section_generation", "inputTokens": 3600, "outputTokens": 4800, "deliverables": ["DEL-FUN", "DEL-EST", "DEL-PLAN", "DEL-QUOTE", "DEL-SOLUTION", "DEL-SLIDE"]},
+    {"id": "estimation_classification", "taskType": "formal_analysis", "inputTokens": 2400, "outputTokens": 1400, "deliverables": ["DEL-EST", "DEL-PLAN", "DEL-QUOTE", "DEL-SOLUTION"]},
+    {"id": "estimation_calculation", "taskType": "deterministic_text", "inputTokens": 0, "outputTokens": 0, "deliverables": ["DEL-EST", "DEL-PLAN", "DEL-QUOTE", "DEL-SOLUTION"]},
+    {"id": "implementation_narrative", "taskType": "section_generation", "inputTokens": 3000, "outputTokens": 3200, "deliverables": ["DEL-PLAN", "DEL-SOLUTION", "DEL-SLIDE"]},
+    {"id": "quote_calculation", "taskType": "deterministic_text", "inputTokens": 0, "outputTokens": 0, "deliverables": ["DEL-QUOTE", "DEL-SOLUTION"]},
+    {"id": "solution_narrative", "taskType": "section_generation", "inputTokens": 5200, "outputTokens": 9000, "deliverables": ["DEL-SOLUTION", "DEL-SLIDE"]},
+    {"id": "slide_story", "taskType": "section_generation", "inputTokens": 2600, "outputTokens": 2200, "deliverables": ["DEL-SLIDE"]}
+  ],
+  "formats": {
+    "DEL-REQ": ["xlsx", "docx", "pdf"],
+    "DEL-FUN": ["xlsx", "docx", "pdf"],
+    "DEL-EST": ["xlsx", "pdf"],
+    "DEL-PLAN": ["xlsx", "docx", "pdf"],
+    "DEL-QUOTE": ["xlsx", "pdf"],
+    "DEL-SOLUTION": ["docx", "pdf"],
+    "DEL-SLIDE": ["pptx", "pdf"]
+  }
+}

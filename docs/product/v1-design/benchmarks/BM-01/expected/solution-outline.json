@@ -1,0 +1,10 @@
+{
+  "deliverableType": "solution_proposal",
+  "sections": [
+    {"id": "SEC-01", "title": "项目理解与目标", "dependencies": []},
+    {"id": "SEC-02", "title": "范围与关键约束", "dependencies": ["SEC-01"]},
+    {"id": "SEC-03", "title": "业务与权限方案", "dependencies": ["SEC-01", "SEC-02"]},
+    {"id": "SEC-04", "title": "技术架构与实施建议", "dependencies": ["SEC-02", "SEC-03"]},
+    {"id": "SEC-05", "title": "风险、决策与后续行动", "dependencies": ["SEC-03", "SEC-04"]}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "benchmark_id": "BM-01",
+  "version": "1.0",
+  "values": {
+    "roles_count_min": 3,
+    "requirements_rows": 12,
+    "intentional_duplicate_groups": 2,
+    "intentional_out_of_scope_requirements": 1,
+    "source_files_expected": 3,
+    "budget_min_cny": 300000,
+    "budget_max_cny": 600000,
+    "go_live_date": "2027-01-31",
+    "customer_sample_rows": 8
+  }
+}

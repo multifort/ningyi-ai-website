@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/benchmark-run/v1.json",
+  "title": "Ningyi Benchmark Run Record V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "benchmarkId",
+    "benchmarkVersion",
+    "repeatIndex",
+    "candidate",
+    "startedAt",
+    "finishedAt",
+    "status",
+    "usage",
+    "scores",
+    "blockingChecks",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "runId": {"type": "string", "format": "uuid"},
+    "benchmarkId": {"type": "string", "pattern": "^BM-(0[1-9]|1[0-8])$"},
+    "benchmarkVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+$"},
+    "repeatIndex": {"type": "integer", "minimum": 1},
+    "randomSeed": {"type": ["integer", "null"]},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot", "provider", "modelId", "modelVersion", "promptVersion", "parserVersion"],
+      "properties": {
+        "slot": {"enum": ["FAST_ANALYSIS_MODEL", "FORMAL_ANALYSIS_MODEL", "DOCUMENT_MODEL", "REVIEW_MODEL", "VISION_MODEL", "OCR_ENGINE", "EMBEDDING_MODEL"]},
+        "provider": {"type": "string", "minLength": 1},
+        "modelId": {"type": "string", "minLength": 1},
+        "modelVersion": {"type": "string", "minLength": 1},
+        "promptVersion": {"type": "string", "minLength": 1},
+        "parserVersion": {"type": "string", "minLength": 1}
+      }
+    },
+    "startedAt": {"type": "string", "format": "date-time"},
+    "finishedAt": {"type": "string", "format": "date-time"},
+    "status": {"enum": ["passed", "failed", "error"]},
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputTokens", "outputTokens", "cachedTokens", "imagePages", "ocrPages", "estimatedCostCny"],
+      "properties": {
+        "inputTokens": {"type": "integer", "minimum": 0},
+        "outputTokens": {"type": "integer", "minimum": 0},
+        "cachedTokens": {"type": "integer", "minimum": 0},
+        "imagePages": {"type": "integer", "minimum": 0},
+        "ocrPages": {"type": "integer", "minimum": 0},
+        "estimatedCostCny": {"type": "number", "minimum": 0},
+        "billedCostCny": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "stageTimingsMs": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "total"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "raw", "weight", "weighted"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "raw": {"type": "number", "minimum": 0, "maximum": 100},
+              "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+              "weighted": {"type": "number", "minimum": 0, "maximum": 100},
+              "evidence": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "total": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    },
+    "blockingChecks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "passed"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "passed": {"type": "boolean"},
+          "evidence": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "path", "sha256"],
+        "properties": {
+          "kind": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "error": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {"type": "string"},
+        "message": {"type": "string"},
+        "retryable": {"type": "boolean"}
+      }
+    }
+  }
+}

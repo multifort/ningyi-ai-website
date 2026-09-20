@@ -1,0 +1,10 @@
+{
+  "benchmark_id": "BM-02",
+  "relations": [
+    {"from": "动态审批需求", "to": "金额区间与业务类型规则", "type": "implemented_by"},
+    {"from": "金额区间与业务类型规则", "to": "审批矩阵数值单元格", "type": "derived_from"},
+    {"from": "预算校验需求", "to": "预算超额阻断", "type": "implemented_by"},
+    {"from": "退回处理需求", "to": "退回原因和受影响节点重走", "type": "implemented_by"},
+    {"from": "制度角色称谓", "to": "标准审批角色", "type": "normalized_to"}
+  ]
+}

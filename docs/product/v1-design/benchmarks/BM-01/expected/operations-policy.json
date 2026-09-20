@@ -1,0 +1,11 @@
+{
+  "minSamples": 5,
+  "successRateMinimum": 0.95,
+  "completeDeliveryRateMinimum": 0.95,
+  "latencyP95MaximumSeconds": 1800,
+  "queuedTasksMaximum": 100,
+  "oldestQueueAgeMaximumSeconds": 300,
+  "costRatioMaximum": 1.25,
+  "providerFailureRateMaximum": 0.15,
+  "providerMinCalls": 3
+}

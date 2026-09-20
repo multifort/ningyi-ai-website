@@ -6,8 +6,8 @@ import { requireAuth } from '../../../lib/middleware';
 export async function POST(request: NextRequest) {
   try {
     // 验证用户是否已登录
-    const authResult = requireAuth(request);
-    if (authResult && 'status' in authResult) {
+    const authResult = await requireAuth(request);
+    if ('status' in authResult) {
       return authResult;
     }
 
@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
 // 删除文件
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = requireAuth(request);
-    if (authResult && 'status' in authResult) {
+    const authResult = await requireAuth(request);
+    if ('status' in authResult) {
       return authResult;
     }
 

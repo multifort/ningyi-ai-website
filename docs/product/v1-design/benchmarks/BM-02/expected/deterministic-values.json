@@ -1,0 +1,12 @@
+{
+  "benchmark_id": "BM-02",
+  "currency": "CNY",
+  "values": [
+    {"id": "DV-001", "label": "采购申请第一金额边界", "value": 5000, "source": "approval-matrix.xlsx#审批矩阵!D5"},
+    {"id": "DV-002", "label": "采购申请第二金额边界", "value": 50000, "source": "approval-matrix.xlsx#审批矩阵!D6"},
+    {"id": "DV-003", "label": "采购申请第三金额边界", "value": 200000, "source": "approval-matrix.xlsx#审批矩阵!D7"},
+    {"id": "DV-004", "label": "合同审批金额边界", "value": 100000, "source": "approval-matrix.xlsx#审批矩阵!D9"},
+    {"id": "DV-005", "label": "退回原因完整率", "value": 1, "unit": "ratio", "source": "approval-policy.pdf#page=2"},
+    {"id": "DV-006", "label": "预算超额拦截率", "value": 1, "unit": "ratio", "source": "approval-policy.pdf#page=2"}
+  ]
+}

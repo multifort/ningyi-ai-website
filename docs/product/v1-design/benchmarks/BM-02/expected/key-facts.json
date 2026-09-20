@@ -1,0 +1,12 @@
+{
+  "benchmark_id": "BM-02",
+  "facts": [
+    {"id": "KF-001", "fact": "金额阈值以审批矩阵为确定性来源", "sources": ["approval-matrix.xlsx"]},
+    {"id": "KF-002", "fact": "采购申请五万元以内需要需求主管、采购负责人和财务复核", "sources": ["approval-policy.pdf"]},
+    {"id": "KF-003", "fact": "采购申请超过五万元增加分管领导和总经理", "sources": ["approval-policy.pdf"]},
+    {"id": "KF-004", "fact": "预算不足时不得继续流转", "sources": ["approval-policy.pdf"]},
+    {"id": "KF-005", "fact": "退回必须填写原因", "sources": ["approval-policy.pdf"]},
+    {"id": "KF-006", "fact": "角色名称差异按角色映射归并", "sources": ["approval-matrix.xlsx"]},
+    {"id": "KF-007", "fact": "一期不包括合同电子签署、银企直连和自动付款", "sources": ["approval-policy.pdf", "intake.json"]}
+  ]
+}

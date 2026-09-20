@@ -100,15 +100,6 @@ export default function RichTextEditor({
         >
           I
         </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-200 underline' : ''}`}
-          title="下划线"
-        >
-          U
-        </button>
-
         <div className="w-px h-6 bg-gray-300 mx-1"></div>
 
         <button

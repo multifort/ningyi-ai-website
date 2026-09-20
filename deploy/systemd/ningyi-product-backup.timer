@@ -1,0 +1,12 @@
+[Unit]
+Description=Back up Ningyi product database every day
+
+[Timer]
+OnBootSec=10m
+OnCalendar=*-*-* 03:20:00
+RandomizedDelaySec=20m
+Persistent=true
+Unit=ningyi-product-backup.service
+
+[Install]
+WantedBy=timers.target

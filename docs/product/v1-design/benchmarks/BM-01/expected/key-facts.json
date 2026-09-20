@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-01",
+  "version": "1.0",
+  "facts": [
+    {"id": "F-01", "statement": "首期范围为 Web 销售管理，并提供响应式移动 Web。", "required": true},
+    {"id": "F-02", "statement": "一期不包含财务总账、应收应付和法定财务报表。", "required": true},
+    {"id": "F-03", "statement": "角色至少包含销售代表、销售经理和系统管理员。", "required": true},
+    {"id": "F-04", "statement": "系统继续使用现有统一身份平台，不新增员工密码体系。", "required": true},
+    {"id": "F-05", "statement": "商机关闭权限在 Word 与 PDF 之间存在显式冲突。", "required": true},
+    {"id": "F-06", "statement": "客户迁移样例包含重复、缺失、格式混合和负责人映射问题。", "required": true},
+    {"id": "F-07", "statement": "原生移动 App 和离线能力不属于一期。", "required": true},
+    {"id": "F-08", "statement": "主交付链路为需求、功能、估算、方案和多格式文件。", "required": true}
+  ]
+}

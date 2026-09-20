@@ -81,7 +81,7 @@ export default function CapabilityPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">产品能力管理</h1>
+        <h1 className="text-3xl font-bold text-primary">交付能力管理</h1>
         <button
           onClick={() => {
             setShowForm(true);

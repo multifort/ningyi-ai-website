@@ -1,0 +1,22 @@
+{
+  "benchmark_id": "BM-07",
+  "minimum_structured_items": {"requirement": 10, "feature": 10, "phase": 2, "risk": 3},
+  "maximum_runtime_seconds": 1800,
+  "required_patterns": [
+    {"id": "priority_sla", "patterns": ["P1.{0,16}10.{0,5}分钟", "P2.{0,16}30.{0,5}分钟", "P3.{0,16}4.{0,5}小时", "P4.{0,16}1个工作日|P4.{0,16}一个工作日"]},
+    {"id": "response_counting", "patterns": ["自动回执.{0,10}(不计|不算).{0,8}(首次|首).{0,5}人工响应", "等待客户.{0,12}(暂停|停止).{0,8}解决.{0,6}(时钟|计时)", "等待客户.{0,12}(不暂停|不停止).{0,8}(首响|首次响应)"]},
+    {"id": "ticket_states", "patterns": ["待受理", "待分级", "待派工", "处理中", "等待客户", "待客户确认", "已关闭"]},
+    {"id": "production_escalation", "patterns": ["生产停线.{0,10}P1|P1.{0,10}生产停线", "服务主管", "立即升级|立即通知"]},
+    {"id": "customer_confirmation", "patterns": ["客户确认.{0,12}(后|才).{0,6}(关闭|结单)", "不得.{0,8}自动关闭"]},
+    {"id": "reopen_audit", "patterns": ["重开|重新打开", "原工单", "审计记录|操作记录"]},
+    {"id": "sample_gaps", "patterns": ["WO-SYN-204", "联系人.{0,8}(缺失|待补充|需回访)", "WO-SYN-203", "工作日历|节假日"]},
+    {"id": "scope_boundary", "patterns": ["远程控制", "自动诊断|自动判断故障", "不纳入|不包含|不在首期范围"]}
+  ],
+  "prohibited_commitment_patterns": [
+    {"id": "auto_receipt_sla", "pattern": "自动回执[^。；\n]{0,12}(满足|达成|(?<!不)计入)[^。；\n]{0,8}(首响|首次人工响应)"},
+    {"id": "waiting_stops_first_response", "pattern": "等待客户[^。；\n]{0,18}(?<!不)(暂停|停止)(?:首次人工响应|首次响应|首响)(?:时钟|计时)?"},
+    {"id": "unconfirmed_auto_close", "pattern": "客户未确认[^。；\n]{0,15}(自动关闭|自动结单)"},
+    {"id": "out_of_scope_remote", "pattern": "首期[^。；\n]{0,12}(提供|支持|(?<!不)包含)[^。；\n]{0,8}(远程控制|自动诊断)"},
+    {"id": "unsupported_calendar_precision", "pattern": "无需工作日历[^。；\n]{0,20}(准确|精确)[^。；\n]{0,8}(计算|判定)"}
+  ]
+}

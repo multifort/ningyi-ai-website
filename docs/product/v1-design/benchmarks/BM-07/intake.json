@@ -1,0 +1,16 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-07",
+  "project_name": "海岳装备售后服务平台建设项目",
+  "customer_facing_name": "售后服务平台",
+  "customer_type": "工业装备制造企业",
+  "target_users": ["客户报修人", "客服调度员", "现场服务工程师", "服务主管", "备件管理员"],
+  "primary_goal": "建立覆盖报修、派工、维修、客户确认和复盘的售后服务平台",
+  "secondary_goal": "统一工单状态、服务时限、升级规则和设备维修记录",
+  "need_description": "当前客户通过电话、微信和邮件报修，调度员手工登记并联系工程师。故障等级和响应时间口径不一致，等待客户补充信息时也常被误算为服务超时。希望统一入口和服务规则，同时保留人工判断与客户确认。",
+  "desired_product_form": ["客户报修入口", "服务调度后台", "工程师移动工作台"],
+  "budget": {"available": true, "range_cny": {"min": 420000, "max": 760000}, "confidence": "tentative", "note": "不含新增传感器、现场网络改造和差旅费用。"},
+  "schedule": {"desired_start": "2027-03-01", "desired_go_live": "2027-08-31", "flexibility": "以设备主数据整理和试点服务站准备情况为准"},
+  "output_preferences": {"primary_audience": "售后负责人、服务运营负责人和信息化负责人", "language": "zh-CN", "packages": ["立项评审包", "实施交接包"], "template_files": []},
+  "constraints": ["服务手册是 SLA 和工单规则的唯一依据", "首次人工响应不包括自动回执", "等待客户补充信息期间暂停维修解决时钟，但首次响应时钟不暂停", "P1 生产停线故障立即升级服务主管", "客户确认前不得自动关闭维修工单", "首期不包含远程控制设备和自动判断故障原因"]
+}

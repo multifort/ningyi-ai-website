@@ -1,0 +1,35 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-01",
+  "project_name": "华东智造 CRM 升级项目",
+  "customer_facing_name": "华东智造销售管理平台",
+  "customer_type": "中型制造企业",
+  "target_users": ["销售代表", "销售经理", "系统管理员"],
+  "primary_goal": "形成可用于客户沟通的 CRM 一期方案",
+  "secondary_goal": "形成内部估算与报价依据",
+  "need_description": "统一客户、联系人、商机、跟进、预测、权限和报表，替代分散 Excel 与旧台账。",
+  "desired_product_form": ["Web 管理系统", "响应式移动 Web"],
+  "budget": {
+    "available": true,
+    "range_cny": {"min": 300000, "max": 600000},
+    "confidence": "tentative",
+    "note": "预算仅用于方案方向，不得直接作为最终报价。"
+  },
+  "schedule": {
+    "desired_start": "2026-09-01",
+    "desired_go_live": "2027-01-31",
+    "flexibility": "可根据一期范围调整"
+  },
+  "output_preferences": {
+    "primary_audience": "业务负责人和信息化负责人",
+    "language": "zh-CN",
+    "packages": ["评审包", "客户沟通包", "实施交接包"],
+    "template_files": []
+  },
+  "constraints": [
+    "使用现有企业统一身份平台",
+    "不使用生产数据进行前期分析",
+    "一期不包含财务总账",
+    "未授权时不得执行外部发布或消息发送"
+  ]
+}

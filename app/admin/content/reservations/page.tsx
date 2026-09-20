@@ -73,8 +73,8 @@ export default function ReservationsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2">预约信息管理</h1>
-        <p className="text-gray-600">管理客户预约信息，及时跟进商机</p>
+        <h1 className="text-3xl font-bold text-primary mb-2">咨询线索管理</h1>
+        <p className="text-gray-600">查看客户提交的项目情况并跟进交付需求</p>
       </div>
 
       {/* 统计卡片 */}

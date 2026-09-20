@@ -1,0 +1,95 @@
+{
+  "benchmark_id": "BM-01",
+  "benchmark_version": "1.0",
+  "pass_score": 85,
+  "weights": {
+    "project_understanding": 0.2,
+    "requirements_features": 0.2,
+    "conflicts_scope": 0.15,
+    "deterministic_data": 0.1,
+    "traceability": 0.15,
+    "deliverable_quality": 0.15,
+    "runtime_cost": 0.05
+  },
+  "dimensions": [
+    {
+      "id": "project_understanding",
+      "automatic": true,
+      "metrics": [
+        {"id": "key_fact_recall", "target": 1.0, "source": "key-facts.json"},
+        {"id": "unsupported_fact_rate", "target_max": 0.02},
+        {"id": "actor_recall", "target": 1.0}
+      ]
+    },
+    {
+      "id": "requirements_features",
+      "automatic": true,
+      "metrics": [
+        {"id": "requirement_recall", "target_min": 0.9},
+        {"id": "duplicate_detection", "target": 1.0},
+        {"id": "requirement_feature_relation_coverage", "target_min": 0.9}
+      ]
+    },
+    {
+      "id": "conflicts_scope",
+      "automatic": true,
+      "metrics": [
+        {"id": "permission_conflict_detected", "target": 1.0},
+        {"id": "out_of_scope_requirement_detected", "target": 1.0},
+        {"id": "future_mobile_boundary_preserved", "target": 1.0}
+      ]
+    },
+    {
+      "id": "deterministic_data",
+      "automatic": true,
+      "metrics": [
+        {"id": "fixed_value_accuracy", "target": 1.0},
+        {"id": "customer_quality_issue_recall", "target_min": 0.9}
+      ]
+    },
+    {
+      "id": "traceability",
+      "automatic": true,
+      "metrics": [
+        {"id": "required_fact_source_coverage", "target": 1.0},
+        {"id": "source_reference_validity", "target": 1.0},
+        {"id": "conflict_dual_evidence", "target": 1.0}
+      ]
+    },
+    {
+      "id": "deliverable_quality",
+      "automatic": false,
+      "metrics": [
+        {"id": "schema_validity", "target": 1.0},
+        {"id": "cross_deliverable_consistency", "target": 1.0},
+        {"id": "file_open_rate", "target": 1.0},
+        {"id": "severe_visual_defects", "target": 0}
+      ]
+    },
+    {
+      "id": "runtime_cost",
+      "automatic": true,
+      "metrics": [
+        {"id": "run_success", "target": 1.0},
+        {"id": "timeout_seconds", "target_max": 1800},
+        {"id": "cost_record_complete", "target": 1.0}
+      ]
+    }
+  ],
+  "blocking_checks": [
+    "all_manifest_hashes_match",
+    "phase1_excludes_financial_ledger",
+    "opportunity_close_permission_conflict_detected",
+    "native_mobile_app_not_committed",
+    "duplicate_customer_groups_detected",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs",
+    "no_cross_project_data",
+    "all_exported_files_open"
+  ],
+  "repeat_policy": {
+    "minimum_runs_per_candidate": 3,
+    "pass_rule": "all blocking checks pass in every run and mean score >= pass_score",
+    "stability_rule": "critical object set must be identical; non-critical score standard deviation <= 5"
+  }
+}

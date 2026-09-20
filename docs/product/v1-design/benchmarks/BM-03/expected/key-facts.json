@@ -1,0 +1,17 @@
+{
+  "benchmark_id": "BM-03",
+  "facts": [
+    {"id": "KF-01", "fact": "首期产品形态包含响应式移动 Web 和 Web 管理后台，并预留企业微信工作台入口", "source": "intake.json; sources/sales-mobile-requirements.docx"},
+    {"id": "KF-02", "fact": "主要用户为一线销售、区域经理、销售运营和系统管理员", "source": "intake.json; sources/sales-mobile-requirements.docx"},
+    {"id": "KF-03", "fact": "核心业务对象为客户、拜访、商机和跟进", "source": "sources/sales-mobile-requirements.docx"},
+    {"id": "KF-04", "fact": "离线记录恢复网络后自动同步，并保留原始操作时间", "source": "sources/sales-mobile-requirements.docx; sources/current-mobile-visit.png"},
+    {"id": "KF-05", "fact": "线索转商机后保留来源关系且不删除原线索", "source": "sources/sales-mobile-requirements.docx"},
+    {"id": "KF-06", "fact": "普通销售仅查看本人及获授权客户，区域经理查看本区域客户", "source": "sources/sales-mobile-requirements.docx"},
+    {"id": "KF-07", "fact": "普通销售不得批量导出客户明细", "source": "sources/sales-mobile-requirements.docx"},
+    {"id": "KF-08", "fact": "首期对接现有 CRM 的客户和商机主数据，按员工编号匹配用户", "source": "sources/sales-mobile-requirements.docx"},
+    {"id": "KF-09", "fact": "目标启动时间为 2026 年 11 月，首期上线时间为 2027 年 3 月", "source": "intake.json; sources/sales-mobile-requirements.docx"},
+    {"id": "KF-10", "fact": "预算参考范围为人民币 32 万至 58 万元", "source": "intake.json"},
+    {"id": "KF-11", "fact": "移动端现状界面提供到店签到、记录沟通和创建商机入口", "source": "sources/current-mobile-visit.png"},
+    {"id": "KF-12", "fact": "一期明确不包含 ERP 订单处理、库存查询、回款核销、自动报价审批和销售佣金结算", "source": "sources/sales-mobile-requirements.docx"}
+  ]
+}

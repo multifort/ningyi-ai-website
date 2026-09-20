@@ -1,0 +1,120 @@
+{
+  "benchmarkId": "BM-06",
+  "benchmarkVersion": "1.0",
+  "title": "采购与供应商协同平台建设项目",
+  "projectType": "software",
+  "difficulty": "L2",
+  "coverageTags": [
+    "procurement_workflow",
+    "supplier_governance",
+    "approval_matrix",
+    "segregation_of_duties",
+    "deterministic_quote_thresholds",
+    "supplier_credential_expiry",
+    "audit_traceability",
+    "scope_boundary"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 10,
+      "max": 30
+    },
+    "features": {
+      "min": 10,
+      "max": 34
+    },
+    "solutionCharacters": {
+      "min": 10000,
+      "max": 28000
+    },
+    "slideCount": {
+      "min": 10,
+      "max": 22
+    }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "quote_thresholds_preserved",
+    "sole_source_requires_joint_approval",
+    "segregation_of_duties_preserved",
+    "expired_supplier_excluded_from_new_awards",
+    "score_below_60_triggers_remediation_not_auto_removal",
+    "erp_remains_order_and_payment_system_of_record",
+    "emergency_records_auditable",
+    "no_prohibited_commitments",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "825719709a440f0ac1731369cef9238b5cab13d7e98593a288cb41b47c3d89a1",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "cb0b741bad6f83f0db77f63318506b09f233497bbaa63a8dac4e76d4438c52d5",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "4e8b2e27f0d79f2a127ba5dfd8a68e564f1cf51150f65bec0bfcf2c96c0c357a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "41bd7d3e991bb85a98dc1cfac6c4f04508c8fb226b83b25887ce6b813a1b6503",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "396cc7359388c9692586e9c162d15a9f1e9d00339e48e38759f3e043e5ac9a0c",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "d937b42dcbbf0591fe8841ec16bde92197fd68b566ee3c91272d6786d26599c6",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "3f15693db293ce0f9f328d83fac86becbb1a91a302da5d56756b2e9467155cc4",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/procurement-policy.pdf",
+      "sha256": "6644dcaa55da83b14ba64e8aefbcc3377913f362bca4d0a37fd207fde002d3ae",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/procurement-policy.txt",
+      "sha256": "a2678e9cd78b2a0abd458993fb7fe4a8c5021abc31915728d571ec42aef5b3d7",
+      "category": "content",
+      "format": "txt",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/supplier-register.xlsx",
+      "sha256": "f4a38c86722ca1a17ea119f9ace60505202cecaab1a3202e2e73f29f150fadc9",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

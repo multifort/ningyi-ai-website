@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -65,40 +66,45 @@ export default function SolutionDetailPage() {
   return (
     <>
       <Header />
-      <main className="pt-20">
-        {/* Hero 区域 */}
-        <section 
-          className="relative py-20 overflow-hidden"
-          style={{
-            backgroundImage: solution.heroImage ? `url(${solution.heroImage})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          {!solution.heroImage && (
-            <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-accent1/20"></div>
-          )}
+      <main>
+        <section className="relative min-h-[610px] overflow-hidden bg-primary pb-14 pt-28 text-white md:pb-16 md:pt-32 lg:min-h-[650px]">
           {solution.heroImage && (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70"></div>
+            <div className="page-intro-visual">
+              <Image src={solution.heroImage} alt={`${solution.title}项目成果工作场景`} fill sizes="(min-width: 1024px) 60vw, 100vw" quality={95} className="object-cover object-center lg:object-right" priority />
+            </div>
           )}
-          
-          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-center">
-            <div className="text-6xl mb-6">{solution.icon}</div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              {solution.title}
-            </h1>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              {solution.description}
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,12,31,0.98)_0%,rgba(1,12,31,0.91)_38%,rgba(1,12,31,0.3)_64%,rgba(1,12,31,0.04)_88%)]" />
+          <div className="project-grid absolute inset-0 opacity-25" aria-hidden="true" />
+
+          <div className="section-shell relative z-10 flex min-h-[438px] items-center lg:min-h-[490px]">
+            <div className="max-w-[43rem]">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-semibold tracking-[0.08em] text-slate-300">
+                <span className="h-px w-10 bg-accent2" aria-hidden="true" />
+                <span>{solution.icon} · 项目场景</span>
+                <span className="text-accent2">企业项目方案与成果智能交付服务</span>
+              </div>
+              <h1 className="mt-6 max-w-[42rem] font-display text-4xl font-bold leading-[1.08] tracking-[-0.035em] text-white sm:text-5xl md:text-[3.7rem]">
+                {solution.title}
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-slate-300 md:text-lg">
+                {solution.description}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2.5">
               {solution.features.map((feature, index) => (
                 <span
                   key={index}
-                  className="px-4 py-2 bg-white/10 text-white rounded-full text-sm backdrop-blur-sm"
+                  className="inline-flex items-center rounded-xl border border-white/15 bg-white/[0.055] px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-md"
                 >
+                  <span className={`mr-2 h-2 w-2 rounded-full ${index === 1 ? "bg-accent2" : index === 2 ? "bg-accentWarm" : "bg-accent1"}`} />
                   {feature}
                 </span>
               ))}
+              </div>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link href="/product/start" className="rounded-full bg-accent1 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-blue-600">
+                  开始生成方案
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -116,7 +122,7 @@ export default function SolutionDetailPage() {
                       </svg>
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-primary">
-                      行业挑战与痛点
+                      项目任务与难点
                     </h2>
                   </div>
                 </div>
@@ -141,7 +147,7 @@ export default function SolutionDetailPage() {
                       </svg>
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-primary">
-                      我们的解决方案
+                      建议形成成果
                     </h2>
                   </div>
                 </div>
@@ -166,7 +172,7 @@ export default function SolutionDetailPage() {
                       </svg>
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-primary">
-                      核心优势与价值
+                      成果组织方式
                     </h2>
                   </div>
                 </div>
@@ -179,20 +185,20 @@ export default function SolutionDetailPage() {
         )}
 
         {/* 客户案例 */}
-        <section className="py-16 bg-gray-50">
+        <section className="bg-gray-50 py-8 md:py-10">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <CaseStudies industryFilter={solution.title} />
           </div>
         </section>
 
         {/* CTA */}
-        <section className="py-16 bg-gradient-to-br from-accent1/10 via-white to-accent2/10">
+        <section className="bg-gradient-to-br from-accent1/10 via-white to-accent2/10 py-14 md:py-16">
           <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
             <h2 className="text-3xl font-bold text-primary mb-6">
-              为您的企业定制专属 AI 管家
+              用当前项目验证成果形成过程
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              了解 AI 管家如何为您的企业创造价值
+              从已有材料出发，确认事实、缺口与适合交付的成果类型
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
@@ -202,10 +208,10 @@ export default function SolutionDetailPage() {
                 返回首页
               </Link>
               <Link
-                href="/cta"
+                href="/product/start"
                 className="px-8 py-3 border-2 border-accent1 text-accent1 rounded-full font-semibold hover:bg-accent1/10 transition-all duration-300"
               >
-                预约演示
+                开始生成方案
               </Link>
             </div>
           </div>

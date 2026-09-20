@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/project-model/v1.json",
+  "title": "Ningyi Formal Project Model V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "snapshotId",
+    "projectType",
+    "identity",
+    "goals",
+    "scope",
+    "actors",
+    "requirements",
+    "features",
+    "constraints",
+    "assumptions",
+    "conflicts",
+    "relations"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "projectId": { "$ref": "#/$defs/uuid" },
+    "snapshotId": { "$ref": "#/$defs/uuid" },
+    "projectType": {
+      "enum": ["software", "integration", "upgrade", "deployment", "ai_agent", "hybrid"]
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["displayName", "primaryPurpose"],
+      "properties": {
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "customerName": { "type": ["string", "null"], "maxLength": 200 },
+        "industry": { "type": ["string", "null"], "maxLength": 100 },
+        "primaryPurpose": { "type": "string", "minLength": 1 },
+        "secondaryPurposes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "productShapes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "goals": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["included", "excluded"],
+      "properties": {
+        "included": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+        "excluded": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+        "future": { "type": "array", "items": { "$ref": "#/$defs/entity" } }
+      }
+    },
+    "actors": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "scenarios": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "requirements": { "type": "array", "items": { "$ref": "#/$defs/requirement" } },
+    "features": { "type": "array", "items": { "$ref": "#/$defs/feature" } },
+    "constraints": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "integrations": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "dataEntities": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "agentCapabilities": { "type": "array", "items": { "$ref": "#/$defs/agentCapability" } },
+    "terms": { "type": "array", "items": { "$ref": "#/$defs/term" } },
+    "assumptions": { "type": "array", "items": { "$ref": "#/$defs/assumption" } },
+    "conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+    "relations": { "type": "array", "items": { "$ref": "#/$defs/relation" } },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": { "type": ["number", "integer", "string", "null"] }
+    }
+  },
+  "$defs": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "stableKey": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*-[0-9]{3,}$" },
+    "confidenceState": {
+      "enum": ["user_confirmed", "multi_source", "single_source", "system_proposed", "conflict", "unknown"]
+    },
+    "visibility": { "enum": ["client", "internal", "both"] },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "refId", "role"],
+      "properties": {
+        "kind": { "enum": ["source_block", "user_decision", "assumption"] },
+        "refId": { "$ref": "#/$defs/uuid" },
+        "role": { "enum": ["supports", "contradicts", "context", "example"] }
+      }
+    },
+    "entityBase": {
+      "type": "object",
+      "required": ["id", "key", "title", "description", "confidence", "visibility", "sourceRefs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "key": { "$ref": "#/$defs/stableKey" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "description": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidenceState" },
+        "visibility": { "$ref": "#/$defs/visibility" },
+        "locked": { "type": "boolean", "default": false },
+        "sourceRefs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } },
+        "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "entity": {
+      "allOf": [{ "$ref": "#/$defs/entityBase" }],
+      "unevaluatedProperties": false
+    },
+    "requirement": {
+      "allOf": [
+        { "$ref": "#/$defs/entityBase" },
+        {
+          "type": "object",
+          "properties": {
+            "priority": { "enum": ["must", "should", "could", "wont", "unknown"] },
+            "acceptanceCriteria": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "requirementType": { "enum": ["business", "user", "functional", "non_functional", "constraint"] }
+          },
+          "required": ["priority", "acceptanceCriteria", "requirementType"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "feature": {
+      "allOf": [
+        { "$ref": "#/$defs/entityBase" },
+        {
+          "type": "object",
+          "properties": {
+            "systemKey": { "type": "string" },
+            "moduleKey": { "type": "string" },
+            "complexity": { "enum": ["low", "medium", "high", "unknown"] },
+            "inputs": { "type": "array", "items": { "type": "string" } },
+            "outputs": { "type": "array", "items": { "type": "string" } },
+            "rules": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["systemKey", "moduleKey", "complexity"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "agentCapability": {
+      "allOf": [
+        { "$ref": "#/$defs/entityBase" },
+        {
+          "type": "object",
+          "properties": {
+            "task": { "type": "string", "minLength": 1 },
+            "knowledgeSources": { "type": "array", "items": { "type": "string" } },
+            "tools": { "type": "array", "items": { "type": "string" } },
+            "permissionMode": { "enum": ["suggest_only", "confirm_before_action", "authorized_auto_action"] },
+            "memoryPolicy": { "type": "string" },
+            "evaluationCriteria": { "type": "array", "items": { "type": "string" } },
+            "fallback": { "type": "string" }
+          },
+          "required": ["task", "permissionMode", "evaluationCriteria", "fallback"]
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["term", "definition"],
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "definition": { "type": "string", "minLength": 1 },
+        "aliases": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "locked": { "type": "boolean", "default": false }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "key", "description", "impact", "status"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "key": { "$ref": "#/$defs/stableKey" },
+        "description": { "type": "string", "minLength": 1 },
+        "impact": { "enum": ["low", "medium", "high"] },
+        "status": { "enum": ["active", "confirmed", "rejected", "expired"] },
+        "validationMethod": { "type": ["string", "null"] },
+        "sourceRefs": { "type": "array", "items": { "$ref": "#/$defs/sourceRef" } }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "key", "summary", "severity", "status", "evidenceRefs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid" },
+        "key": { "$ref": "#/$defs/stableKey" },
+        "summary": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["info", "warning", "direction_blocking", "project_blocking"] },
+        "status": { "enum": ["open", "resolved", "accepted_as_assumption"] },
+        "evidenceRefs": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/sourceRef" } },
+        "resolution": { "type": ["string", "null"] }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "type", "strength"],
+      "properties": {
+        "from": { "$ref": "#/$defs/stableKey" },
+        "to": { "$ref": "#/$defs/stableKey" },
+        "type": {
+          "enum": ["satisfies", "implemented_by", "depends_on", "conflicts_with", "derived_from", "estimated_by", "scheduled_in", "quoted_by", "mentioned_in", "replaces"]
+        },
+        "strength": { "enum": ["required", "recommended", "informational"] },
+        "rationale": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

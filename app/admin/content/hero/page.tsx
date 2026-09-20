@@ -1,6 +1,16 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 
+type HeroImageItem = {
+  imagePath: string;
+  isActive: boolean;
+  kicker: string;
+  title: string;
+  description: string;
+  benefits: string[];
+  alt: string;
+};
+
 export default function HeroConfigPage() {
   const [config, setConfig] = useState({
     title: "",
@@ -10,7 +20,7 @@ export default function HeroConfigPage() {
     ctaSecondaryText: "",
     ctaSecondaryLink: "",
   });
-  const [images, setImages] = useState<Array<{ imagePath: string; isActive: boolean }>>([]);
+  const [images, setImages] = useState<HeroImageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -87,7 +97,7 @@ export default function HeroConfigPage() {
         });
         const data = await res.json();
         if (data.success) {
-          setImages((prev) => [...prev, { imagePath: data.data.url, isActive: true }]);
+          setImages((prev) => [...prev, { imagePath: data.data.url, isActive: true, kicker: "", title: "", description: "", benefits: ["", "", ""], alt: "" }]);
           setMessage("✅ 上传成功！");
           setTimeout(() => setMessage(""), 3000);
         } else {
@@ -128,13 +138,19 @@ export default function HeroConfigPage() {
     setImages(newImages);
   };
 
+  const updateImage = (index: number, field: keyof HeroImageItem, value: string | string[]) => {
+    const next = [...images];
+    next[index] = { ...next[index], [field]: value };
+    setImages(next);
+  };
+
   if (loading) {
     return <div className="text-center py-12">加载中...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-primary mb-8">Hero 配置管理</h1>
+      <h1 className="text-3xl font-bold text-primary mb-8">首页主视觉管理</h1>
 
       {message && (
         <div className={`mb-6 p-4 rounded-lg ${message.includes("✅") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
@@ -236,7 +252,7 @@ export default function HeroConfigPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid xl:grid-cols-2 gap-5">
           {images.map((img, index) => (
             <div key={index} className="relative group border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
               <div className="aspect-video relative">
@@ -280,12 +296,24 @@ export default function HeroConfigPage() {
                   </button>
                 </div>
               </div>
-              <div className="p-3">
+              <div className="space-y-3 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">图片 {index + 1}</span>
                   <span className="text-xs text-gray-500 truncate max-w-[150px]" title={img.imagePath}>
                     {img.imagePath ? img.imagePath.split("/").pop() : ""}
                   </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs font-medium text-slate-600">眉题<input type="text" value={img.kicker || ""} onChange={(event) => updateImage(index, "kicker", event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent1" /></label>
+                  <label className="text-xs font-medium text-slate-600">图片说明<input type="text" value={img.alt || ""} onChange={(event) => updateImage(index, "alt", event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent1" /></label>
+                </div>
+                <label className="block text-xs font-medium text-slate-600">宣传标题<textarea rows={2} value={img.title || ""} onChange={(event) => updateImage(index, "title", event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent1" /></label>
+                <label className="block text-xs font-medium text-slate-600">宣传说明<textarea rows={3} value={img.description || ""} onChange={(event) => updateImage(index, "description", event.target.value)} className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent1" /></label>
+                <div>
+                  <div className="text-xs font-medium text-slate-600">三个价值点</div>
+                  <div className="mt-1.5 grid gap-2 sm:grid-cols-3">
+                    {[0, 1, 2].map((benefitIndex) => <input key={benefitIndex} type="text" value={img.benefits?.[benefitIndex] || ""} onChange={(event) => { const benefits = [...(img.benefits || ["", "", ""])]; benefits[benefitIndex] = event.target.value; updateImage(index, "benefits", benefits); }} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent1" placeholder={`价值点 ${benefitIndex + 1}`} />)}
+                  </div>
                 </div>
               </div>
             </div>

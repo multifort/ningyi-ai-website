@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/benchmark-manifest/v1.json",
+  "title": "Ningyi Benchmark Manifest V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "benchmarkId",
+    "benchmarkVersion",
+    "title",
+    "projectType",
+    "difficulty",
+    "files",
+    "coverageTags",
+    "blockingChecks"
+  ],
+  "properties": {
+    "benchmarkId": { "type": "string", "pattern": "^BM-(0[1-9]|1[0-8])$" },
+    "benchmarkVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "projectType": {
+      "enum": ["software", "integration", "upgrade", "deployment", "ai_agent", "hybrid"]
+    },
+    "difficulty": { "enum": ["L1", "L2", "L3", "L4"] },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "category", "format", "licenseStatus"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "category": { "enum": ["content", "template", "brand"] },
+          "format": { "type": "string", "minLength": 1 },
+          "licenseStatus": { "enum": ["synthetic", "public_licensed", "approved_anonymized"] }
+        }
+      }
+    },
+    "coverageTags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "expectedScale": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requirements": { "$ref": "#/$defs/range" },
+        "features": { "$ref": "#/$defs/range" },
+        "solutionCharacters": { "$ref": "#/$defs/range" },
+        "slideCount": { "$ref": "#/$defs/range" }
+      }
+    },
+    "timeoutSeconds": { "type": "integer", "minimum": 1 },
+    "blockingChecks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "integer", "minimum": 0 },
+        "max": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

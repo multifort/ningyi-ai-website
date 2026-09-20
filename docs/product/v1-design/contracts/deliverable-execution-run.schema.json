@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/deliverable-execution-run/v1.json",
+  "title": "Ningyi Deliverable Execution Run V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "runId", "projectRevisionId", "planHash", "status", "nodes"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "runId": {"type": "string", "format": "uuid"},
+    "projectRevisionId": {"type": "string", "minLength": 1},
+    "planHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"enum": ["pending", "in_progress", "complete", "failed"]},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "dependencies", "status", "attempt", "artifactHash", "failure"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["model_generation", "deterministic_compute", "quality_gate", "deterministic_render"]},
+          "dependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "status": {"enum": ["pending", "in_progress", "complete", "failed", "stale"]},
+          "attempt": {"type": "integer", "minimum": 0},
+          "artifactHash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "failure": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "sectionId": "SEC-03",
+  "title": "业务与权限方案",
+  "revision": 0,
+  "blocks": [
+    {"id": "B-001", "type": "heading", "claimType": "transition", "text": "商机关闭权限需要显式决策", "sourceBlockIds": []},
+    {"id": "B-002", "type": "paragraph", "claimType": "sourced_fact", "text": "需求说明书允许销售代表关闭本人商机，而评审纪要要求关闭操作由销售经理执行，两份材料构成显式冲突。", "sourceBlockIds": ["ed363f46-c2ad-513d-8e48-6cfe1ab8f0ec", "d31a667b-a65d-5323-a0e2-1d34534a30d7"]},
+    {"id": "B-003", "type": "list", "claimType": "analysis", "text": "可选方案一：仅销售经理执行关闭；可选方案二：销售代表提交关闭申请，由销售经理审批。", "sourceBlockIds": ["da8547f0-1dec-5a08-9f34-056f181dff21", "3a9fe6a8-bfbc-5ece-a33a-ac0ab61224c4"]},
+    {"id": "B-004", "type": "paragraph", "claimType": "recommendation", "text": "建议采用代表申请、经理审批，并记录结果原因和审批轨迹；该建议需作为待确认决策展示，不能伪装成已确认事实。", "sourceBlockIds": ["3a9fe6a8-bfbc-5ece-a33a-ac0ab61224c4"]},
+    {"id": "B-005", "type": "callout", "claimType": "transition", "text": "财务总账不纳入一期，本节权限设计不扩展至财务核算。", "sourceBlockIds": []}
+  ]
+}

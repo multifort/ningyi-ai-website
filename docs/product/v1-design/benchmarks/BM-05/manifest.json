@@ -1,0 +1,114 @@
+{
+  "benchmarkId": "BM-05",
+  "benchmarkVersion": "1.0",
+  "title": "经销商管理平台整体解决方案",
+  "projectType": "software",
+  "difficulty": "L2",
+  "files": [
+    {
+      "path": "intake.json",
+      "sha256": "1bb2699a9670b52155b815fd96ae0c00d4916193f717d79c42e50ceb47bf84f5",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/dealer-current-state.pptx",
+      "sha256": "85f45abf6c8a7609a169f0a10809af3ea678d85e17744c155b09cd55acaabf21",
+      "category": "content",
+      "format": "pptx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/dealer-policy-matrix.xlsx",
+      "sha256": "0ea4aa48eac88b013c5c96ea59e5306e5a30d5513fa92e39b307f9e9c6eedd79",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "4980672fa4161ce0376260ca0b1c343b065023314636116090a11fb88cbdb7b0",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "78a1c5384fbbaa9faf525dfb4373e49bb5aed60c922da3ec170416b00ac33835",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "56efddf0eaa385b0f8ebe120cb0ebdd647f188c06cc48bae47973ce8178cb7ff",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "d967ee1aa85b85953dc05db5b4bb338a25b6d0feb99681ab412172115e164a88",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "60c43ba1d0953f3b262f23357518b2832ed81a2095713d1930786e78e5d1dc33",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "2295689e557ba36e7ae468975db99efef3c7af105fdb27d503cf84a0fc590476",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    }
+  ],
+  "coverageTags": [
+    "structured_intake",
+    "pptx",
+    "xlsx",
+    "editable_chart",
+    "deterministic_thresholds",
+    "dealer_tiering",
+    "rebate_policy",
+    "customer_protection",
+    "scope_boundary",
+    "source_traceability",
+    "multi_format_ingestion"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 10,
+      "max": 28
+    },
+    "features": {
+      "min": 10,
+      "max": 32
+    },
+    "solutionCharacters": {
+      "min": 11000,
+      "max": 30000
+    },
+    "slideCount": {
+      "min": 11,
+      "max": 24
+    }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "level_thresholds_from_xlsx",
+    "rebate_rates_from_xlsx",
+    "simultaneous_level_conditions_preserved",
+    "customer_conflict_rule_preserved",
+    "scope_exclusions_preserved",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs"
+  ]
+}

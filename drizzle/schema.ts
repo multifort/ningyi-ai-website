@@ -26,6 +26,11 @@ export const heroImages = sqliteTable('hero_images', {
   imagePath: text('image_path').notNull(),
   sortOrder: integer('sort_order').default(0),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  kicker: text('kicker'),
+  title: text('title'),
+  description: text('description'),
+  benefits: text('benefits'),
+  alt: text('alt'),
   createdAt: text('created_at').default('(CURRENT_TIMESTAMP)'),
 });
 
@@ -55,6 +60,7 @@ export const solutionScenarios = sqliteTable('solution_scenarios', {
   subtitle: text('subtitle'),
   pain: text('pain'),
   solution: text('solution'),
+  flowSteps: text('flow_steps'), // JSON: [{ title, detail }]
   heroImage: text('hero_image'),
   painPoints: text('pain_points'), // 富文本 HTML
   solutionDetail: text('solution_detail'), // 富文本 HTML
@@ -106,6 +112,12 @@ export const demoQuestions = sqliteTable('demo_questions', {
   sortOrder: integer('sort_order').default(0),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   createdAt: text('created_at').default('(CURRENT_TIMESTAMP)'),
+});
+
+export const deliveryContent = sqliteTable('delivery_content', {
+  id: integer('id').primaryKey(),
+  contentJson: text('content_json').notNull(),
+  updatedAt: text('updated_at').default('(CURRENT_TIMESTAMP)'),
 });
 
 // 产品能力模块表

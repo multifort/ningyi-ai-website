@@ -1,0 +1,20 @@
+{
+  "benchmark_id": "BM-06",
+  "minimum_structured_items": {"requirement": 10, "feature": 10, "phase": 2, "risk": 3},
+  "maximum_runtime_seconds": 1800,
+  "required_patterns": [
+    {"id": "quote_thresholds", "patterns": ["2.{0,3}万元", "10.{0,3}万元", "至少两家", "至少三家"]},
+    {"id": "sole_source_exception", "patterns": ["单一来源", "停线抢修", "采购负责人", "财务负责人"]},
+    {"id": "segregation_of_duties", "patterns": ["申请人.{0,12}不得审批本人", "采购经办人.{0,15}不得.{0,8}验收", "职责分离"]},
+    {"id": "supplier_expiry", "patterns": ["到期前30日|到期前 30 日", "资质待更新", "不得参与.{0,8}询价定标", "历史订单.{0,10}保留"]},
+    {"id": "supplier_score", "patterns": ["40%", "30%", "20%", "10%", "低于60分|低于 60 分", "整改观察", "不得自动淘汰|不自动删除"]},
+    {"id": "erp_boundary", "patterns": ["ERP", "订单主数据|订单编号.{0,10}主数据", "不得.{0,10}付款|不触发付款"]},
+    {"id": "emergency_audit", "patterns": ["2个工作日|2 个工作日", "事后审计", "操作人", "变更前后"]}
+  ],
+  "prohibited_commitment_patterns": [
+    {"id": "platform_executes_payment", "pattern": "(?<!不授权)(?<!未授权)(?<!不允许)(?:平台|系统)(?!不得|不|不能|不可|无权)[^,，。；\\n]{0,6}(?:自动付款|触发付款|执行付款)"},
+    {"id": "auto_blacklist", "pattern": "低于.{0,5}60分(?![^。；\\n]{0,12}(?:不得|不|不能|不会|不应|不宜|禁止))[^。；\\n]{0,12}(?:自动淘汰|自动删除|自动拉黑)"},
+    {"id": "expired_supplier_award", "pattern": "资质过期.{0,12}(仍可|可以|允许).{0,8}(询价|定标)"},
+    {"id": "self_approval", "pattern": "申请人.{0,12}(可以|可由).{0,8}审批本人"}
+  ]
+}

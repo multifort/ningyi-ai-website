@@ -10,22 +10,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#0A1F3E",
-        accent1: "#3A86FF",
-        accent2: "#8338EC",
+        primary: "#071B33",
+        accent1: "#1F6FFF",
+        accent2: "#4BD7E8",
+        accentWarm: "#F2A55D",
         bgLight: "#FFFFFF",
-        bgGray: "#F8F9FA",
-        textDark: "#1F2937",
-        textGray: "#6B7280",
+        bgGray: "#F4F7FB",
+        textDark: "#13243A",
+        textGray: "#66758A",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        sans: ["Avenir Next", "PingFang SC", "Microsoft YaHei", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["DIN Alternate", "Avenir Next Condensed", "PingFang SC", "Microsoft YaHei", "sans-serif"],
       },
       borderRadius: {
         xl: "1rem",
       },
       boxShadow: {
-        lg: "0 4px 12px rgba(0,0,0,0.1)",
+        lg: "0 18px 50px rgba(7, 27, 51, 0.12)",
       },
     },
   },

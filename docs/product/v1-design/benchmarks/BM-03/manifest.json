@@ -1,0 +1,123 @@
+{
+  "benchmarkId": "BM-03",
+  "benchmarkVersion": "1.0",
+  "title": "销售移动端整体解决方案",
+  "projectType": "software",
+  "difficulty": "L2",
+  "files": [
+    {
+      "path": "intake.json",
+      "sha256": "003aa1bccd1d3895198a82a1166f9cb7523707c273bfd5614cb5d7fa370e475d",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/sales-mobile-requirements.docx",
+      "sha256": "c97c56abfc0ff50557ccaf1b661cafc68819bed284735bc7153cb1327f66e02e",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/current-mobile-visit.png",
+      "sha256": "b2f261e22cb2b31e2be775114eceaa43f1c5a4860cf7660c68dc5a99555146f0",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/sales-targets.xlsx",
+      "sha256": "378e52244be17cc5d15cbb1d08c8937daf37cb968e635d431c3faf6231d4fc74",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "885e0188cb5e7f1d46c1d88e3964c5d41a991f2051121a544fbc848634b3acdb",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "ff51f4e4ed21e49188a9dacc7e90b7e5e05e2340797f9caff5cc91b2d981ab50",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "1f9c6e9acd50a7f74a3a7d20fc98991ddf6b72018a9552aa29608b152c8fc762",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "81f0c7c4770f929511ebb95eba3354a35850afb73dd0d7bdd402b0d3987604ee",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "f24604cd61129d6511b1036785005cbdf668314b65434839fb955249836e6d4e",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "97504a4f925731c9679fe5576282cda4b05a642cbe7ccf913a5e40ccf7297f4e",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    }
+  ],
+  "coverageTags": [
+    "structured_intake",
+    "docx",
+    "xlsx",
+    "image",
+    "mobile_workflow",
+    "offline_sync",
+    "data_permissions",
+    "lead_opportunity_traceability",
+    "deterministic_kpis",
+    "scope_boundary",
+    "source_traceability",
+    "multi_format_ingestion"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 10,
+      "max": 28
+    },
+    "features": {
+      "min": 10,
+      "max": 32
+    },
+    "solutionCharacters": {
+      "min": 11000,
+      "max": 30000
+    },
+    "slideCount": {
+      "min": 11,
+      "max": 24
+    }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "offline_sync_preserves_original_time",
+    "lead_source_relationship_preserved",
+    "customer_permissions_present",
+    "kpi_values_from_xlsx",
+    "xlsx_null_not_coerced_to_zero",
+    "phase_one_exclusions_preserved",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/operations-snapshot/v1.3.json",
+  "title": "Ningyi Unattended Operations Snapshot V1.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["snapshotId", "schemaVersion", "window", "metrics", "stageQueues", "providerHealth", "knowledgeHealth", "alerts", "routingSafety"],
+  "properties": {
+    "snapshotId": {"type": "string", "format": "uuid"},
+    "schemaVersion": {"const": "1.3"},
+    "window": {"type": "object", "required": ["from", "to"], "properties": {"from": {"type": "integer"}, "to": {"type": "integer"}}, "additionalProperties": false},
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {"type": ["number", "integer"]},
+      "required": ["runs", "successRate", "completeDeliveryRate", "latencyP50Seconds", "latencyP95Seconds", "queuedTasks", "oldestQueueAgeSeconds", "retryRate", "estimatedCost", "expectedCost", "costRatio", "materialChangeDiscardedCalls", "materialChangeDiscardRate", "materialChangeDiscardedCost"],
+      "properties": {
+        "runs": {"type": "integer", "minimum": 0},
+        "successRate": {"type": "number", "minimum": 0, "maximum": 1},
+        "completeDeliveryRate": {"type": "number", "minimum": 0, "maximum": 1},
+        "latencyP50Seconds": {"type": "number", "minimum": 0},
+        "latencyP95Seconds": {"type": "number", "minimum": 0},
+        "queuedTasks": {"type": "integer", "minimum": 0},
+        "oldestQueueAgeSeconds": {"type": "integer", "minimum": 0},
+        "retryRate": {"type": "number", "minimum": 0},
+        "estimatedCost": {"type": "number", "minimum": 0},
+        "expectedCost": {"type": "number", "minimum": 0},
+        "costRatio": {"type": "number", "minimum": 0},
+        "materialChangeDiscardedCalls": {"type": "integer", "minimum": 0},
+        "materialChangeDiscardRate": {"type": "number", "minimum": 0, "maximum": 1},
+        "materialChangeDiscardedCost": {"type": "number", "minimum": 0},
+        "knowledgeReconciliationBacklog": {"type": "integer", "minimum": 0},
+        "knowledgeOldestBacklogAgeSeconds": {"type": "integer", "minimum": 0}
+      }
+    },
+    "stageQueues": {"type": "object", "additionalProperties": {"type": "object"}},
+    "providerHealth": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["provider", "calls", "failureRate", "p95Seconds"],
+        "properties": {
+          "provider": {"type": "string"}, "calls": {"type": "integer", "minimum": 0}, "failureRate": {"type": "number", "minimum": 0, "maximum": 1}, "p95Seconds": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "knowledgeHealth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backlog", "oldestBacklogAgeSeconds"],
+      "properties": {
+        "backlog": {"type": "integer", "minimum": 0},
+        "oldestBacklogAgeSeconds": {"type": "integer", "minimum": 0}
+      }
+    },
+    "mediaHealth": {"type": "object"},
+    "deletionHealth": {"type": "object"},
+    "storageHealth": {"type": ["object", "null"]},
+    "workerHealth": {"type": "object"},
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "automaticAction"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,79}$"},
+          "severity": {"enum": ["warning", "critical"]},
+          "automaticAction": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$"}
+        }
+      }
+    },
+    "routingSafety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formalSilentDowngrades", "unverifiedProviderRoutes"],
+      "properties": {"formalSilentDowngrades": {"const": 0}, "unverifiedProviderRoutes": {"const": 0}}
+    }
+  }
+}

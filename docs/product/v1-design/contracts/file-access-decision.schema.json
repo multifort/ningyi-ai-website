@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/file-access-decision/v1.json",
+  "title": "Ningyi Private File Access Decision V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "action", "artifactId", "allowed", "reason", "expiresAt", "tokenHash"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "action": {"enum": ["upload", "read", "download", "delete"]},
+    "artifactId": {"type": "string", "format": "uuid"},
+    "allowed": {"type": "boolean"},
+    "reason": {"enum": ["OWNER_MATCH", "CROSS_USER_DENIED", "SOLUTION_MISMATCH", "ARTIFACT_REVOKED", "TOKEN_EXPIRED", "TOKEN_INVALID", "UNKNOWN_ARTIFACT"]},
+    "expiresAt": {"type": ["integer", "null"], "minimum": 0},
+    "tokenHash": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+  }
+}

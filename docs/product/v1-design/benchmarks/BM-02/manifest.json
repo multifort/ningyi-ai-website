@@ -1,0 +1,47 @@
+{
+  "benchmarkId": "BM-02",
+  "benchmarkVersion": "1.0",
+  "title": "OA 审批流程优化方案",
+  "projectType": "software",
+  "difficulty": "L2",
+  "files": [
+    {"path": "intake.json", "sha256": "80625be8b9cbc7d2e9415318c52cafec33ff5a1c6f2f270f3ee2d36041cf1b43", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "sources/approval-policy.pdf", "sha256": "17b0a2ebcc0df4a8e6165feb593536f96d34dfc2cec96611a8f8f156f17f8ce0", "category": "content", "format": "pdf", "licenseStatus": "synthetic"},
+    {"path": "sources/approval-matrix.xlsx", "sha256": "d7be4bc9bbabca3e5acec5d3dca8cf6c0a33ef476a1cafd001f97b8d17644a20", "category": "content", "format": "xlsx", "licenseStatus": "synthetic"},
+    {"path": "sources/current-expense-approval.png", "sha256": "e66a6079a8b42e080ceb273b126d20eceb3d1de1dd0e81c61cb9919c8632b50d", "category": "content", "format": "png", "licenseStatus": "synthetic"},
+    {"path": "expected/key-facts.json", "sha256": "d9bdd690106b3b17f73406d1e0c4c4db0314cb99184b2b443ef9dcd69dc90d4c", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "expected/deterministic-values.json", "sha256": "44cb7d4c850293da5deed3d1fbace9181a4fac5c0494e954c9c01544b87d29de", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "expected/prohibited-claims.json", "sha256": "af88afdb7ac13a5741161c9abd4d8ab62583ffa5e043e94631ba1f67481667b9", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "expected/expected-relations.json", "sha256": "9dfbcb1a9cda16ef64f07d0f25d81f812b335195714824bbca2aace9ce08ba73", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "expected/scoring-rubric.json", "sha256": "48e8c5b6cc03a3099803a2cc3a4ce57f7d5997ce77c8934eff63a0a8a0493583", "category": "content", "format": "json", "licenseStatus": "synthetic"},
+    {"path": "expected/automatic-content-checks.json", "sha256": "f1da5786c95e1ec8f580749546619870866c9692919402a3abd7bc96a68223ce", "category": "content", "format": "json", "licenseStatus": "synthetic"}
+  ],
+  "coverageTags": [
+    "structured_intake",
+    "pdf",
+    "xlsx",
+    "image",
+    "deterministic_thresholds",
+    "role_normalization",
+    "workflow_exceptions",
+    "scope_boundary",
+    "source_traceability",
+    "multi_format_ingestion"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 8, "max": 24},
+    "features": {"min": 8, "max": 28},
+    "solutionCharacters": {"min": 10000, "max": 28000},
+    "slideCount": {"min": 10, "max": 22}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "amount_thresholds_from_xlsx",
+    "role_names_normalized",
+    "workflow_exception_paths_present",
+    "phase_one_exclusions_preserved",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs"
+  ]
+}

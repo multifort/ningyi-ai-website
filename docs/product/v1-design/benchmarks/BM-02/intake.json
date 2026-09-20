@@ -1,0 +1,35 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-02",
+  "project_name": "OA 审批流程优化项目",
+  "customer_facing_name": "企业智能审批平台",
+  "customer_type": "多部门综合型企业",
+  "target_users": ["申请人", "部门主管", "采购经理", "财务人员", "预算管理员", "法务经理", "分管副总", "总经理"],
+  "primary_goal": "形成用于内部立项和流程评审的 OA 审批系统方案",
+  "secondary_goal": "形成可核对的功能、工作量、实施计划与报价依据",
+  "need_description": "改造固定审批链，根据业务类型、金额、部门和预算状态动态选择审批节点，并支持退回、撤回、转交、催办、超时与完整审计。",
+  "desired_product_form": ["Web 管理系统", "响应式移动 Web", "企业内部消息集成"],
+  "budget": {
+    "available": true,
+    "range_cny": {"min": 240000, "max": 450000},
+    "confidence": "tentative",
+    "note": "预算为立项参考，不是最终报价。"
+  },
+  "schedule": {
+    "desired_start": "2026-10-15",
+    "desired_go_live": "2027-02-28",
+    "flexibility": "可按流程范围和集成复杂度调整"
+  },
+  "output_preferences": {
+    "primary_audience": "业务部门负责人、财务负责人和信息化负责人",
+    "language": "zh-CN",
+    "packages": ["内部评审包", "实施交接包"],
+    "template_files": []
+  },
+  "constraints": [
+    "金额阈值必须以审批矩阵为确定性来源",
+    "角色称谓差异按角色映射归并",
+    "一期不包含合同电子签署、银企直连和自动付款",
+    "未经授权不得向第三方平台发送数据"
+  ]
+}

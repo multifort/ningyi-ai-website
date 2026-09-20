@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/artifact-repository/v1.json",
+  "title": "Ningyi Artifact Repository V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "projectId", "activePublishedContentVersionId", "contentVersions", "templateVersions", "renderVersions", "packages"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "projectId": {"type": "string", "minLength": 1},
+    "activePublishedContentVersionId": {"type": ["string", "null"], "format": "uuid"},
+    "contentVersions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "versionNo", "parentVersionId", "status", "runId", "semanticManifest", "manifestHash"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "versionNo": {"type": "integer", "minimum": 1},
+          "parentVersionId": {"type": ["string", "null"], "format": "uuid"},
+          "status": {"enum": ["candidate", "published", "archived", "rejected"]},
+          "runId": {"type": "string", "format": "uuid"},
+          "semanticManifest": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+          "manifestHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "templateVersions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "templateKey", "versionNo", "contentHash"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "templateKey": {"type": "string", "minLength": 1},
+          "versionNo": {"type": "integer", "minimum": 1},
+          "contentHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "renderVersions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "contentVersionId", "renderNo", "templateVersionId", "rendererVersion", "modelCalls", "status", "artifacts"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "contentVersionId": {"type": "string", "format": "uuid"},
+          "renderNo": {"type": "integer", "minimum": 1},
+          "templateVersionId": {"type": "string", "format": "uuid"},
+          "rendererVersion": {"type": "string", "minLength": 1},
+          "modelCalls": {"const": 0},
+          "status": {"enum": ["candidate", "available", "failed", "archived"]},
+          "artifacts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "#/$defs/artifact"}
+          }
+        }
+      }
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "contentVersionId", "packageType", "artifactIds", "manifestHash", "modelCalls", "status"],
+        "properties": {
+          "id": {"type": "string", "format": "uuid"},
+          "contentVersionId": {"type": "string", "format": "uuid"},
+          "packageType": {"enum": ["client", "internal", "archive"]},
+          "artifactIds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "format": "uuid"}},
+          "manifestHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "modelCalls": {"const": 0},
+          "status": {"enum": ["available", "failed", "archived"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "deliverable", "format", "objectKey", "sha256", "sizeBytes", "visibility"],
+      "properties": {
+        "id": {"type": "string", "format": "uuid"},
+        "deliverable": {"type": "string", "minLength": 1},
+        "format": {"type": "string", "minLength": 1},
+        "objectKey": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "sizeBytes": {"type": "integer", "minimum": 0},
+        "visibility": {"enum": ["client", "internal", "both"]}
+      }
+    }
+  }
+}

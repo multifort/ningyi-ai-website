@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/file-validation/v1.json",
+  "title": "Ningyi File Validation V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "fileId", "category", "displayName", "status", "detectedFormat", "safeToParse", "errors", "warnings", "resourceProfile", "recommendedAction"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "fileId": {"type": "string", "format": "uuid"},
+    "category": {"enum": ["content", "template", "brand"]},
+    "displayName": {"type": "string", "minLength": 1},
+    "status": {"enum": ["accepted", "rejected"]},
+    "detectedFormat": {"enum": ["docx", "xlsx", "pptx", "pdf", "png", "jpeg", "encrypted_office", "zip", "unknown"]},
+    "safeToParse": {"type": "boolean"},
+    "errors": {"type": "array", "uniqueItems": true, "items": {"enum": ["EMPTY_FILE", "FILE_TOO_LARGE", "TYPE_MISMATCH", "CATEGORY_NOT_ALLOWED", "PASSWORD_PROTECTED", "MACRO_ENABLED", "ZIP_BOMB_RISK", "CORRUPT_ARCHIVE", "UNSUPPORTED_TYPE"]}},
+    "warnings": {"type": "array", "uniqueItems": true, "items": {"enum": ["ACTIVE_CONTENT_REMOVED", "DEFAULT_TEMPLATE_FALLBACK"]}},
+    "resourceProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sizeBytes", "archiveEntries", "uncompressedBytes", "compressionRatio"],
+      "properties": {
+        "sizeBytes": {"type": "integer", "minimum": 0},
+        "archiveEntries": {"type": "integer", "minimum": 0},
+        "uncompressedBytes": {"type": "integer", "minimum": 0},
+        "compressionRatio": {"type": "number", "minimum": 0}
+      }
+    },
+    "recommendedAction": {"enum": ["parse", "replace_file", "upload_unencrypted", "use_default_template", "remove_or_convert"]}
+  }
+}

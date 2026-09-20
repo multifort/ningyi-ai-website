@@ -121,7 +121,7 @@ export default function SolutionsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">解决方案管理</h1>
+        <h1 className="text-3xl font-bold text-primary">适用团队管理</h1>
         <button
           onClick={() => {
             setShowForm(true);
@@ -130,14 +130,14 @@ export default function SolutionsPage() {
           }}
           className="px-6 py-3 bg-accent1 text-white rounded-lg hover:bg-accent1/90 transition-all"
         >
-          + 新增解决方案
+          + 新增适用团队
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-xl font-semibold text-primary mb-4">
-            {editingId ? "编辑解决方案" : "新增解决方案"}
+            {editingId ? "编辑适用团队" : "新增适用团队"}
           </h2>
           
           {/* Tab 切换 */}

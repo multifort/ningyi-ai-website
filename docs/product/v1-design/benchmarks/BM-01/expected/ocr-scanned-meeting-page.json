@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "sourcePath": "sources/scanned-meeting-page.pdf",
+  "derivedFromSourcePath": "sources/meeting-notes.pdf",
+  "engine": {"name": "bm01-ocr-fixture", "version": "1.0"},
+  "pages": [
+    {
+      "page": 1,
+      "width": 1240,
+      "height": 1754,
+      "regions": [
+        {"id": "r001", "text": "CRM 一期需求评审会议纪要", "bbox": [0.267995, 0.07484, 0.732005, 0.099351], "confidence": 0.99, "kind": "heading"},
+        {"id": "r002", "text": "会议时间 2026-07-22 14:00-15:40；会议形式 线上会议", "bbox": [0.094114, 0.168159, 0.662098, 0.177852], "confidence": 0.97, "kind": "table"},
+        {"id": "r003", "text": "参会角色：销售运营、销售经理、信息安全；纪要状态：待确认", "bbox": [0.094114, 0.220422, 0.647483, 0.230115], "confidence": 0.96, "kind": "table"},
+        {"id": "r004", "text": "财务总账、应收应付和法定财务报表不纳入一期；销售与财务只预留后续集成边界。", "bbox": [0.102937, 0.419134, 0.759103, 0.430609], "confidence": 0.95, "kind": "paragraph"},
+        {"id": "r005", "text": "区域销售经理提出：销售代表可以维护商机，但不能直接将商机置为赢单或输单。关闭操作只允许销售经理执行。", "bbox": [0.095794, 0.5991, 0.897473, 0.62958], "confidence": 0.94, "kind": "paragraph"},
+        {"id": "r006", "text": "冲突提示：该决定与需求说明书 CRM-F-005 销售代表可以关闭本人商机的描述不一致。", "bbox": [0.095794, 0.645527, 0.894608, 0.657003], "confidence": 0.84, "kind": "paragraph"},
+        {"id": "r007", "text": "必须将其识别为显式冲突，并给出至少两种可选处理方向，不能静默选边。", "bbox": [0.095794, 0.664532, 0.614881, 0.676008], "confidence": 0.96, "kind": "paragraph"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "benchmark_id": "BM-06",
+  "facts": [
+    {"id": "KF-01", "fact": "2万元以下可由采购专员询价；2万至10万元至少两家报价；10万元及以上至少三家有效报价", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-02", "fact": "唯一原厂、专利授权和突发停线抢修可申请单一来源，但需原因佐证及采购、财务共同审批", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-03", "fact": "申请人不得审批本人申请，采购经办人不得担任同一事项最终验收人", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-04", "fact": "ERP 是订单编号、数量和金额主数据来源；平台不触发付款", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-05", "fact": "资质到期前30日提醒；到期后供应商不得参加新询价定标，但历史记录保留", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-06", "fact": "质量、交付、服务、合规评分权重为40%、30%、20%、10%；低于60分整改复评，不自动淘汰", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"},
+    {"id": "KF-07", "fact": "紧急采购2个工作日内补齐材料和审批记录，事后仍须审计", "source": "sources/procurement-policy.pdf; sources/procurement-policy.txt"}
+  ]
+}

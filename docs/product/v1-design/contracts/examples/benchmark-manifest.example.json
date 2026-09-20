@@ -1,0 +1,36 @@
+{
+  "benchmarkId": "BM-01",
+  "benchmarkVersion": "1.0",
+  "title": "中型企业 CRM",
+  "projectType": "software",
+  "difficulty": "L1",
+  "files": [
+    {
+      "path": "sources/requirements.docx",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    }
+  ],
+  "coverageTags": [
+    "docx",
+    "csv",
+    "requirements",
+    "traceability",
+    "minimal-complete-flow"
+  ],
+  "expectedScale": {
+    "requirements": { "min": 50, "max": 80 },
+    "features": { "min": 30, "max": 60 },
+    "solutionCharacters": { "min": 18000, "max": 26000 },
+    "slideCount": { "min": 12, "max": 15 }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "no-cross-project-data",
+    "critical-facts-traceable",
+    "deterministic-values-consistent",
+    "office-files-open"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "50000000-0000-4000-8000-000000000001",
+  "benchmarkId": "BM-01",
+  "benchmarkVersion": "1.0",
+  "repeatIndex": 1,
+  "randomSeed": 20260817,
+  "candidate": {
+    "slot": "FORMAL_ANALYSIS_MODEL",
+    "provider": "candidate-provider",
+    "modelId": "candidate-model",
+    "modelVersion": "2026-08-01",
+    "promptVersion": "formal-analysis-v1",
+    "parserVersion": "source-parser-v1"
+  },
+  "startedAt": "2026-08-17T01:00:00Z",
+  "finishedAt": "2026-08-17T01:08:30Z",
+  "status": "passed",
+  "usage": {
+    "inputTokens": 18500,
+    "outputTokens": 7200,
+    "cachedTokens": 9000,
+    "imagePages": 0,
+    "ocrPages": 0,
+    "estimatedCostCny": 8.42,
+    "billedCostCny": null
+  },
+  "stageTimingsMs": {
+    "parse": 28000,
+    "formal_analysis": 402000,
+    "validation": 80000
+  },
+  "scores": {
+    "dimensions": [
+      {"id": "project_understanding", "raw": 95, "weight": 0.2, "weighted": 19, "evidence": ["F-01..F-08"]},
+      {"id": "requirements_features", "raw": 90, "weight": 0.2, "weighted": 18, "evidence": ["REQ/FUN relation report"]},
+      {"id": "conflicts_scope", "raw": 100, "weight": 0.15, "weighted": 15, "evidence": ["CONFLICT-001"]},
+      {"id": "deterministic_data", "raw": 92, "weight": 0.1, "weighted": 9.2, "evidence": ["deterministic checks"]},
+      {"id": "traceability", "raw": 96, "weight": 0.15, "weighted": 14.4, "evidence": ["source refs"]},
+      {"id": "deliverable_quality", "raw": 88, "weight": 0.15, "weighted": 13.2, "evidence": ["quality report"]},
+      {"id": "runtime_cost", "raw": 80, "weight": 0.05, "weighted": 4, "evidence": ["usage ledger"]}
+    ],
+    "total": 92.8
+  },
+  "blockingChecks": [
+    {"id": "all_manifest_hashes_match", "passed": true, "evidence": "preflight.json"},
+    {"id": "opportunity_close_permission_conflict_detected", "passed": true, "evidence": "CONFLICT-001"},
+    {"id": "no_prohibited_claims", "passed": true, "evidence": "claim-scan.json"}
+  ],
+  "artifacts": [
+    {"kind": "project_model", "path": "runs/example/project-model.json", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+  ],
+  "error": null
+}

@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-02",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.15,
+    "requirements_features": 0.15,
+    "conflicts_scope": 0.15,
+    "deterministic_data": 0.2,
+    "traceability": 0.15,
+    "deliverable_quality": 0.15,
+    "runtime_cost": 0.05
+  }
+}

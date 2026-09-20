@@ -1,0 +1,19 @@
+{
+  "benchmark_id": "BM-03",
+  "source_of_truth": "sources/sales-targets.xlsx",
+  "values": [
+    {"id": "DV-01", "metric": "拜访记录当日提交率", "current": 0.62, "target": 0.9, "display_unit": "%"},
+    {"id": "DV-02", "metric": "销售重复录入时间", "current": 45, "target": 15, "display_unit": "分钟/人/天"},
+    {"id": "DV-03", "metric": "线索转商机信息完整率", "current": 0.71, "target": 0.95, "display_unit": "%"},
+    {"id": "DV-04", "metric": "区域经理周报准备时间", "current": 180, "target": 30, "display_unit": "分钟/周"},
+    {"id": "DV-05", "metric": "离线记录同步成功率", "current": null, "target": 0.99, "display_unit": "%", "note": "当前值尚未建立基线，不得写成 0"},
+    {"id": "DV-06", "metric": "客户归属变更审计覆盖率", "current": 0.4, "target": 1, "display_unit": "%"}
+  ],
+  "opportunity_stage_probabilities": [
+    {"stage": "需求确认", "probability": 0.1},
+    {"stage": "方案交流", "probability": 0.3},
+    {"stage": "商务谈判", "probability": 0.6},
+    {"stage": "赢单", "probability": 1},
+    {"stage": "输单", "probability": 0}
+  ]
+}

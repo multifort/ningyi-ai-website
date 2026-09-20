@@ -1,0 +1,11 @@
+{
+  "benchmark_id": "BM-06",
+  "relations": [
+    {"from": "采购申请金额", "relation": "决定", "to": "有效报价家数门槛", "required_detail": "2万元和10万元分界，单一来源例外须共同审批"},
+    {"from": "申请人", "relation": "不得承担", "to": "本人申请审批", "required_detail": "采购经办人也不得担任同一事项最终验收人"},
+    {"from": "供应商证照到期", "relation": "触发", "to": "提醒与资质待更新", "required_detail": "提前30日提醒，到期后禁止新询价定标但保留历史记录"},
+    {"from": "履约评分低于60分", "relation": "触发", "to": "整改观察及复评", "required_detail": "不得自动淘汰或删除供应商"},
+    {"from": "采购审批结果", "relation": "关联", "to": "ERP采购订单", "required_detail": "ERP保留订单主数据，平台不得执行付款"},
+    {"from": "紧急停线采购", "relation": "要求", "to": "2个工作日内补齐材料", "required_detail": "不免除事后审计"}
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "benchmark_id": "BM-02",
+  "minimum_structured_items": {
+    "requirement": 8,
+    "feature": 8,
+    "phase": 2,
+    "risk": 2
+  },
+  "maximum_runtime_seconds": 1800,
+  "required_patterns": [
+    {"id": "dynamic_approval", "patterns": ["动态审批|动态.{0,6}审批", "金额|额度", "业务类型|流程类型"]},
+    {"id": "budget_block", "patterns": ["预算不足|预算超额", "不得继续流转|阻断|拦截"]},
+    {"id": "return_reason", "patterns": ["退回", "原因"]},
+    {"id": "exception_paths", "patterns": ["撤回", "转交", "催办", "超时"]},
+    {"id": "phase_one_boundary", "patterns": ["不包括|不包含", "电子签署", "银企直连", "自动付款"]},
+    {"id": "role_normalization", "patterns": ["部门主管", "采购经理|采购负责人", "分管副总|分管领导"]}
+  ],
+  "prohibited_commitment_patterns": [
+    {"id": "electronic_signature_committed", "pattern": "一期.{0,16}(?<!不)(包含|支持|交付).{0,10}合同电子签署"},
+    {"id": "bank_integration_committed", "pattern": "一期.{0,16}(?<!不)(包含|支持|交付).{0,10}银企直连"},
+    {"id": "auto_payment_committed", "pattern": "一期.{0,16}(?<!不)(包含|支持|交付).{0,10}自动付款"}
+  ]
+}

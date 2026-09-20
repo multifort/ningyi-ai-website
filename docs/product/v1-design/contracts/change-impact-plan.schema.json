@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/change-impact-plan/v1.json",
+  "title": "Ningyi Change Impact Plan V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "actionClass", "directTargets", "impactedTargets", "conflicts", "unaffectedTargets", "modelTaskCount"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "actionClass": {"enum": ["R", "C", "S", "P"]},
+    "directTargets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "impactedTargets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "action", "reasonPath"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "action": {"enum": ["rebuild_project_model", "generate", "calculate", "check", "render"]},
+          "reasonPath": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lockedTarget", "blockedPath", "code"],
+        "properties": {
+          "lockedTarget": {"type": "string"},
+          "blockedPath": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "code": {"const": "LOCKED_TARGET_CONFLICT"}
+        }
+      }
+    },
+    "unaffectedTargets": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "modelTaskCount": {"type": "integer", "minimum": 0}
+  }
+}

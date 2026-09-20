@@ -1,0 +1,1 @@
+{"benchmark_id":"BM-05","pass_score":95,"weights":{"project_understanding":0.14,"requirements_features":0.14,"deterministic_data":0.22,"customer_conflict_rules":0.14,"scope_boundary":0.12,"traceability":0.12,"deliverable_quality":0.08,"runtime_cost":0.04}}

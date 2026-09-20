@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ningyi-ai.com/schemas/model-routing-policy/v1.json",
+  "title": "Ningyi Model Routing Policy V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "currency", "slots", "taskRules"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "currency": {"const": "weighted_token_unit"},
+    "slots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "modality", "qualityTier", "maxInputTokens", "maxOutputTokens", "inputWeight", "outputWeight", "providerBinding"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "modality": {"enum": ["none", "text", "vision"]},
+          "qualityTier": {"enum": ["deterministic", "economy", "quality"]},
+          "maxInputTokens": {"type": "integer", "minimum": 0},
+          "maxOutputTokens": {"type": "integer", "minimum": 0},
+          "inputWeight": {"type": "number", "minimum": 0},
+          "outputWeight": {"type": "number", "minimum": 0},
+          "providerBinding": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "taskRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["free_analysis", "formal_analysis", "section_generation", "revision", "quality_review", "vision_low_cost", "vision_premium", "deterministic_text", "ocr_standard"],
+      "properties": {
+        "free_analysis": {"type": "string"},
+        "formal_analysis": {"type": "string"},
+        "section_generation": {"type": "string"},
+        "revision": {"type": "string"},
+        "quality_review": {"type": "string"},
+        "vision_low_cost": {"type": "string"},
+        "vision_premium": {"type": "string"},
+        "deterministic_text": {"type": "string"},
+        "ocr_standard": {"type": "string"}
+      }
+    }
+  }
+}

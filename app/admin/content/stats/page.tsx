@@ -62,7 +62,7 @@ export default function StatsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">价值数据管理</h1>
+        <h1 className="text-3xl font-bold text-primary">核心价值管理</h1>
         <button
           onClick={handleSave}
           disabled={saving}

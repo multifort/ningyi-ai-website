@@ -16,18 +16,16 @@ export default function Page() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "宁翼智能科技",
-    "alternateName": "NingYi AI",
+    "alternateName": "NingYi Technology",
     "url": "https://www.ningyi-ai.com",
     "logo": "https://www.ningyi-ai.com/images/logo.png",
-    "description": "宁翼智能科技提供企业级 AI 管家系统，通过多 Agent 协同和 Skill 执行平台，让企业拥有一支可管理、可执行、可进化的 AI 员工团队",
-    "foundingDate": "2024",
+    "description": "宁翼智能科技提供企业项目方案与成果智能交付服务，把零散项目材料转化为需求、方案、估算、报价、实施和汇报成果。",
     "areaServed": "CN",
     "industry": "Software Development",
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
       "email": "contact@ningyi-ai.com",
-      "telephone": "400-xxx-xxxx",
       "areaServed": "CN",
       "availableLanguage": ["Chinese"]
     }
@@ -40,7 +38,7 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
-      <main className="pt-20">
+      <main>
         <HeroSection />
         <ValueNumber />
         <DemoShowcase />

@@ -1,0 +1,125 @@
+{
+  "benchmarkId": "BM-04",
+  "benchmarkVersion": "1.0",
+  "title": "客户服务小程序整体解决方案",
+  "projectType": "software",
+  "difficulty": "L2",
+  "files": [
+    {
+      "path": "intake.json",
+      "sha256": "4cb8d4e9699f7496705fd6046fedd65bc8e9b627ad17cfd8bbb83a87cd330470",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/customer-service-rules.docx",
+      "sha256": "8b004f72786600683cb9135af3ce00f783f8eed986a07416aa51677a2b87b940",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/service-chat-log.txt",
+      "sha256": "76c9ffbb5d38c05c60c8bcb4532b4de5f6b946733e30ceb06380f2a20db52e63",
+      "category": "content",
+      "format": "txt",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/current-service-mini-program.png",
+      "sha256": "460bb4b093da27fe62eb0f111a63c51a3b42fddd17822e083286eb36e3437413",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "dde986749c5f1c79fbe9556ff5d632b8c90e64e08153097fc885c2d96974cf1f",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "e735531c916641642dbb221211c48502d0bc03430ec3c7e45d3535ac11a4b94f",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "4d4d71dc812d7c250c14fb6d570362e9aff26d9a014c2516ee25d9de56ea2092",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "68e154aae3a33e993422eb1efc8669c80a9daeb991319466e27af2c5ef902908",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "7e8731f91b2bb60365b1f8d03a54ba4f585888551abf30a879acbab86c0949d9",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "71b513b492315dea1f705a959a61ef1fc2c999e1076aa66f3b35a1010183a160",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    }
+  ],
+  "coverageTags": [
+    "structured_intake",
+    "txt",
+    "docx",
+    "image",
+    "mini_program",
+    "chat_log",
+    "priority_sla",
+    "human_handoff",
+    "privacy_boundary",
+    "duplicate_detection",
+    "scope_boundary",
+    "source_traceability",
+    "multi_format_ingestion"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 10,
+      "max": 28
+    },
+    "features": {
+      "min": 10,
+      "max": 32
+    },
+    "solutionCharacters": {
+      "min": 11000,
+      "max": 30000
+    },
+    "slideCount": {
+      "min": 11,
+      "max": 24
+    }
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "priority_sla_values_preserved",
+    "bot_response_not_counted_as_human",
+    "waiting_for_customer_does_not_pause_timer",
+    "human_escalation_triggers_present",
+    "duplicate_ticket_not_auto_merged",
+    "attachment_and_privacy_limits_preserved",
+    "phase_one_exclusions_preserved",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs"
+  ]
+}

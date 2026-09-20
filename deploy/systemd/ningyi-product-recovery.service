@@ -1,0 +1,7 @@
+[Unit]
+Description=Recover Ningyi product services after failed health check
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl try-restart ningyi-web.service
+ExecStart=/usr/bin/systemctl restart ningyi-product-worker.service

@@ -1,0 +1,220 @@
+{
+  "schemaVersion": "1.0",
+  "projectId": "10000000-0000-4000-8000-000000000001",
+  "snapshotId": "10000000-0000-4000-8000-000000000002",
+  "projectType": "software",
+  "identity": {
+    "displayName": "华东制造销售管理平台",
+    "customerName": "华东制造",
+    "industry": "制造业",
+    "primaryPurpose": "客户沟通",
+    "secondaryPurposes": ["估算报价"],
+    "productShapes": ["web_admin"]
+  },
+  "goals": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "key": "GOAL-001",
+      "title": "统一销售过程",
+      "description": "统一客户、商机、跟进和预测口径。",
+      "confidence": "user_confirmed",
+      "visibility": "both",
+      "locked": true,
+      "sourceRefs": [
+        {
+          "kind": "user_decision",
+          "refId": "30000000-0000-4000-8000-000000000001",
+          "role": "supports"
+        }
+      ],
+      "tags": ["sales"]
+    }
+  ],
+  "scope": {
+    "included": [
+      {
+        "id": "20000000-0000-4000-8000-000000000002",
+        "key": "SCOPE-001",
+        "title": "销售管理",
+        "description": "客户、联系人、商机和跟进管理。",
+        "confidence": "multi_source",
+        "visibility": "both",
+        "locked": false,
+        "sourceRefs": [
+          {
+            "kind": "source_block",
+            "refId": "30000000-0000-4000-8000-000000000002",
+            "role": "supports"
+          }
+        ],
+        "tags": []
+      }
+    ],
+    "excluded": [
+      {
+        "id": "20000000-0000-4000-8000-000000000003",
+        "key": "SCOPE-002",
+        "title": "财务核算",
+        "description": "财务总账继续使用现有 ERP。",
+        "confidence": "single_source",
+        "visibility": "both",
+        "locked": false,
+        "sourceRefs": [
+          {
+            "kind": "source_block",
+            "refId": "30000000-0000-4000-8000-000000000003",
+            "role": "supports"
+          }
+        ],
+        "tags": []
+      }
+    ],
+    "future": []
+  },
+  "actors": [
+    {
+      "id": "20000000-0000-4000-8000-000000000004",
+      "key": "ACTOR-001",
+      "title": "销售代表",
+      "description": "维护客户、商机和跟进记录。",
+      "confidence": "multi_source",
+      "visibility": "both",
+      "locked": false,
+      "sourceRefs": [
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000004",
+          "role": "supports"
+        }
+      ],
+      "tags": []
+    }
+  ],
+  "scenarios": [],
+  "requirements": [
+    {
+      "id": "20000000-0000-4000-8000-000000000005",
+      "key": "REQ-001",
+      "title": "创建商机",
+      "description": "销售代表可以为客户创建商机并记录预计金额和阶段。",
+      "confidence": "multi_source",
+      "visibility": "both",
+      "locked": false,
+      "sourceRefs": [
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000005",
+          "role": "supports"
+        }
+      ],
+      "tags": ["opportunity"],
+      "priority": "must",
+      "acceptanceCriteria": [
+        "必填字段完整时可以保存商机",
+        "预计金额必须为非负数"
+      ],
+      "requirementType": "functional"
+    }
+  ],
+  "features": [
+    {
+      "id": "20000000-0000-4000-8000-000000000006",
+      "key": "FUN-001",
+      "title": "商机基本信息",
+      "description": "创建、查看和修改商机基本信息。",
+      "confidence": "system_proposed",
+      "visibility": "both",
+      "locked": false,
+      "sourceRefs": [
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000005",
+          "role": "supports"
+        }
+      ],
+      "tags": ["opportunity"],
+      "systemKey": "SYS-001",
+      "moduleKey": "MOD-001",
+      "complexity": "low",
+      "inputs": ["客户", "商机名称", "预计金额", "商机阶段"],
+      "outputs": ["商机记录"],
+      "rules": ["预计金额不得小于零"]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "20000000-0000-4000-8000-000000000007",
+      "key": "CONSTRAINT-001",
+      "title": "沿用现有单点登录",
+      "description": "销售管理平台需要接入企业现有单点登录。",
+      "confidence": "single_source",
+      "visibility": "both",
+      "locked": false,
+      "sourceRefs": [
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000006",
+          "role": "supports"
+        }
+      ],
+      "tags": ["integration", "security"]
+    }
+  ],
+  "integrations": [],
+  "dataEntities": [],
+  "agentCapabilities": [],
+  "terms": [
+    {
+      "term": "商机",
+      "definition": "已经识别并进入跟进过程的潜在销售机会。",
+      "aliases": ["销售机会"],
+      "locked": true
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "20000000-0000-4000-8000-000000000008",
+      "key": "ASSUMPTION-001",
+      "description": "首期只建设 Web 管理端。",
+      "impact": "medium",
+      "status": "active",
+      "validationMethod": "在项目理解页由用户确认"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "20000000-0000-4000-8000-000000000009",
+      "key": "CONFLICT-001",
+      "summary": "两份材料对商机关闭权限的描述不一致。",
+      "severity": "direction_blocking",
+      "status": "open",
+      "evidenceRefs": [
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000007",
+          "role": "supports"
+        },
+        {
+          "kind": "source_block",
+          "refId": "30000000-0000-4000-8000-000000000008",
+          "role": "contradicts"
+        }
+      ],
+      "resolution": null
+    }
+  ],
+  "relations": [
+    {
+      "from": "REQ-001",
+      "to": "FUN-001",
+      "type": "implemented_by",
+      "strength": "required",
+      "rationale": "商机基本信息功能实现创建商机需求。"
+    }
+  ],
+  "metrics": {
+    "requirementCount": 1,
+    "featureCount": 1,
+    "openConflictCount": 1
+  }
+}

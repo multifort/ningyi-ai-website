@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-01",
+  "version": "1.0",
+  "relations": [
+    {"from": "CRM-F-005", "type": "conflicts_with", "to": "meeting-notes:3.1"},
+    {"from": "CRM-F-002", "type": "duplicates_semantics_of", "to": "CRM-F-011"},
+    {"from": "CRM-F-012", "type": "outside_scope_of", "to": "phase-1"},
+    {"from": "customer-sample:C0002", "type": "possible_duplicate_of", "to": "customer-sample:C0001"},
+    {"from": "customer-sample:C0007", "type": "possible_duplicate_of", "to": "customer-sample:C0001"},
+    {"from": "intake:primary_goal", "type": "drives", "to": "客户沟通包"},
+    {"from": "intake:secondary_goal", "type": "drives", "to": "实施交接包"}
+  ]
+}

@@ -1,97 +1,108 @@
-"use client"
-import { useEffect, useState } from "react";
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const links = [
+  { name: "能交付什么", href: "/#value", id: "value" },
+  { name: "如何形成", href: "/#demo", id: "demo" },
+  { name: "如何保障", href: "/#capability", id: "capability" },
+  { name: "适合哪些团队", href: "/#solution", id: "solution" },
+  { name: "交付成果", href: "/#case", id: "case" },
+];
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('');
-
-  const links = [
-    { name: "首页", href: "/" },
-    { name: "核心价值", href: "/value" },
-    { name: "Demo 展示", href: "/demo" },
-    { name: "产品能力", href: "/capability" },
-    { name: "行业场景", href: "/solution" },
-    { name: "成功案例", href: "/case" },
-    { name: "联系我们", href: "/cta" },
-  ];
+  const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const sections = links
+      .map((link) => document.getElementById(link.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveSection(visible.target.id);
+      },
+      { rootMargin: "-25% 0px -60% 0px", threshold: [0.05, 0.25] }
+    );
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
-  const handleClick = (href: string) => {
-    // 如果是锚点链接（在当前页面），使用平滑滚动
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        const headerOffset = 80;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        });
-        setIsMobileMenuOpen(false);
-      }
-    }
-    // 否则让 Link 组件处理页面跳转
-  };
+  const solidHeader = isScrolled || isMobileMenuOpen;
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${
+        solidHeader
+          ? "border-slate-200/80 bg-white/95 shadow-[0_8px_32px_rgba(7,27,51,0.08)] backdrop-blur-xl"
+          : "border-white/10 bg-primary/20 backdrop-blur-sm"
+      }`}
     >
-      <div className="w-full px-4 md:px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center">
+      <div className="section-shell flex h-[76px] items-center justify-between">
+        <Link href="/#hero" aria-label="返回宁翼智能科技首页" className="relative z-10 flex items-center">
           <Image
-            src="/images/logo.png"
+            src={solidHeader ? "/images/logo.png" : "/images/logo-white.png"}
             alt="宁翼智能科技"
-            width={140}
-            height={40}
-            className="object-contain"
+            width={154}
+            height={44}
+            className="h-10 w-auto object-contain"
             priority
           />
-        </div>
-        
-        {/* 桌面导航 */}
-        <nav className="hidden md:flex space-x-6">
+        </Link>
+
+        <nav aria-label="主导航" className="hidden items-center gap-7 lg:flex">
           {links.map((link) => (
-            <Link 
-              key={link.href} 
+            <Link
+              key={link.id}
               href={link.href}
-              className={`text-sm md:text-base font-medium transition-all duration-300 ${
-                activeSection === link.href 
-                  ? 'text-accent1 font-semibold'
-                  : 'text-primary hover:text-accent1'
+              className={`relative py-2 text-sm font-medium transition-colors ${
+                activeSection === link.id
+                  ? "text-accent1"
+                  : solidHeader
+                    ? "text-slate-600 hover:text-primary"
+                    : "text-white/75 hover:text-white"
               }`}
             >
               {link.name}
+              {activeSection === link.id && (
+                <span className="absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-accent1" />
+              )}
             </Link>
           ))}
         </nav>
-        
-        {/* 桌面按钮 */}
-        <div className="hidden md:flex space-x-3 ml-8">
-          <button className="px-4 py-1.5 rounded-full bg-accent1 text-white text-sm font-semibold hover:bg-accent1/90 transition-all duration-300 shadow-md">立即体验 Demo</button>
-          <button className="px-4 py-1.5 rounded-full border border-accent1 text-accent1 text-sm font-semibold hover:bg-accent1/10 transition-all duration-300">预约专属演示</button>
+
+        <div className="hidden items-center gap-3 lg:flex">
+          <Link href="/product" className={`rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${solidHeader ? "text-primary hover:bg-slate-100" : "text-white hover:bg-white/10"}`}>我的成果</Link>
+          <Link
+            href="/product/start"
+            className="rounded-full bg-accent1 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(31,111,255,0.28)] transition hover:-translate-y-0.5 hover:bg-blue-600"
+          >
+            开启你的定制之旅
+          </Link>
         </div>
-        
-        {/* 移动端汉堡菜单按钮 */}
-        <button 
-          className="md:hidden p-2 text-primary"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="切换菜单"
+
+        <button
+          type="button"
+          className={`rounded-lg p-2 lg:hidden ${solidHeader ? "text-primary" : "text-white"}`}
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          aria-label={isMobileMenuOpen ? "关闭导航菜单" : "打开导航菜单"}
+          aria-expanded={isMobileMenuOpen}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             {isMobileMenuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -100,28 +111,34 @@ export default function Header() {
           </svg>
         </button>
       </div>
-      
-      {/* 移动端菜单 */}
+
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
-          <nav className="flex flex-col py-4">
+        <div className="border-t border-slate-200 bg-white px-4 pb-5 pt-3 lg:hidden">
+          <nav className="mx-auto flex max-w-lg flex-col" aria-label="移动端导航">
             {links.map((link) => (
               <Link
-                key={link.href}
+                key={link.id}
                 href={link.href}
-                className={`px-6 py-3 transition-all duration-200 ${
-                  activeSection === link.href
-                    ? 'bg-accent1/10 text-accent1 font-semibold border-l-4 border-accent1'
-                    : 'text-primary hover:bg-gray-50'
-                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="border-b border-slate-100 px-3 py-3.5 text-sm font-medium text-slate-700"
               >
                 {link.name}
               </Link>
             ))}
-            <div className="flex flex-col space-y-3 px-6 pt-4 mt-2 border-t border-gray-100">
-              <button className="w-full px-4 py-2 rounded-full bg-accent1 text-white text-sm font-semibold hover:bg-accent1/90 transition-all duration-300 shadow-md">立即体验 Demo</button>
-              <button className="w-full px-4 py-2 rounded-full border border-accent1 text-accent1 text-sm font-semibold hover:bg-accent1/10 transition-all duration-300">预约专属演示</button>
-            </div>
+            <Link
+              href="/product"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="border-b border-slate-100 px-3 py-3.5 text-sm font-medium text-slate-700"
+            >
+              我的成果
+            </Link>
+            <Link
+              href="/product/start"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="mt-4 rounded-xl bg-accent1 px-5 py-3 text-center text-sm font-semibold text-white"
+            >
+              开启你的定制之旅
+            </Link>
           </nav>
         </div>
       )}

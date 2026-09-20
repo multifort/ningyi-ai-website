@@ -102,7 +102,7 @@ export default function CasesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">案例研究管理</h1>
+        <h1 className="text-3xl font-bold text-primary">交付成果管理</h1>
         <button
           onClick={() => {
             setShowForm(true);

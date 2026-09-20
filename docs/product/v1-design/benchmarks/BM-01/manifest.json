@@ -1,0 +1,195 @@
+{
+  "benchmarkId": "BM-01",
+  "benchmarkVersion": "1.0",
+  "title": "中型制造企业 CRM 一期方案",
+  "projectType": "software",
+  "difficulty": "L1",
+  "files": [
+    {
+      "path": "intake.json",
+      "sha256": "1a7123bd9785bc2a27d0af040d59641893c62885bdb09c09baa5ff7326f98f6b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/requirements.docx",
+      "sha256": "2cd43dea0270fcac2fe570a67845fa44233a78bb410ecd9c5d835eb68108d09f",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/meeting-notes.pdf",
+      "sha256": "d1ccf0476b43b415242cf9fc82a0cfe41ba0bf62ea2e72726c618ae62853879a",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/scanned-meeting-page.pdf",
+      "sha256": "60a2c0caa5940f51bebab534723db43846a5a14776cd79d7ff39bae7f96d1806",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/customer-sample.xlsx",
+      "sha256": "1f04b0f7362e9dfb594f2e7b6fd456061604b2b5c47a5925489712e9f13e220a",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/company-template.pptx",
+      "sha256": "3f3420dbc18ab75e1f726ed11909948f836cfd348ecdc1ec1004b1b83a77f9a5",
+      "category": "template",
+      "format": "pptx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "b1f0414ddf174cd339b08511eea8826fea714eb69587606bdbec965a5b14c85b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "e89bc6de140e6570dda24793c094420c15d7ffe176b8ada6136b51b8df02b947",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "5672d737118c6d69b0881529c967a57b09c96df0cbe2affc08eb46e9204fb149",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "4f536cd2c4625f5cb0d8054286eacdc38daca0063273a0beadd4bd3fec2bee7d",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "6d8fcb9774660131d3ecdd799ba015c049c3566c55f7685c3f469cb748eecc9a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/project-model.json",
+      "sha256": "d3e0e5c3d9bdbb5ac363be45f3813c0b7eb6f4a0c32f26cfaa36573a719da50f",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/source-block-index.json",
+      "sha256": "0fe131fee540d0395e2e98ae25bf0d50186f76e40efa8f50131f42a970524888",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/ocr-scanned-meeting-page.json",
+      "sha256": "61ff7b88ca8b04a20afd7f7e54ae807829ad800bce56a5ff7972a41759358735",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/solution-outline.json",
+      "sha256": "0ad16f379e77cf75ba46c24fc4e658d378f6ac89dd58a461b13395d148542753",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/section-draft-permission.json",
+      "sha256": "45d8c8a8570d96ceb3e002f13323c4414900849f4135b5cc15763a0315488da5",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/model-routing-policy.json",
+      "sha256": "a7f7b4ba2d6fbfe1b867f8d9474ed84505c506374d1d4c91e44141cee93564d8",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deliverable-generation-catalog.json",
+      "sha256": "4fc501c3c79ea25bbc698b7d45e051dd1dbcc7f7e1311026b6d4d43be663924a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/change-impact-graph.json",
+      "sha256": "ec91e5368a015d0fb68e6e265da76fb251e61e5b37c2627e1e16ca0f14404cd9",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/operations-policy.json",
+      "sha256": "347ae383ea0a41361a1f7bea25d6f6c0774666f4ad5922bbf53079e22e1ffb1b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/product-api-catalog.json",
+      "sha256": "d18d47d3c45aad9c91a51576c653ae50320d618e8e94d9b7af669cf4592f6d4c",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "c2d8690a8c929065cf27ce5ebd2b006b3f5c96e25a4c211670df3aa93bb68f3b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    }
+  ],
+  "coverageTags": [
+    "structured_intake",
+    "docx",
+    "pdf",
+    "scanned_pdf",
+    "ocr_routing",
+    "xlsx",
+    "pptx",
+    "enterprise_template",
+    "duplicate_requirements",
+    "scope_conflict",
+    "permission_conflict",
+    "data_quality",
+    "multi_format_ingestion",
+    "source_traceability"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 10, "max": 25},
+    "features": {"min": 8, "max": 30},
+    "solutionCharacters": {"min": 12000, "max": 30000},
+    "slideCount": {"min": 10, "max": 24}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "phase1_excludes_financial_ledger",
+    "opportunity_close_permission_conflict_detected",
+    "native_mobile_app_not_committed",
+    "duplicate_customer_groups_detected",
+    "no_prohibited_claims",
+    "all_formal_claims_have_source_refs"
+  ]
+}

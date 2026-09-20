@@ -1,0 +1,22 @@
+{
+  "benchmark_id": "BM-01",
+  "version": "1.0",
+  "blocks": [
+    {"id": "61000000-0000-4000-8000-000000000001", "file": "intake.json", "locator": "primary_goal,secondary_goal,need_description", "kind": "structured_input"},
+    {"id": "61000000-0000-4000-8000-000000000002", "file": "intake.json", "locator": "budget,schedule,constraints", "kind": "structured_input"},
+    {"id": "61000000-0000-4000-8000-000000000003", "file": "sources/requirements.docx", "locator": "1. 项目背景与目标", "kind": "docx_section"},
+    {"id": "61000000-0000-4000-8000-000000000004", "file": "sources/requirements.docx", "locator": "2. 用户与职责", "kind": "docx_table"},
+    {"id": "61000000-0000-4000-8000-000000000005", "file": "sources/requirements.docx", "locator": "3. 一期业务范围", "kind": "docx_section"},
+    {"id": "61000000-0000-4000-8000-000000000006", "file": "sources/requirements.docx", "locator": "4. 功能需求 CRM-F-001..003", "kind": "docx_table_rows"},
+    {"id": "61000000-0000-4000-8000-000000000007", "file": "sources/requirements.docx", "locator": "4. 功能需求 CRM-F-004..007", "kind": "docx_table_rows"},
+    {"id": "61000000-0000-4000-8000-000000000008", "file": "sources/requirements.docx", "locator": "4. 功能需求 CRM-F-008..012", "kind": "docx_table_rows"},
+    {"id": "61000000-0000-4000-8000-000000000009", "file": "sources/requirements.docx", "locator": "5. 数据与集成", "kind": "docx_section"},
+    {"id": "61000000-0000-4000-8000-000000000010", "file": "sources/requirements.docx", "locator": "6. 非功能要求", "kind": "docx_table"},
+    {"id": "61000000-0000-4000-8000-000000000011", "file": "sources/meeting-notes.pdf", "locator": "page 1 / 2. 已达成共识", "kind": "pdf_section"},
+    {"id": "61000000-0000-4000-8000-000000000012", "file": "sources/meeting-notes.pdf", "locator": "page 1 / 3.1 商机关闭权限", "kind": "pdf_section"},
+    {"id": "61000000-0000-4000-8000-000000000013", "file": "sources/meeting-notes.pdf", "locator": "page 1 / 3.2 移动使用方式", "kind": "pdf_section"},
+    {"id": "61000000-0000-4000-8000-000000000014", "file": "sources/meeting-notes.pdf", "locator": "page 2 / 4. 数据迁移约束", "kind": "pdf_section"},
+    {"id": "61000000-0000-4000-8000-000000000015", "file": "sources/customer-sample.xlsx", "locator": "客户样例!A4:K12", "kind": "xlsx_range"},
+    {"id": "61000000-0000-4000-8000-000000000016", "file": "sources/customer-sample.xlsx", "locator": "字段说明!A3:D8", "kind": "xlsx_range"}
+  ]
+}

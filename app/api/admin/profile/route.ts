@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sqlite } from '../../../../../lib/db';
-import { requireAuth } from '../../../../../lib/middleware';
+import { sqlite } from '../../../../lib/db';
+import { requireAuth } from '../../../../lib/middleware';
 import bcrypt from 'bcryptjs';
 
 // PUT: 修改密码
@@ -35,7 +35,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // 获取当前用户
-    const admin = sqlite.prepare('SELECT * FROM admins WHERE username = ?').get('admin');
+    const admin = sqlite.prepare('SELECT * FROM admins WHERE username = ?').get('admin') as {
+      password_hash: string;
+    } | undefined;
 
     if (!admin) {
       return NextResponse.json(
@@ -59,7 +61,7 @@ export async function PUT(request: NextRequest) {
 
     // 更新密码
     sqlite.prepare(
-      'UPDATE admins SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ?'
+      'UPDATE admins SET password_hash = ? WHERE username = ?'
     ).run(newPasswordHash, 'admin');
 
     return NextResponse.json({

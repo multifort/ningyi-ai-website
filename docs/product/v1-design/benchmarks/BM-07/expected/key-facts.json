@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-07",
+  "facts": [
+    {"id": "KF-01", "fact": "标准工单状态为待受理、待分级、待派工、处理中、等待客户、待客户确认、已关闭；关闭后再次报修应进入重开或新工单关联流程", "source": "sources/service-manual.docx"},
+    {"id": "KF-02", "fact": "优先级 P1、P2、P3、P4 的首次人工响应目标分别为10分钟、30分钟、4小时、1个工作日", "source": "sources/service-manual.docx"},
+    {"id": "KF-03", "fact": "首次响应以人工客服或工程师首次联系为准，自动回执不计入；等待客户仅暂停解决时钟，不暂停首次响应时钟", "source": "sources/service-manual.docx; sources/work-orders.csv"},
+    {"id": "KF-04", "fact": "生产停线属于P1；值班人员立即通知服务主管并优先安排恢复生产所需处置", "source": "sources/service-manual.docx; sources/ticket-flow.png"},
+    {"id": "KF-05", "fact": "工单不得在客户确认维修结果前自动关闭；客户未回复时只能按人工回访及服务主管复核规则处理", "source": "sources/service-manual.docx; sources/ticket-flow.png"},
+    {"id": "KF-06", "fact": "CSV 中 WO-SYN-202 的10:21自动回执不算人工响应，10:47才是首次人工响应；等待客户时解决时钟暂停但首响时钟不暂停", "source": "sources/work-orders.csv; sources/service-manual.docx"},
+    {"id": "KF-07", "fact": "CSV 中 WO-SYN-204 缺少现场联系人，需回访补充；WO-SYN-203的非工作时段时长需要业务日历，不能直接判定超时", "source": "sources/work-orders.csv"},
+    {"id": "KF-08", "fact": "首期不提供远程设备控制、不自动诊断故障、不代替工程师确认维修完成", "source": "intake.json; sources/service-manual.docx"}
+  ]
+}

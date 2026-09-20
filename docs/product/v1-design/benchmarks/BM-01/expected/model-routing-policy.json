@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "currency": "weighted_token_unit",
+  "slots": [
+    {"id": "deterministic", "modality": "none", "qualityTier": "deterministic", "maxInputTokens": 0, "maxOutputTokens": 0, "inputWeight": 0, "outputWeight": 0, "providerBinding": null},
+    {"id": "text_economy", "modality": "text", "qualityTier": "economy", "maxInputTokens": 32000, "maxOutputTokens": 4000, "inputWeight": 0.25, "outputWeight": 0.75, "providerBinding": null},
+    {"id": "text_quality", "modality": "text", "qualityTier": "quality", "maxInputTokens": 128000, "maxOutputTokens": 16000, "inputWeight": 1.0, "outputWeight": 4.0, "providerBinding": null},
+    {"id": "vision_economy", "modality": "vision", "qualityTier": "economy", "maxInputTokens": 32000, "maxOutputTokens": 4000, "inputWeight": 1.5, "outputWeight": 3.0, "providerBinding": null},
+    {"id": "vision_quality", "modality": "vision", "qualityTier": "quality", "maxInputTokens": 128000, "maxOutputTokens": 8000, "inputWeight": 4.0, "outputWeight": 8.0, "providerBinding": null}
+  ],
+  "taskRules": {
+    "free_analysis": "text_economy",
+    "formal_analysis": "text_quality",
+    "section_generation": "text_quality",
+    "revision": "text_quality",
+    "quality_review": "text_quality",
+    "vision_low_cost": "vision_economy",
+    "vision_premium": "vision_quality",
+    "deterministic_text": "deterministic",
+    "ocr_standard": "deterministic"
+  }
+}

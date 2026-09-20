@@ -10,6 +10,7 @@ interface Scenario {
   subtitle: string;
   pain: string;
   solution: string;
+  flowSteps: Array<{ title: string; detail: string }>;
   heroImage: string;
   painPoints: string;
   solutionDetail: string;
@@ -30,6 +31,7 @@ export default function ScenariosPage() {
     subtitle: "",
     pain: "",
     solution: "",
+    flowSteps: Array.from({ length: 4 }, () => ({ title: "", detail: "" })),
     heroImage: "",
     painPoints: "",
     solutionDetail: "",
@@ -71,7 +73,7 @@ export default function ScenariosPage() {
 
     setShowForm(false);
     setEditingId(null);
-    setFormData({ icon: "", title: "", slug: "", subtitle: "", pain: "", solution: "", heroImage: "", painPoints: "", solutionDetail: "", advantage: "", sortOrder: 0 });
+    setFormData({ icon: "", title: "", slug: "", subtitle: "", pain: "", solution: "", flowSteps: Array.from({ length: 4 }, () => ({ title: "", detail: "" })), heroImage: "", painPoints: "", solutionDetail: "", advantage: "", sortOrder: 0 });
     fetchScenarios();
   };
 
@@ -84,6 +86,7 @@ export default function ScenariosPage() {
       subtitle: scenario.subtitle || "",
       pain: scenario.pain || "",
       solution: scenario.solution || "",
+      flowSteps: scenario.flowSteps?.length ? scenario.flowSteps : Array.from({ length: 4 }, () => ({ title: "", detail: "" })),
       heroImage: scenario.heroImage || "",
       painPoints: scenario.painPoints || "",
       solutionDetail: scenario.solutionDetail || "",
@@ -109,12 +112,12 @@ export default function ScenariosPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-primary">行业场景管理</h1>
+        <h1 className="text-3xl font-bold text-primary">项目场景管理</h1>
         <button
           onClick={() => {
             setShowForm(true);
             setEditingId(null);
-            setFormData({ icon: "", title: "", slug: "", subtitle: "", pain: "", solution: "", heroImage: "", painPoints: "", solutionDetail: "", advantage: "", sortOrder: 0 });
+            setFormData({ icon: "", title: "", slug: "", subtitle: "", pain: "", solution: "", flowSteps: Array.from({ length: 4 }, () => ({ title: "", detail: "" })), heroImage: "", painPoints: "", solutionDetail: "", advantage: "", sortOrder: 0 });
           }}
           className="px-6 py-3 bg-accent1 text-white rounded-lg hover:bg-accent1/90 transition-all"
         >
@@ -233,8 +236,44 @@ export default function ScenariosPage() {
                     onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
                     rows={2}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent1 outline-none"
-                    placeholder="自动生产分析、实时异常预警、智能决策建议"
+                    placeholder="需求梳理、方案组织、工作量与报价、实施计划"
                   />
+                </div>
+
+                <div>
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700">官网四步业务流程</label>
+                    <p className="mt-1 text-xs text-gray-500">对应官网项目场景右侧的四张流程卡，建议保持四步。</p>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {formData.flowSteps.map((step, index) => (
+                      <div key={index} className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                        <div className="mb-2 text-xs font-bold text-accent1">步骤 {String(index + 1).padStart(2, "0")}</div>
+                        <input
+                          type="text"
+                          value={step.title}
+                          onChange={(event) => {
+                            const flowSteps = [...formData.flowSteps];
+                            flowSteps[index] = { ...flowSteps[index], title: event.target.value };
+                            setFormData({ ...formData, flowSteps });
+                          }}
+                          className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-accent1"
+                          placeholder="步骤标题"
+                        />
+                        <input
+                          type="text"
+                          value={step.detail}
+                          onChange={(event) => {
+                            const flowSteps = [...formData.flowSteps];
+                            flowSteps[index] = { ...flowSteps[index], detail: event.target.value };
+                            setFormData({ ...formData, flowSteps });
+                          }}
+                          className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-accent1"
+                          placeholder="步骤说明"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
