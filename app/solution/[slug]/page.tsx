@@ -28,25 +28,24 @@ export default function SolutionDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSolutionDetail();
-  }, [slug]);
-
-  const fetchSolutionDetail = async () => {
-    try {
-      const res = await fetch(`/api/content/solutions/${slug}`);
-      const data = await res.json();
-      if (data.success) {
-        setSolution(data.data);
-      } else {
+    const fetchSolutionDetail = async () => {
+      try {
+        const res = await fetch(`/api/content/solutions/${slug}`);
+        const data = await res.json();
+        if (data.success) {
+          setSolution(data.data);
+        } else {
+          notFound();
+        }
+      } catch (error) {
+        console.error("获取解决方案详情失败:", error);
         notFound();
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("获取解决方案详情失败:", error);
-      notFound();
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    void fetchSolutionDetail();
+  }, [slug]);
 
   if (loading) {
     return (

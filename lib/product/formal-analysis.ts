@@ -458,7 +458,7 @@ async function callFormalModel(model: string, userId: string, title: string, inp
     if (!text) throw new Error(`FORMAL_MODEL_EMPTY_${responseOutputShape(payload)}`);
     try {
       return { ...parseStructuredJson(text), inputTokens: payload.usage?.input_tokens ?? null, outputTokens: payload.usage?.output_tokens ?? null };
-    } catch (error) {
+    } catch {
       const repaired = await repairFormalJson(model, text, reasoningEffort, title);
       return { ...repaired.value, inputTokens: (payload.usage?.input_tokens || 0) + (repaired.inputTokens || 0) || null, outputTokens: (payload.usage?.output_tokens || 0) + (repaired.outputTokens || 0) || null };
     }

@@ -9,11 +9,6 @@ interface FooterConfig {
   copyright: string;
 }
 
-interface FooterLink {
-  title: string;
-  href: string;
-}
-
 export default function FooterPage() {
   const [config, setConfig] = useState<FooterConfig>({
     companyDescription: "",

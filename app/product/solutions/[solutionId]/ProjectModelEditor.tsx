@@ -105,7 +105,7 @@ export default function ProjectModelEditor({ solutionId, understandingReady, onE
     const activeFactIds = new Set(confirmedFacts.map((fact) => fact.id));
     setSelectedFactIds((modelItem.sourceRefs || []).filter((ref: any) => ref.kind === "user_decision" && activeFactIds.has(ref.refId)).map((ref: any) => ref.refId));
     setPreview(null); setCandidateSnapshotId(""); setAccepted(false); setNotice("");
-  }, [selectedKey, state?.active?.snapshotId, confirmedFacts]);
+  }, [selected, modelItem, confirmedFacts]);
 
   const primaryLabel = selected?.entityKind === "term" ? "定义" : selected?.entityKind === "conflict" ? "冲突描述" : selected?.entityKind === "assumption" ? "假设内容" : "名称";
   const saveAndPreview = async () => {

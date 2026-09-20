@@ -35,7 +35,16 @@ export async function GET(request: NextRequest) {
     const section = formalDocument ? sectionQuery.get(solution.id) : null;
     const formal = formalDocument ? { ...formalDocument, sections: section ? [section] : [] } : null;
     const recovery = solutionRecoveryStatus(solution, run, media, formal);
-    const { sourceStatus, sourceAttemptCount, sourceNextAttemptAt, sourceFailedAt, sourceErrorCode, renderAttemptCount, renderNextAttemptAt, renderErrorCode, renderFailedAt, ...publicSolution } = solution;
+    const publicSolution = {
+      id: solution.id,
+      title: solution.title,
+      status: solution.status,
+      stage: solution.stage,
+      createdAt: solution.createdAt,
+      updatedAt: solution.updatedAt,
+      fileCount: solution.fileCount,
+      artifactCount: solution.artifactCount,
+    };
     return { ...publicSolution, automaticRecovery: Boolean(recovery), recovery };
   });
   return NextResponse.json({ success: true, data: { solutions } });

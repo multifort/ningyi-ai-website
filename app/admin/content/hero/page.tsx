@@ -68,7 +68,7 @@ export default function HeroConfigPage() {
       } else {
         setMessage("❌ 保存失败：" + data.error);
       }
-    } catch (error) {
+    } catch {
       setMessage("❌ 网络错误");
     } finally {
       setSaving(false);
@@ -256,6 +256,8 @@ export default function HeroConfigPage() {
           {images.map((img, index) => (
             <div key={index} className="relative group border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
               <div className="aspect-video relative">
+                {/* Dynamic CMS paths intentionally keep the native fallback behavior. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.imagePath}
                   alt={`轮播图 ${index + 1}`}

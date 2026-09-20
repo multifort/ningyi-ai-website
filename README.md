@@ -48,7 +48,7 @@ pnpm benchmark:verify
 - `api:check` 扫描全部 `app/api/product/**/route.ts`，并与产品 API 目录逐项比对；新增、删除或修改路由时必须同步目录。
 - `benchmark:verify` 默认聚合校验仓库中已有的 BM-01—BM-07，也可以追加单个 `manifest.json` 路径。
 - `contracts:check` 通过 `uv.lock` 自动建立隔离环境并校验机器可读 JSON Schema，无需手工安装 `jsonschema`。
-- `lint` 使用非交互式 ESLint 9 配置；当前警告预算为 36，新增警告会使质量门失败。
+- `lint` 使用非交互式 ESLint 9 配置，并以 0 warning 作为质量门。
 
 ## 主要目录
 

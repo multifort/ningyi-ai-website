@@ -123,7 +123,7 @@ export default function ProductIntake() {
     if (draft.desiredGoals.length || draft.currentState || draft.includedScope || draft.excludedScope) value += 1;
     if (draft.budget || draft.timeline || draft.otherConstraints || Object.values(files).some((items) => items.length)) value += 1;
     return value;
-  }, [draft, files.content.length]);
+  }, [draft, files]);
 
   const update = (key: keyof Draft, value: string | string[]) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -205,7 +205,7 @@ export default function ProductIntake() {
           purposePrimary: draft.purposePrimary,
           needDescription: draft.needDescription,
           formData: { organizationName: draft.organizationName, industry: draft.industry, actualUsers: draft.actualUsers, shapes: draft.shapes, desiredGoals: draft.desiredGoals, currentState: draft.currentState, includedScope: draft.includedScope, excludedScope: draft.excludedScope, budget: draft.budget, timeline: draft.timeline, otherConstraints: draft.otherConstraints },
-          fileSelections: selectedFiles.map(({ file: _file, ...metadata }) => metadata),
+          fileSelections: selectedFiles.map(({ clientKey, category, displayName, sizeBytes, declaredMime }) => ({ clientKey, category, displayName, sizeBytes, declaredMime })),
         }),
       });
       const handoff = await handoffResponse.json();

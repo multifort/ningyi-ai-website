@@ -558,7 +558,6 @@ const deletionRunColumns = productSqlite.pragma("table_info(solution_deletion_ru
 if (!deletionRunColumns.some((column) => column.name === "lease_owner")) productSqlite.exec("ALTER TABLE solution_deletion_runs ADD COLUMN lease_owner TEXT");
 if (!deletionRunColumns.some((column) => column.name === "lease_until")) productSqlite.exec("ALTER TABLE solution_deletion_runs ADD COLUMN lease_until TEXT");
 ensureColumn("solution_deletion_runs", "next_attempt_at", "TEXT");
-const processingRunColumns = productSqlite.pragma("table_info(processing_runs)") as Array<{ name: string }>;
 ensureColumn("processing_runs", "next_attempt_at", "TEXT");
 const productSolutionColumns = productSqlite.pragma("table_info(product_solutions)") as Array<{ name: string }>;
 if (!productSolutionColumns.some((column) => column.name === "render_lease_owner")) productSqlite.exec("ALTER TABLE product_solutions ADD COLUMN render_lease_owner TEXT");
@@ -632,7 +631,6 @@ for (const table of ["processing_runs", "media_analysis_tasks"] as const) {
   if (!columns.some((column) => column.name === "lease_owner")) productSqlite.exec(`ALTER TABLE ${table} ADD COLUMN lease_owner TEXT`);
   if (!columns.some((column) => column.name === "lease_until")) productSqlite.exec(`ALTER TABLE ${table} ADD COLUMN lease_until TEXT`);
 }
-const mediaTaskColumns = productSqlite.pragma("table_info(media_analysis_tasks)") as Array<{ name: string }>;
 ensureColumn("media_analysis_tasks", "next_attempt_at", "TEXT");
 ensureColumn("media_analysis_tasks", "failed_at", "TEXT");
 ensureColumn("change_impact_plans", "execution_started_at", "TEXT");

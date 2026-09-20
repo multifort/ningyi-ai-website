@@ -5,7 +5,6 @@ import { projectModelSectionImpacts } from "./project-model-section-map";
 
 type EntityRow = { key: string; kind: string; title: string; locked: boolean; json: string };
 type ProjectModel = Record<string, any>;
-const stableKeyPattern = /^[A-Z][A-Z0-9_]*-[0-9]{3,}$/;
 const persistedEntityKeyPattern = /^(?:[A-Z][A-Z0-9_]*-[0-9]{3,}|TERM-[0-9A-F]{12})$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const relationTypes = new Set(["satisfies", "implemented_by", "depends_on", "conflicts_with", "derived_from", "estimated_by", "scheduled_in", "quoted_by", "mentioned_in", "replaces"]);

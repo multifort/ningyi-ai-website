@@ -27,7 +27,7 @@
     "test:recovery-status": "node --test scripts/product-recovery-status.test.mjs",
     "templates:preview": "node scripts/product-template-preview.mjs",
     "acceptance:campaign": "node scripts/product-acceptance-campaign.mjs",
-    "lint": "eslint . --max-warnings=36",
+    "lint": "eslint . --max-warnings=0",
     "content:refresh": "sqlite3 data/cms.db < scripts/refresh-content.sql"
   },
   "dependencies": {

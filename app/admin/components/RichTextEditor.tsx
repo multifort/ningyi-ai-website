@@ -16,7 +16,6 @@ export default function RichTextEditor({
   value, 
   onChange, 
   placeholder,
-  imageUploadUrl 
 }: RichTextEditorProps) {
   const [isClient, setIsClient] = useState(false);
 
@@ -50,6 +49,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] p-4',
+        'aria-label': placeholder || '富文本内容',
       },
     },
   });

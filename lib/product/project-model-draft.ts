@@ -96,7 +96,7 @@ function normalizeDraft(output: DraftOutput, projectId: string, title: string, p
   for (const group of groups) {
     const entries = output[group.name];
     if (!Array.isArray(entries) || entries.length > 20) throw new Error("PROJECT_MODEL_INVALID_COLLECTION");
-    normalized[group.key] = entries.map((item: any, index: number) => {
+    normalized[group.key] = entries.map((item: any) => {
       if (!item || typeof item.key !== "string" || !new RegExp(`^${group.prefix}-[0-9]{3,}$`).test(item.key) || keys.has(item.key)) throw new Error("PROJECT_MODEL_INVALID_KEY");
       keys.add(item.key);
       const sourceRefs = normalizeSourceRefs(item.sourceFactIds, factSources, userFactIds);

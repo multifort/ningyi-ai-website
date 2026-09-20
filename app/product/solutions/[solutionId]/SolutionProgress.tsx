@@ -128,7 +128,7 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
       }));
       const preparedResponse = await fetch(productApi.addMaterials(solutionId), {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileSelections: selections.map(({ file: _file, ...selection }) => selection) }),
+        body: JSON.stringify({ fileSelections: selections.map(({ clientKey, displayName, sizeBytes, declaredMime }) => ({ clientKey, displayName, sizeBytes, declaredMime })) }),
       });
       const prepared = await preparedResponse.json().catch(() => null);
       if (!preparedResponse.ok || !prepared?.success) throw new Error(prepared?.error?.message || "暂时无法准备补充材料。");
@@ -162,7 +162,7 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
     setTemplateNotice("");
     try {
       const selections = templateFiles.map((file) => ({ clientKey: crypto.randomUUID(), displayName: file.name, sizeBytes: file.size, declaredMime: file.type, file }));
-      const preparedResponse = await fetch(productApi.addTemplates(solutionId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileSelections: selections.map(({ file: _file, ...selection }) => selection) }) });
+      const preparedResponse = await fetch(productApi.addTemplates(solutionId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileSelections: selections.map(({ clientKey, displayName, sizeBytes, declaredMime }) => ({ clientKey, displayName, sizeBytes, declaredMime })) }) });
       const prepared = await preparedResponse.json().catch(() => null);
       if (!preparedResponse.ok || !prepared?.success) throw new Error(prepared?.error?.message || "暂时无法准备企业模板。");
       let failures = 0;
@@ -208,7 +208,7 @@ export default function SolutionProgress({ solutionId }: { solutionId: string })
     setBrandNotice("");
     try {
       const selections = brandFiles.map((file) => ({ clientKey: crypto.randomUUID(), displayName: file.name, sizeBytes: file.size, declaredMime: file.type, file }));
-      const preparedResponse = await fetch(productApi.addBrands(solutionId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileSelections: selections.map(({ file: _file, ...selection }) => selection) }) });
+      const preparedResponse = await fetch(productApi.addBrands(solutionId), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileSelections: selections.map(({ clientKey, displayName, sizeBytes, declaredMime }) => ({ clientKey, displayName, sizeBytes, declaredMime })) }) });
       const prepared = await preparedResponse.json().catch(() => null);
       if (!preparedResponse.ok || !prepared?.success) throw new Error(prepared?.error?.message || "暂时无法准备品牌素材。");
       let failures = 0;

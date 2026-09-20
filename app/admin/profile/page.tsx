@@ -44,7 +44,7 @@ export default function ProfilePage() {
       } else {
         setMessage({ type: "error", text: data.error });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "修改失败，请重试" });
     } finally {
       setLoading(false);

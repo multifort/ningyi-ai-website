@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import { caseStudies, caseResults } from '../../../../drizzle/schema';
 import { requireAuth } from '../../../../lib/middleware';
-import { eq, asc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 // GET: 获取所有案例
 export async function GET(request: NextRequest) {

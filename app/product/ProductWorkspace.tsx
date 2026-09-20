@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import { productApi } from "../../lib/product/api-contract";
 
@@ -98,12 +99,12 @@ export default function ProductWorkspace() {
 
   if (!signedInAs) return (
     <main className="relative isolate min-h-[100svh] overflow-hidden bg-[#020817] text-white lg:grid lg:grid-cols-[minmax(0,1.08fr)_minmax(500px,.92fr)]">
-      <img src="/images/product-results-login-v2.png" alt="" className="fixed inset-0 -z-30 h-full w-full object-cover object-[38%_center]" />
+      <Image src="/images/product-results-login-v2.png" alt="" width={1586} height={992} priority sizes="100vw" className="fixed inset-0 -z-30 h-full w-full object-cover object-[38%_center]" />
       <div className="fixed inset-0 -z-20 bg-[linear-gradient(90deg,rgba(2,8,23,.91)_0%,rgba(2,8,23,.65)_30%,rgba(2,8,23,.38)_46%,rgba(2,8,23,.82)_62%,rgba(2,8,23,.98)_100%),linear-gradient(180deg,rgba(2,8,23,.05)_0%,rgba(2,8,23,.12)_62%,rgba(2,8,23,.68)_100%)]" aria-hidden="true" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_76%_42%,rgba(23,107,255,.1),transparent_34%)]" aria-hidden="true" />
       <section className="relative min-h-[400px] px-6 pb-12 pt-7 sm:px-10 lg:min-h-[100svh] lg:px-[clamp(48px,5.3vw,88px)] lg:pb-12 lg:pt-10">
         <Link href="/" className="inline-flex items-center rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-4 focus:ring-offset-[#020817]" aria-label="返回宁翼智能官网">
-          <img src="/images/logo-white.png" alt="宁翼智能" className="h-auto w-[174px] sm:w-[190px]" />
+          <Image src="/images/logo-white.png" alt="宁翼智能" width={1026} height={265} priority sizes="(min-width: 640px) 190px, 174px" className="h-auto w-[174px] sm:w-[190px]" />
         </Link>
 
         <div className="mt-16 max-w-[590px] sm:mt-20 lg:mt-[16vh]">

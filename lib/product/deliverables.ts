@@ -39,7 +39,7 @@ export async function ensurePrimaryDeliverables(solutionId: string, userId: stri
   if (!sections.length || sections.some((section) => !section.content?.trim())) throw new Error("FORMAL_DOCUMENT_INCOMPLETE");
 
   supersedeStaleRenderedArtifacts(solutionId, userId);
-  await ensureProgressiveDeliverables(solutionId, userId, options);
+  await ensureProgressiveDeliverables(solutionId, userId);
 
   const existingTypes = new Set((productSqlite.prepare("SELECT artifact_type AS artifactType FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ artifactType: string }>).map((item) => item.artifactType));
 
@@ -190,7 +190,7 @@ export async function ensurePrimaryDeliverables(solutionId: string, userId: stri
   return listDeliverables(solutionId, userId);
 }
 
-export async function ensureProgressiveDeliverables(solutionId: string, userId: string, options: { workerId?: string } = {}) {
+export async function ensureProgressiveDeliverables(solutionId: string, userId: string) {
   const solution = productSqlite.prepare("SELECT title FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, userId) as { title: string } | undefined;
   if (!solution) throw new Error("SOLUTION_NOT_FOUND");
   ensureTraceableBenchmarkFacts(solutionId);
@@ -307,7 +307,6 @@ export function hasCompleteFormalDocument(solutionId: string) {
 }
 
 export async function buildFormalSolutionDocx(title: string, sections: FormalSection[], theme: RenderTheme | null, documentLabel = "企业项目整体解决方案") {
-  const primary = officeColor(theme?.primary || "#0B2545");
   const accent = officeColor(theme?.accent || "#2E74B5");
   const pageSize = documentPageSize(theme);
   const children: Array<Paragraph | Table> = [
