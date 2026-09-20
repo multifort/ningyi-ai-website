@@ -9,7 +9,7 @@ export async function processFormalBatch(requestedLimit = 1) {
   const recovered = recoverStaleFormalWork();
   const repairedFormal = repairExhaustedFormalWork();
   const reactivatedConfiguration = reactivateConfiguredFormalDocuments();
-  const recoveredRendering = productSqlite.prepare("UPDATE product_solutions SET status = 'recovering', render_lease_owner = NULL, render_lease_until = NULL, render_next_attempt_at = CURRENT_TIMESTAMP, render_error_code = 'STALE_RENDER_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE stage = 'rendering' AND status = 'rendering' AND render_lease_until < CURRENT_TIMESTAMP").run().changes;
+  const recoveredRendering = recoverStaleRendering();
   const repairedRendering = repairExhaustedRendering();
   const requeuedIncompleteDeliveries = requeueIncompleteCompletedDeliveries();
   const workerId = `formal-${randomUUID()}`;
@@ -17,6 +17,10 @@ export async function processFormalBatch(requestedLimit = 1) {
   const limit = Math.min(10, configuredLimit, Math.max(1, Math.floor(requestedLimit)));
   const results = await Promise.all(Array.from({ length: limit }, () => processOneFormalWork(workerId)));
   return { workerId, requested: limit, processed: results.filter((item) => item.status !== "idle" && item.status !== "contended").length, recovered, repairedFormal, reactivatedConfiguration, recoveredRendering, repairedRendering, requeuedIncompleteDeliveries, results };
+}
+
+export function recoverStaleRendering() {
+  return productSqlite.prepare("UPDATE product_solutions SET status = 'recovering', render_lease_owner = NULL, render_lease_until = NULL, render_next_attempt_at = CURRENT_TIMESTAMP, render_error_code = 'STALE_RENDER_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE stage = 'rendering' AND status = 'rendering' AND render_lease_until < CURRENT_TIMESTAMP").run().changes;
 }
 
 function requeueIncompleteCompletedDeliveries() {

@@ -18,7 +18,7 @@
 | 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别 | 用 BM-08—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退基础能力 | 补齐真实项目修改集与无关变化率验收 |
 | 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌 | 完整模板兼容、视觉质量回归和跨成果一致性验收 |
-| Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、退避、自动修复、心跳、健康探针、备份恢复和存储维护 | 独立可扩展队列、多主机 Worker、容量压测和告警接入 |
+| Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`worker-health.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、退避、自动修复、共享心跳健康判定、故障退出、备份恢复和存储维护 | 独立可扩展队列、多主机 Worker、容量压测和告警接入 |
 | 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—07 | 补齐 BM-08—18，并完成全量活动与故障探针 |
 
 ## 3. 当前存储与部署形态
@@ -34,7 +34,7 @@
 2026-09-20 的仓库基线校验结果：
 
 - `pnpm typecheck`：通过。
-- `pnpm test`：22 项通过，0 项失败；其中包含模型供应商失败、Worker 中断、成果损坏、删除竞争和材料并发变化五类隔离故障探针回归。
+- `pnpm test`：30 项通过，0 项失败；除五类隔离故障探针外，已覆盖真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管，以及解析、媒体、正式章节和渲染过期租约恢复。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
 - `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-07 的 manifest 与文件摘要。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
@@ -70,7 +70,7 @@
 ## 7. 下一批研发顺序
 
 1. 把已通过的浏览器冒烟扩展为可重复的桌面/移动端异常状态矩阵。
-2. 在已有五类隔离故障探针回归基础上，补齐真实 Worker 循环停滞、退出重启和租约接管集成验证。
+2. 在已有真实 Worker 失败退出、循环停滞告警、删除租约接管及全阶段过期租约恢复回归基础上，补齐解析、正式生成和渲染由新所有者完成提交的竞争验证。
 3. 补齐 BM-08—18 的材料、期望事实、评分规则和绑定流程。
 4. 迁移 PostgreSQL 与 S3 兼容对象存储，并完成备份、恢复和删除审计。
 5. 执行多用户并发、租约竞争、重复消费、崩溃恢复和供应商限流压测。

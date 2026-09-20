@@ -95,6 +95,7 @@
 - 删除任务使用 `PRODUCT_DELETION_LEASE_SECONDS` 所有者租约和原子领取；多个 Runner 可并行清理不同项目，租约丢失的 Worker 不得提交数据库删除结果。`PRODUCT_DELETION_BATCH_CONCURRENCY` 默认 2。
 - 删除失败按 5 秒、30 秒、2 分钟、10 分钟逐级延迟重试，五次耗尽后进入明确的 `failed / DELETION_RETRY_EXHAUSTED`，不再伪装为等待状态；默认 6 小时后由系统自动开启新一轮修复，可通过 `PRODUCT_DELETION_AUTO_REPAIR_SECONDS` 调整，无需人工重新提交。监控同时检查失败数和最老删除任务等待时间。
 - 每个 Runner 启动时生成独立 `workerId`，默认每 15 秒向 `POST /api/product/internal/health` 写入心跳，正常停止时登记 `stopped`。`GET /api/product/internal/health` 在没有有效 Worker 时返回 503，供部署健康检查使用；积压存在但 Worker 全部失联时产生 `WORKER_UNAVAILABLE` 告警。
+- 心跳只接受已知循环的健康字段；无效时间、超过 60 秒时钟偏差的未来时间和异常失败次数会在入库前清理。健康接口与运行快照复用同一判定模块，防止两处对“循环是否停滞”得出不同结论。
 - 心跳同时上报生成流水线、删除、运行快照和存储维护循环的最后成功时间、最后实际推进时间与连续失败次数。存在已到期可执行积压时，如果所有有效 Runner 的流水线最后成功时间超过 60 秒，健康检查返回 503 并产生 `PIPELINE_LOOP_STALLED`，防止“进程仍活着但任务不再推进”的假健康；阈值可通过 `PRODUCT_PIPELINE_HEALTH_STALE_SECONDS` 调整。
 - 删除链路采用同样的能力感知检查：只评估声明了 `deletion` 能力的 Runner；存在到期删除任务或租约已过期的删除任务时，删除循环超过默认 60 秒未成功会返回 503 并产生 `DELETION_LOOP_STALLED`。阈值可通过 `PRODUCT_DELETION_HEALTH_STALE_SECONDS` 调整。
 - 运行快照属于监控基础设施，不以任务积压作为触发条件。声明了 `operations` 能力的 Runner 必须在默认 180 秒内至少成功生成一次快照，否则主健康检查返回 503；外部探针或手工快照会得到 `OPERATIONS_LOOP_STALLED`。阈值可通过 `PRODUCT_OPERATIONS_HEALTH_STALE_SECONDS` 调整，建议至少为快照轮询周期的两倍。

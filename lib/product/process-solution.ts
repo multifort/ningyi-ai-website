@@ -123,7 +123,7 @@ async function processNextSourceTask(workerId: string) {
   } catch (error) { const leaseLost = error instanceof Error && error.message === "SOURCE_LEASE_LOST"; return { status: leaseLost ? "lease_lost" : "failed", solutionId: next.solutionId, errorCode: leaseLost ? "SOURCE_LEASE_LOST" : "SOURCE_INGESTION_FAILED" }; }
 }
 
-function recoverStaleSourceProcessing() {
+export function recoverStaleSourceProcessing() {
   const seconds = Math.max(180, Number(process.env.PRODUCT_SOURCE_STALE_AFTER_SECONDS || 900));
   return productSqlite.prepare("UPDATE processing_runs SET status = 'queued', lease_owner = NULL, lease_until = NULL, error_code = 'STALE_WORK_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE run_type = 'source_ingestion' AND status = 'running' AND (lease_until < CURRENT_TIMESTAMP OR (lease_until IS NULL AND updated_at < datetime('now', ?)))").run(`-${seconds} seconds`).changes;
 }

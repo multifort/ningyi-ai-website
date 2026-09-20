@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { productSqlite } from "../../../../../lib/product/db";
 import { privateStorageRoot } from "../../../../../lib/product/private-storage";
 import { unifiedKnowledgeBacklog } from "../../../../../lib/product/unified-knowledge";
+import { sanitizeWorkerLoopHealth, workerCapabilityLoopHealthy, workerLoopHealthy } from "../../../../../lib/product/worker-health";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
   const status = body.status === "stopped" ? "stopped" : "running";
   const capabilities = Array.isArray(body.capabilities) ? body.capabilities.filter((item) => typeof item === "string").slice(0, 16) : [];
   const startedAt = typeof body.startedAt === "string" && !Number.isNaN(Date.parse(body.startedAt)) ? body.startedAt : new Date().toISOString();
-  const loopHealth = sanitizeLoopHealth(body.loopHealth);
+  const loopHealth = sanitizeWorkerLoopHealth(body.loopHealth);
   productSqlite.prepare(`INSERT INTO worker_heartbeats (worker_id, status, capabilities_json, health_json, started_at, stopped_at)
     VALUES (?, ?, ?, ?, ?, CASE WHEN ? = 'stopped' THEN CURRENT_TIMESTAMP ELSE NULL END)
     ON CONFLICT(worker_id) DO UPDATE SET status = excluded.status, capabilities_json = excluded.capabilities_json, health_json = excluded.health_json,
@@ -45,24 +46,12 @@ export async function GET(request: NextRequest) {
   const storageStaleSeconds = Math.min(172800, Math.max(3600, Number(process.env.PRODUCT_STORAGE_HEALTH_STALE_SECONDS || 46800)));
   const pipelineBacklog = activePipelineBacklog();
   const deletionBacklog = activeDeletionBacklog();
-  const pipelineHealthy = loopHealthy(activeWorkers, "pipeline", "pipeline", pipelineBacklog, pipelineStaleSeconds);
-  const deletionHealthy = loopHealthy(activeWorkers, "deletion", "deletion", deletionBacklog, deletionStaleSeconds);
-  const operationsHealthy = capabilityLoopHealthy(activeWorkers, "operations", "operations", operationsStaleSeconds);
-  const storageHealthy = capabilityLoopHealthy(activeWorkers, "storage_maintenance", "storage_maintenance", storageStaleSeconds);
+  const pipelineHealthy = workerLoopHealthy(activeWorkers, "pipeline", "pipeline", pipelineBacklog, pipelineStaleSeconds);
+  const deletionHealthy = workerLoopHealthy(activeWorkers, "deletion", "deletion", deletionBacklog, deletionStaleSeconds);
+  const operationsHealthy = workerCapabilityLoopHealthy(activeWorkers, "operations", "operations", operationsStaleSeconds);
+  const storageHealthy = workerCapabilityLoopHealthy(activeWorkers, "storage_maintenance", "storage_maintenance", storageStaleSeconds);
   const healthy = dependencies.ready && activeWorkers.length > 0 && pipelineHealthy && deletionHealthy && operationsHealthy && storageHealthy;
   return NextResponse.json({ success: true, data: { status: healthy ? "healthy" : "unavailable", activeWorkers: activeWorkers.length, staleAfterSeconds: staleSeconds, lastSeenAt: lastSeen?.lastSeenAt || null, pipeline: { healthy: pipelineHealthy, backlog: pipelineBacklog, staleAfterSeconds: pipelineStaleSeconds }, deletion: { healthy: deletionHealthy, backlog: deletionBacklog, staleAfterSeconds: deletionStaleSeconds }, operations: { healthy: operationsHealthy, staleAfterSeconds: operationsStaleSeconds }, storageMaintenance: { healthy: storageHealthy, staleAfterSeconds: storageStaleSeconds }, dependencies } }, { status: healthy ? 200 : 503 });
-}
-
-function sanitizeLoopHealth(value: unknown) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  const result: Record<string, { lastSuccessAt: string | null; lastProgressAt: string | null; consecutiveFailures: number }> = {};
-  for (const name of ["pipeline", "deletion", "operations", "storage_maintenance"]) {
-    const item = (value as Record<string, any>)[name];
-    if (!item || typeof item !== "object") continue;
-    const timestamp = (input: unknown) => typeof input === "string" && !Number.isNaN(Date.parse(input)) ? input : null;
-    result[name] = { lastSuccessAt: timestamp(item.lastSuccessAt), lastProgressAt: timestamp(item.lastProgressAt), consecutiveFailures: Math.min(1000, Math.max(0, Number(item.consecutiveFailures) || 0)) };
-  }
-  return result;
 }
 
 function activePipelineBacklog() {
@@ -77,27 +66,6 @@ function activeDeletionBacklog() {
   return (productSqlite.prepare(`SELECT COUNT(*) AS count FROM solution_deletion_runs WHERE
     (status IN ('pending','retry_wait') AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP))
     OR (status = 'running' AND lease_until <= CURRENT_TIMESTAMP)`).get() as { count: number }).count;
-}
-
-function loopHealthy(workers: Array<{ capabilitiesJson: string; healthJson: string }>, capability: string, loop: string, backlog: number, staleSeconds: number) {
-  if (backlog === 0) return true;
-  return workers.some((worker) => hasCapability(worker.capabilitiesJson, capability) && recentLoopSuccess(worker.healthJson, loop, staleSeconds));
-}
-
-function capabilityLoopHealthy(workers: Array<{ capabilitiesJson: string; healthJson: string }>, capability: string, loop: string, staleSeconds: number) {
-  return workers.some((worker) => hasCapability(worker.capabilitiesJson, capability) && recentLoopSuccess(worker.healthJson, loop, staleSeconds));
-}
-
-function hasCapability(capabilitiesJson: string, capability: string) {
-  try { return JSON.parse(capabilitiesJson)?.includes(capability); }
-  catch { return false; }
-}
-
-function recentLoopSuccess(healthJson: string, loop: string, staleSeconds: number) {
-  try {
-    const value = JSON.parse(healthJson)?.[loop]?.lastSuccessAt;
-    return typeof value === "string" && Date.now() - Date.parse(value) <= staleSeconds * 1000;
-  } catch { return false; }
 }
 
 async function checkDependencies() {

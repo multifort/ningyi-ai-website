@@ -52,3 +52,22 @@ test("删除 Worker 清理私有文件和派生数据，并最终保留删除墓
   assert.equal(productSqlite.prepare("SELECT status FROM product_users WHERE id = ?").get(userId).status, "deleted");
   await assert.rejects(fs.access(solutionDirectory));
 });
+
+test("删除 Worker 回收过期租约后由新所有者完成任务", async () => {
+  const takeoverUserId = "90000000-0000-4000-8000-000000000002";
+  const takeoverSolutionId = "10000000-0000-4000-8000-000000000002";
+  const takeoverRunId = "60000000-0000-4000-8000-000000000003";
+  productSqlite.prepare("INSERT INTO product_users (id, username, username_normalized, password_hash, status) VALUES (?, ?, ?, ?, 'deletion_pending')").run(takeoverUserId, "lease-owner", "lease-owner", "test");
+  productSqlite.prepare("INSERT INTO product_solutions (id, owner_user_id, title, status, stage) VALUES (?, ?, ?, 'deletion_pending', 'deletion_pending')").run(takeoverSolutionId, takeoverUserId, "租约接管方案");
+  productSqlite.prepare(`INSERT INTO solution_deletion_runs
+    (id, solution_id, owner_user_id, status, attempt_count, lease_owner, lease_until, manifest_json)
+    VALUES (?, ?, ?, 'running', 1, 'stale-worker', datetime('now', '-10 seconds'), '{}')`).run(takeoverRunId, takeoverSolutionId, takeoverUserId);
+
+  const result = await processDeletionBatch();
+  assert.equal(result.recovered, 1);
+  assert.equal(result.claimed, 1);
+  assert.equal(result.completed, 1);
+  const run = productSqlite.prepare("SELECT status, attempt_count AS attemptCount, lease_owner AS leaseOwner, error_code AS errorCode FROM solution_deletion_runs WHERE id = ?").get(takeoverRunId);
+  assert.deepEqual(run, { status: "completed", attemptCount: 2, leaseOwner: null, errorCode: null });
+  assert.equal(productSqlite.prepare("SELECT status FROM product_solutions WHERE id = ?").get(takeoverSolutionId).status, "deleted");
+});

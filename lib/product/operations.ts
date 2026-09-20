@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { productSqlite } from "./db";
 import { requiredDeliverableArtifactTypes } from "./deliverable-catalog";
 import { unifiedKnowledgeBacklog } from "./unified-knowledge";
+import { workerCapabilityLoopHealthy, workerLoopHealthy } from "./worker-health";
 
 type Alert = { code: string; severity: "warning" | "critical"; automaticAction: string };
 
@@ -95,10 +96,10 @@ export function createOperationsSnapshot(hours = 24) {
   const storageHealthStaleSeconds = Math.min(172800, Math.max(3600, numberEnv("PRODUCT_STORAGE_HEALTH_STALE_SECONDS", 46800)));
   const runnablePipelineBacklog = runnableBacklog();
   const runnableDeletionBacklog = deletionRunnableBacklog();
-  const pipelineLoopHealthy = loopHealthy(activeWorkerHealth, "pipeline", "pipeline", runnablePipelineBacklog, pipelineHealthStaleSeconds);
-  const deletionLoopHealthy = loopHealthy(activeWorkerHealth, "deletion", "deletion", runnableDeletionBacklog, deletionHealthStaleSeconds);
-  const operationsLoopHealthy = capabilityLoopHealthy(activeWorkerHealth, "operations", "operations", operationsHealthStaleSeconds);
-  const storageLoopHealthy = capabilityLoopHealthy(activeWorkerHealth, "storage_maintenance", "storage_maintenance", storageHealthStaleSeconds);
+  const pipelineLoopHealthy = workerLoopHealthy(activeWorkerHealth, "pipeline", "pipeline", runnablePipelineBacklog, pipelineHealthStaleSeconds);
+  const deletionLoopHealthy = workerLoopHealthy(activeWorkerHealth, "deletion", "deletion", runnableDeletionBacklog, deletionHealthStaleSeconds);
+  const operationsLoopHealthy = workerCapabilityLoopHealthy(activeWorkerHealth, "operations", "operations", operationsHealthStaleSeconds);
+  const storageLoopHealthy = workerCapabilityLoopHealthy(activeWorkerHealth, "storage_maintenance", "storage_maintenance", storageHealthStaleSeconds);
   const renderRetryExhausted = (productSqlite.prepare("SELECT COUNT(*) AS count FROM product_solutions WHERE stage = 'rendering' AND status = 'blocked' AND render_error_code = 'RENDER_RETRY_EXHAUSTED'").get() as { count: number }).count;
   const formalRetryExhausted = (productSqlite.prepare("SELECT COUNT(*) AS count FROM formal_documents WHERE status = 'blocked' AND last_error_code = 'SECTION_RETRY_EXHAUSTED'").get() as { count: number }).count;
   const knowledgeBacklog = unifiedKnowledgeBacklog();
@@ -200,27 +201,6 @@ function deletionRunnableBacklog() {
   return (productSqlite.prepare(`SELECT COUNT(*) AS count FROM solution_deletion_runs WHERE
     (status IN ('pending','retry_wait') AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP))
     OR (status = 'running' AND lease_until <= CURRENT_TIMESTAMP)`).get() as { count: number }).count;
-}
-
-function loopHealthy(workers: Array<{ capabilitiesJson: string; healthJson: string }>, capability: string, loop: string, backlog: number, staleSeconds: number) {
-  if (backlog === 0) return true;
-  return workers.some((worker) => hasCapability(worker.capabilitiesJson, capability) && recentLoopSuccess(worker.healthJson, loop, staleSeconds));
-}
-
-function capabilityLoopHealthy(workers: Array<{ capabilitiesJson: string; healthJson: string }>, capability: string, loop: string, staleSeconds: number) {
-  return workers.some((worker) => hasCapability(worker.capabilitiesJson, capability) && recentLoopSuccess(worker.healthJson, loop, staleSeconds));
-}
-
-function hasCapability(capabilitiesJson: string, capability: string) {
-  try { return JSON.parse(capabilitiesJson)?.includes(capability); }
-  catch { return false; }
-}
-
-function recentLoopSuccess(healthJson: string, loop: string, staleSeconds: number) {
-  try {
-    const value = JSON.parse(healthJson)?.[loop]?.lastSuccessAt;
-    return typeof value === "string" && Date.now() - Date.parse(value) <= staleSeconds * 1000;
-  } catch { return false; }
 }
 
 function queueHealth(stage: "source" | "media" | "formal" | "render", nowSql: string) {
