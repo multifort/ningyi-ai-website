@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-08",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.12,
+    "requirements_features": 0.12,
+    "metric_semantics": 0.20,
+    "deterministic_data": 0.18,
+    "data_lineage_permissions": 0.14,
+    "traceability": 0.10,
+    "deliverable_quality": 0.08,
+    "runtime_cost": 0.06
+  }
+}

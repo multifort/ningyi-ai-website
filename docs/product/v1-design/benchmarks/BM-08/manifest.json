@@ -1,0 +1,107 @@
+{
+  "benchmarkId": "BM-08",
+  "benchmarkVersion": "1.0",
+  "title": "经营数据看板建设项目",
+  "projectType": "software",
+  "difficulty": "L2",
+  "coverageTags": [
+    "metric_semantic_lock",
+    "same_name_metric_conflict",
+    "xlsx_formula_traceability",
+    "dashboard_image_fusion",
+    "data_freshness",
+    "customer_identity_resolution",
+    "row_level_access",
+    "deterministic_kpi_values"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 10, "max": 30},
+    "features": {"min": 10, "max": 34},
+    "solutionCharacters": {"min": 10000, "max": 28000},
+    "slideCount": {"min": 10, "max": 22}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "same_name_sales_metrics_preserved",
+    "all_kpi_formulas_and_values_reconciled",
+    "crm_customer_master_used_for_repeat_rate",
+    "t_plus_one_delay_disclosed",
+    "role_and_region_permissions_preserved",
+    "scope_exclusions_preserved",
+    "no_prohibited_metric_or_realtime_claims",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "e7acf7f3b8af2bf29a994a75d578eb1d2c4aed6d795e48e821d9dc7a50b82b0a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "87c22931bd54aa0bb48fec08c906c4e27351719b2e1d46e94fe2402fc8375666",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "e867ce8ea80e7f66fd6120be3ed75a0f2ab65385d7c72a6e9910db4dfbf11729",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "5566ab6f03521a2dacc3f6b09e594f24c67de8251388b21d5bdf42b18016ce4b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "12b17974b1165944cea71744c81f39dccc8f8723213f63acc209d1fc67ef743e",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "cfb98ce2b2d83f23a2320af5428a7deba48cb5bf416a5fa62189e3ae558cab24",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "9982e70b048d06af5b4dd41596ac240ca02afb87b9eb769f5faeeeef967fa09a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/current-dashboard.png",
+      "sha256": "c14b79c2ede404ad1981b3c64796108df8fbfd3c7e776877d4603c67ec608f14",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/data-source-notes.pdf",
+      "sha256": "ec34bfeb93882b5143e114b13d74df630454e50de359fb4d20b02248b21c83e7",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/metric-definitions.xlsx",
+      "sha256": "bfc9327e48a1118fc02fd2894a2162a771768abc53b728a675384f6ce0dd7af3",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

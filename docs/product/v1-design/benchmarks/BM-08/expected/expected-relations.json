@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-08",
+  "relations": [
+    {"from": "运营销售额", "to": "订单提交含税金额且未扣退货", "type": "metric_definition", "source": "sources/current-dashboard.png"},
+    {"from": "管理销售额", "to": "扣除退货并剔除增值税", "type": "metric_definition", "source": "sources/metric-definitions.xlsx"},
+    {"from": "管理销售额与主营业务成本", "to": "毛利率31.4%", "type": "formula_result", "source": "sources/metric-definitions.xlsx"},
+    {"from": "CRM统一客户ID", "to": "客户复购率42.9%", "type": "identity_and_metric", "source": "sources/metric-definitions.xlsx; sources/data-source-notes.pdf"},
+    {"from": "未映射渠道账号", "to": "数据质量清单", "type": "data_quality_handoff", "source": "sources/data-source-notes.pdf"},
+    {"from": "T+1计划08:30与实际09:05", "to": "延迟35分钟", "type": "freshness_result", "source": "sources/current-dashboard.png; sources/data-source-notes.pdf"},
+    {"from": "财务角色与管理层", "to": "允许查看毛利率", "type": "access_control", "source": "sources/data-source-notes.pdf"},
+    {"from": "公开大屏", "to": "隐藏客户标识、金额明细和毛利率", "type": "data_masking", "source": "sources/data-source-notes.pdf"}
+  ]
+}

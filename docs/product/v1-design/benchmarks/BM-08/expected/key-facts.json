@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-08",
+  "facts": [
+    {"id": "KF-01", "fact": "管理销售额按订单提交含税金额减退货含税金额后除以一加增值税率计算；运营看板销售额则为订单提交含税金额，未扣退货", "source": "sources/metric-definitions.xlsx; sources/current-dashboard.png"},
+    {"id": "KF-02", "fact": "2026年8月订单提交含税金额为12600000元、退货含税金额为300000元、增值税率为13%，管理销售额为10884955.7522元，展示取整为10884956元", "source": "sources/metric-definitions.xlsx"},
+    {"id": "KF-03", "fact": "主营业务成本为7465000元，毛利率按管理销售额减主营业务成本后除以管理销售额计算，结果为31.4191%，展示为31.4%", "source": "sources/metric-definitions.xlsx"},
+    {"id": "KF-04", "fact": "购买客户数为2100、复购客户数为900，客户复购率为42.8571%，展示为42.9%；客户须按CRM统一客户ID归并", "source": "sources/metric-definitions.xlsx; sources/data-source-notes.pdf"},
+    {"id": "KF-05", "fact": "平均库存成本为45000000元、近90天主营业务成本为75000000元，库存周转天数为54.0天；首期不纳入寄售库存", "source": "sources/metric-definitions.xlsx; sources/data-source-notes.pdf"},
+    {"id": "KF-06", "fact": "经营看板首期为T+1批处理，计划每日08:30前完成；截图在09:05更新，较计划延迟35分钟", "source": "sources/current-dashboard.png; sources/data-source-notes.pdf"},
+    {"id": "KF-07", "fact": "未映射的渠道账号不能直接作为独立客户计入复购率，应进入数据质量清单等待CRM主数据归并", "source": "sources/data-source-notes.pdf"},
+    {"id": "KF-08", "fact": "毛利率仅向财务角色和管理层开放，区域负责人只能查看本区域；公开大屏隐藏客户标识、金额明细和毛利率", "source": "sources/data-source-notes.pdf"},
+    {"id": "KF-09", "fact": "平台不替代财务系统，首期不建设实时流处理、不自动修复主数据，也不纳入寄售库存", "source": "intake.json; sources/data-source-notes.pdf"}
+  ]
+}
