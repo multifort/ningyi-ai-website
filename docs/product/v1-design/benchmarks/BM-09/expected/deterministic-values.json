@@ -1,0 +1,22 @@
+{
+  "benchmark_id": "BM-09",
+  "source_of_truth": "sources/membership-rules.pdf; sources/campaigns.xlsx; sources/member-page-spec.md",
+  "level_thresholds_cny": {"普通": 0, "银卡": 2000, "金卡": 8000, "钻石": 20000},
+  "level_window": "前12个完整自然月已结算净额",
+  "level_recalculation_day": 1,
+  "downgrade_grace_days": 30,
+  "base_points_per_cny": 1,
+  "rounding": "floor_at_order_level",
+  "posting_rule": {"cooling_off_days": 7, "posting": "次日", "batch_time": "02:00"},
+  "expiration_rule": "实际入账年度次年12月31日23:59:59",
+  "double_points_campaign": {"id": "ACT-260618", "starts_at": "2026-06-18 00:00:00", "ends_at": "2026-06-20 23:59:59", "activity_points_cap": 1500},
+  "coupon_priority": {"ACT-NEW": 30, "ACT-BIRTHDAY": 10, "selected_when_both_match": "ACT-NEW"},
+  "sample_orders": {
+    "ORD-SYN-901": {"eligible_paid_cny": 1280, "eligible_refund_cny": 280, "base_points": 1000, "activity_points": 1000, "total_points": 2000, "posted_on": "2026-06-26", "expires_at": "2027-12-31 23:59:59"},
+    "ORD-SYN-902": {"eligible_paid_cny": 2200, "eligible_refund_cny": 0, "base_points": 2200, "activity_points": 1500, "total_points": 3700},
+    "ORD-SYN-903": {"eligible_paid_cny": 620, "eligible_refund_cny": 0, "base_points": 620, "activity_points": 0, "total_points": 620},
+    "ORD-SYN-904": {"eligible_paid_cny": 160, "eligible_refund_cny": 260, "base_points": 0, "activity_points": 0, "total_points": 0, "requires_manual_review": true}
+  },
+  "manual_adjustment_approval_threshold_points": 5000,
+  "budget_cny": {"minimum": 680000, "maximum": 1180000}
+}

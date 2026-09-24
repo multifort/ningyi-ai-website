@@ -1,0 +1,16 @@
+{
+  "benchmark_id": "BM-09",
+  "facts": [
+    {"id": "KF-01", "fact": "普通、银卡、金卡、钻石的前12个完整自然月累计结算金额门槛分别为0元、2000元、8000元和20000元", "source": "sources/membership-rules.pdf"},
+    {"id": "KF-02", "fact": "等级每月1日按已结算净额重算，升级当日生效，降级保留30个自然日保护期；保护期不改变积分公式", "source": "sources/membership-rules.pdf"},
+    {"id": "KF-03", "fact": "每1元实付可积分金额获得1分并按订单级向下取整；优惠券抵扣、储值充值、运费和不可积分商品不计入", "source": "sources/membership-rules.pdf"},
+    {"id": "KF-04", "fact": "订单完成且超过7日无理由期后次日入账，每日02:00执行积分入账批次", "source": "sources/membership-rules.pdf"},
+    {"id": "KF-05", "fact": "退货按原订单和原活动规则复算；退款后可积分金额小于0时积分最低为0，已使用积分形成待人工处理欠额而非自动负余额", "source": "sources/membership-rules.pdf; sources/campaigns.xlsx"},
+    {"id": "KF-06", "fact": "积分按实际入账年度归属，在入账年度次年12月31日23:59:59到期；2026-06-26入账积分到期日为2027-12-31 23:59:59", "source": "sources/membership-rules.pdf; sources/campaigns.xlsx"},
+    {"id": "KF-07", "fact": "ORD-SYN-901退款后基础积分1000分、双倍活动积分1000分，应入账2000分", "source": "sources/campaigns.xlsx"},
+    {"id": "KF-08", "fact": "ORD-SYN-902基础积分2200分，活动积分受1500分上限约束，应入账3700分；上限不得截断基础积分", "source": "sources/campaigns.xlsx"},
+    {"id": "KF-09", "fact": "新客100元券与生日月50元券属于同一互斥组，新客券优先；双倍积分可与优惠券并用，但券抵扣额不产生积分", "source": "sources/campaigns.xlsx; sources/member-page-spec.md"},
+    {"id": "KF-10", "fact": "人工调账由运营发起、财务复核，单笔超过5000分增加会员负责人审批；客服只能查询或发起异议单", "source": "sources/membership-rules.pdf; sources/member-page-spec.md"},
+    {"id": "KF-11", "fact": "首期不包含付费会员、积分转赠、跨品牌积分合并、自动延长或豁免过期积分", "source": "intake.json; sources/membership-rules.pdf; sources/member-page-spec.md"}
+  ]
+}

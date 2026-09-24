@@ -1,0 +1,108 @@
+{
+  "benchmarkId": "BM-09",
+  "benchmarkVersion": "1.0",
+  "title": "会员服务平台建设项目",
+  "projectType": "software",
+  "difficulty": "L2",
+  "coverageTags": [
+    "membership_level_window",
+    "points_deterministic_calculation",
+    "refund_reversal",
+    "points_expiration",
+    "campaign_exclusion",
+    "campaign_reward_cap",
+    "cross_deliverable_number_consistency",
+    "manual_adjustment_approval"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 12, "max": 34},
+    "features": {"min": 10, "max": 36},
+    "solutionCharacters": {"min": 11000, "max": 30000},
+    "slideCount": {"min": 10, "max": 22}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "membership_level_window_and_thresholds_preserved",
+    "base_and_campaign_points_separated",
+    "sample_order_totals_reconciled",
+    "refund_uses_original_order_rules",
+    "expiration_anchors_to_posting_year",
+    "campaign_exclusion_and_priority_preserved",
+    "manual_adjustment_approval_preserved",
+    "scope_exclusions_preserved",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "e7d3c8188b5b7f3aedabb9020ba441ecdef9d3323614593638559191fc3601cf",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "d58af2a762f57fb9bc0b2db4220da59185927a0d41231e6323f00e8bb972262c",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "762b9aa9ebef35598c6e9b40fe08bf3c09abde3c97bc4da36de32bcfd5935c71",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "11e469d67026216a24d80a6ac9301510b7be16f7bd9f9da62decc1e9d2ee9145",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "ad3ff7cf44c23698a564eea8e6caea137ebdeca8a92c9b9b6d185be0df014215",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "5b57ff77fbcfe46a361eb66ea7563d18a5f158dbb3150c6f33e378354b99cc2b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "3595463f59b6d442783050538982d9a201ab5b7d2701f4f42c38c1d9e967f740",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/campaigns.xlsx",
+      "sha256": "b7388bc6dcc36f4c88fa937b91600ba93777f7cfa773e3c7dc85a39c97d4dff6",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/member-page-spec.md",
+      "sha256": "8fa4f0651a66b58eebb75b7b145c995c22f4e96f505c1ab107198350e45f6d40",
+      "category": "content",
+      "format": "md",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/membership-rules.pdf",
+      "sha256": "04bb535e866121520336c445827f96e982dc3877d15757cd2504a1fa9a5a966d",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

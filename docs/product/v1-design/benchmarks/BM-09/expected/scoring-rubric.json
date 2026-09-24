@@ -1,0 +1,15 @@
+{
+  "benchmark_id": "BM-09",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.10,
+    "requirements_features": 0.12,
+    "membership_level_rules": 0.14,
+    "points_and_expiration": 0.20,
+    "campaign_stacking": 0.16,
+    "deterministic_data": 0.14,
+    "traceability": 0.08,
+    "deliverable_quality": 0.04,
+    "runtime_cost": 0.02
+  }
+}

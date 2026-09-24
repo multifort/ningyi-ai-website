@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "BM-09",
+  "relations": [
+    {"from": "前12个完整自然月已结算净额", "to": "会员等级", "type": "level_calculation", "source": "sources/membership-rules.pdf"},
+    {"from": "订单完成并超过7日无理由期", "to": "次日02:00积分入账批次", "type": "posting_rule", "source": "sources/membership-rules.pdf"},
+    {"from": "退货", "to": "按原订单和原活动规则复算", "type": "reversal_rule", "source": "sources/membership-rules.pdf; sources/campaigns.xlsx"},
+    {"from": "积分实际入账年度", "to": "次年12月31日23:59:59到期", "type": "expiration_rule", "source": "sources/membership-rules.pdf"},
+    {"from": "ACT-260618活动积分", "to": "最多1500分且不限制基础积分", "type": "campaign_cap", "source": "sources/campaigns.xlsx"},
+    {"from": "新客100元券与生日月50元券", "to": "互斥且新客券优先", "type": "campaign_exclusion", "source": "sources/campaigns.xlsx; sources/member-page-spec.md"},
+    {"from": "人工调账", "to": "运营发起与财务复核", "type": "approval", "source": "sources/membership-rules.pdf; sources/member-page-spec.md"},
+    {"from": "单笔调账超过5000分", "to": "会员负责人审批", "type": "approval_threshold", "source": "sources/membership-rules.pdf"}
+  ]
+}
