@@ -1,0 +1,19 @@
+{
+  "benchmark_id": "BM-11",
+  "facts": [
+    {"id": "KF-01", "fact": "旧站采用固定宽度布局，首页新闻最后更新于2021年，正文没有统一标记内容所有人、复核日期和到期状态", "source": "sources/legacy-portal-home.png; sources/content-governance.docx"},
+    {"id": "KF-02", "fact": "存量内容共620条，直接迁移250条、改写30条、离线归档340条，已分配总数为620且差异为0", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"id": "KF-03", "fact": "集团新闻248条分为迁移96条和归档152条；通知公告112条分为迁移42条和归档70条", "source": "sources/portal-columns.xlsx"},
+    {"id": "KF-04", "fact": "业务板块86条分为迁移34条、改写18条和归档34条；投资者关系54条全部迁移", "source": "sources/portal-columns.xlsx"},
+    {"id": "KF-05", "fact": "人才发展73条分为迁移24条和归档49条；关于集团47条分为改写12条和归档35条", "source": "sources/portal-columns.xlsx"},
+    {"id": "KF-06", "fact": "内容编辑只能维护本部门草稿并提交审核，不能发布或审批自己的草稿；门户发布员不能改写正文或发布审批不完整内容", "source": "sources/content-governance.docx"},
+    {"id": "KF-07", "fact": "普通内容部门审核目标为2个工作日，发布检查为1个工作日；专业审核目标为3个工作日；紧急公告目标4小时但仍须编辑与独立审核人两人", "source": "sources/content-governance.docx"},
+    {"id": "KF-08", "fact": "投资者关系54条在P2批次迁移，财务与法务必审，不自动到期，发布窗口和原始文件必须留痕", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"id": "KF-09", "fact": "标准内容状态为草稿、部门审核、按需专业审核、待发布、已发布、到期和归档，退回后编辑须重新进入审核", "source": "sources/content-governance.docx"},
+    {"id": "KF-10", "fact": "有替代页的迁移或改写内容配置301重定向；无替代页的离线归档内容仅在SEO与法务复核后返回410", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"id": "KF-11", "fact": "离线归档保留原文、附件、原URL、摘要与决策证据，不等同删除；孤儿附件不得自动删除", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"id": "KF-12", "fact": "P1试迁移20条，P2迁移投资者关系54条，P3处理其余206条迁移与改写内容，三批合计280条", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"id": "KF-13", "fact": "切换后观察7天，批量正文缺失、受监管内容错误或关键路由不可用时恢复旧站只读入口且不覆盖问题版本", "source": "sources/content-governance.docx"},
+    {"id": "KF-14", "fact": "首期不包含员工内网、英文站重建、营销自动化、历史视频转码和统一身份平台改造", "source": "sources/content-governance.docx; intake.json"}
+  ]
+}

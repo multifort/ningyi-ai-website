@@ -1,0 +1,31 @@
+{
+  "benchmark_id": "BM-11",
+  "source_of_truth": "sources/portal-columns.xlsx; sources/legacy-portal-home.png; sources/content-governance.docx",
+  "content_totals": {"inventory": 620, "migrate": 250, "rewrite": 30, "offline_archive": 340, "unassigned": 0},
+  "columns": {
+    "集团新闻": {"total": 248, "migrate": 96, "rewrite": 0, "offline_archive": 152, "target_path": "/news"},
+    "通知公告": {"total": 112, "migrate": 42, "rewrite": 0, "offline_archive": 70, "target_path": "/notices"},
+    "业务板块": {"total": 86, "migrate": 34, "rewrite": 18, "offline_archive": 34, "target_path": "/business"},
+    "投资者关系": {"total": 54, "migrate": 54, "rewrite": 0, "offline_archive": 0, "target_path": "/investors"},
+    "人才发展": {"total": 73, "migrate": 24, "rewrite": 0, "offline_archive": 49, "target_path": "/careers"},
+    "关于集团": {"total": 47, "migrate": 0, "rewrite": 12, "offline_archive": 35, "target_path": "/about"}
+  },
+  "workflow_sla": {"department_review_workdays": 2, "publish_check_workdays": 1, "specialist_review_workdays": 3, "emergency_publish_hours": 4},
+  "migration_batches": {
+    "P0": {"scope": "inventory_and_freeze", "content_count": 620},
+    "P1": {"scope": "pilot_news_and_business", "content_count": 20},
+    "P2": {"scope": "investor_relations", "content_count": 54},
+    "P3": {"scope": "remaining_migrate_and_rewrite", "content_count": 206},
+    "P4": {"scope": "cutover_and_observation", "observation_days": 7}
+  },
+  "sample_routes": {
+    "URL-SYN-001": {"action": 301, "target": "/news/2026/green-factory"},
+    "URL-SYN-002": {"action": 301, "target": "/investors/reports/2025"},
+    "URL-SYN-003": {"action": 301, "target": "/business/new-materials"},
+    "URL-SYN-004": {"action": 410, "target": null},
+    "URL-SYN-005": {"action": 410, "target": null},
+    "URL-SYN-006": {"action": 301, "target": "/about/history"},
+    "URL-SYN-007": {"action": "pending_review", "target": null, "must_not_auto_delete": true}
+  },
+  "budget_cny": {"minimum": 920000, "maximum": 1600000}
+}

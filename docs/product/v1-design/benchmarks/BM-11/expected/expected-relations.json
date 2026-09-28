@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-11",
+  "relations": [
+    {"from": "620条存量内容", "to": "250条迁移、30条改写、340条离线归档", "type": "quantity_conservation", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"from": "内容编辑", "to": "部门审核人、按需专业审核人和门户发布员", "type": "separation_of_duties", "source": "sources/content-governance.docx"},
+    {"from": "投资者关系内容", "to": "财务与法务审核", "type": "mandatory_specialist_review", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"from": "正文修改或审核退回", "to": "新版本重新进入审核", "type": "workflow_reentry", "source": "sources/content-governance.docx"},
+    {"from": "迁移或改写且存在替代页", "to": "旧地址301重定向", "type": "routing", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"from": "离线归档且无替代页", "to": "SEO与法务复核后返回410", "type": "routing_review", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"from": "离线归档", "to": "原文、附件、原URL、摘要和决策证据", "type": "archive_evidence", "source": "sources/content-governance.docx"},
+    {"from": "P1、P2、P3", "to": "20+54+206=280条迁移与改写内容", "type": "batch_reconciliation", "source": "sources/portal-columns.xlsx; sources/content-governance.docx"},
+    {"from": "切换后阻断缺陷", "to": "恢复旧站只读入口", "type": "rollback", "source": "sources/content-governance.docx"}
+  ]
+}

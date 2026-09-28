@@ -1,0 +1,16 @@
+{
+  "benchmark_id": "BM-11",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.10,
+    "requirements_features": 0.10,
+    "migration_counts": 0.18,
+    "workflow_roles": 0.17,
+    "content_governance": 0.14,
+    "routing_and_redirects": 0.12,
+    "implementation_and_rollback": 0.09,
+    "traceability": 0.06,
+    "deliverable_quality": 0.03,
+    "runtime_cost": 0.01
+  }
+}

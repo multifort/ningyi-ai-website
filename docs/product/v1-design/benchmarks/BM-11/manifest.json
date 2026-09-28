@@ -1,0 +1,107 @@
+{
+  "benchmarkId": "BM-11",
+  "benchmarkVersion": "1.0",
+  "title": "企业门户改版与迁移项目",
+  "projectType": "software",
+  "difficulty": "L2",
+  "coverageTags": [
+    "content_inventory_reconciliation",
+    "migration_disposition",
+    "multi_role_publishing",
+    "separation_of_duties",
+    "specialist_review",
+    "redirect_and_archive_rules",
+    "phased_migration",
+    "rollback_and_observation"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 12, "max": 36},
+    "features": {"min": 12, "max": 40},
+    "solutionCharacters": {"min": 12000, "max": 32000},
+    "slideCount": {"min": 10, "max": 22}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "migration_counts_reconcile_to_inventory",
+    "per_column_counts_preserved",
+    "publishing_roles_separated",
+    "specialist_review_triggers_preserved",
+    "redirect_and_archive_rules_preserved",
+    "migration_batches_and_rollback_preserved",
+    "scope_exclusions_preserved",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "6d4f03c6446e8e6b0b28dfa7ff260a2a674ceac892b7b784e369f554a30301c8",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "378b4c0053fc28659e33de16d4ca9358c3fe253bea1bd6b6fe2422f8fb260e3a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "29921847670a233238742ccf15420f6762b585fd89251ce1c1f780d52b036045",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "3a563ce666c73d1ff33f68975ee635279cb95caac3dd0abacd3b92cc400a6d66",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "a6f0f0ad596a4b47731e66773b81210ba8b483df68cefb42f867c9b9769a006a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "c233c99118b37e0a234c6e2c7e53e7f56173f44566d6377511716619e86cdbe1",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "9215780243652074484a66390b55520b28f3d3c9c7b1972ab77e2361b6b864c2",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/content-governance.docx",
+      "sha256": "393c7fcbc3b34cf0e20108f76d626c43b6252f4d3414ded731f1a8ab9987832e",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/legacy-portal-home.png",
+      "sha256": "eeb4a2ee59a92ece3bb61c56b0ec4c4c21b29c74a3994414311da27082f7a79c",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/portal-columns.xlsx",
+      "sha256": "5653a996aa4cde0a191b1c711b08aeb70dbc6da1f82960879078326eb3eb3ae6",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}
