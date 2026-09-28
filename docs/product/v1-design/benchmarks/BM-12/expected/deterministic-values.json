@@ -1,0 +1,16 @@
+{
+  "benchmark_id": "BM-12",
+  "source_of_truth": "sources/crm-api-spec.pdf; sources/erp-api-spec.pdf; sources/field-mapping.xlsx; sources/integration-deployment.png",
+  "limits": {"crm_requests_per_minute": 120, "erp_requests_per_minute": 60, "erp_batch_max_records": 200, "idempotency_hours": 24, "webhook_replay_window_minutes": 10},
+  "money_rule": {"scope": "line", "net_formula": "gross/(1+tax_rate)", "rounding_decimals": 2, "tax_formula": "gross-net", "order_level_redistribution": false},
+  "samples": {
+    "INT-SYN-001": {"currency": "CNY", "gross": 11300, "tax_rate": 0.13, "net": 10000, "tax": 1300, "exchange_rate": 1, "cny_amount": 11300, "action": "create_order"},
+    "INT-SYN-002": {"currency": "USD", "gross": 2260, "tax_rate": 0.13, "net": 2000, "tax": 260, "exchange_rate": 7.2, "cny_amount": 16272, "action": "create_order"},
+    "INT-SYN-003": {"business_key": "same", "request_digest": "same", "action": "return_existing_order"},
+    "INT-SYN-004": {"request_key": "same", "amount_changed": true, "http_status": 409, "action": "manual_review"}
+  },
+  "retry": {"retryable": [429, "5xx"], "delays_seconds": [5, 30, 120, 600], "maximum_attempts": 5, "exhausted_action": "dead_letter_and_alert", "not_auto_retry": [400, 409]},
+  "reconciliation": {"full_daily_time": "02:30", "incremental_workday_minutes": 15},
+  "service_targets": {"monthly_availability_percent": 99.9, "ordinary_order_sync_percent": 95, "ordinary_order_sync_minutes": 5, "audit_online_years": 2, "audit_archive_years": 7, "backlog_alert_count": 100, "backlog_alert_minutes": 15},
+  "budget_cny": {"minimum": 1200000, "maximum": 2000000}
+}

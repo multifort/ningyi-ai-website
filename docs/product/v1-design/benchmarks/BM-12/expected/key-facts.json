@@ -1,0 +1,19 @@
+{
+  "benchmark_id": "BM-12",
+  "facts": [
+    {"id": "KF-01", "fact": "CRM是客户法定名称、统一社会信用代码、联系人授权状态、商机、报价和签约状态的主数据源", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-02", "fact": "ERP是客户编码、信用额度、物料、税码、销售订单、承诺交付、发运、发票、应收、付款和核销的主数据源", "source": "sources/erp-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-03", "fact": "CRM SaaS不得直连ERP，入站链路必须经过API网关、集成编排服务、消息队列和内网ERP适配器", "source": "sources/erp-api-spec.pdf; sources/integration-deployment.png"},
+    {"id": "KF-04", "fact": "CRM接口每租户限流120请求/分钟，ERP限流60请求/分钟且批量接口每次最多200条", "source": "sources/crm-api-spec.pdf; sources/erp-api-spec.pdf"},
+    {"id": "KF-05", "fact": "CRM webhook采用HMAC-SHA256签名，只接受10分钟内消息并按event_id去重；请求幂等键保留24小时", "source": "sources/crm-api-spec.pdf; sources/erp-api-spec.pdf"},
+    {"id": "KF-06", "fact": "external_order_no是永久唯一业务键；同业务键与相同请求摘要返回既有订单，不同摘要返回409", "source": "sources/erp-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-07", "fact": "金额按行计算不含税金额等于含税金额除以1加税率并四舍五入到2位，税额为含税减不含税；订单级不重新分摊尾差", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-08", "fact": "INT-SYN-001的CNY含税11300对应不含税10000和税额1300；INT-SYN-002的USD含税2260对应不含税2000、税额260，按7.20折算人民币16272", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-09", "fact": "INT-SYN-003相同业务键和摘要返回既有订单；INT-SYN-004同请求键但金额变化返回409并人工核对", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-10", "fact": "400字段错误与409幂等或版本冲突不自动重试；429与5xx按5秒、30秒、2分钟和10分钟退避，第5次失败进入死信并告警", "source": "sources/crm-api-spec.pdf; sources/erp-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"id": "KF-11", "fact": "超时但结果未知时先按external_order_no查询，再决定是否重试，禁止直接再次创建", "source": "sources/erp-api-spec.pdf; sources/integration-deployment.png"},
+    {"id": "KF-12", "fact": "每日02:30运行全量键对账，工作日每15分钟运行增量状态对账；严重差异阻断相关订单", "source": "sources/erp-api-spec.pdf; sources/integration-deployment.png"},
+    {"id": "KF-13", "fact": "接口月度可用性目标99.9%，普通订单95%在5分钟内同步；审计在线保留2年、归档7年，积压超过100条或15分钟告警", "source": "sources/erp-api-spec.pdf"},
+    {"id": "KF-14", "fact": "首期不包含采购订单、实时库存预留、2025年以前历史订单回填、CRM写回ERP付款状态或双方数据库直连", "source": "intake.json"}
+  ]
+}

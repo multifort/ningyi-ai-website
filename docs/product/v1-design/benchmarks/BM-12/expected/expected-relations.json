@@ -1,0 +1,14 @@
+{
+  "benchmark_id": "BM-12",
+  "relations": [
+    {"from": "CRM客户身份、报价和签约事实", "to": "ERP客户引用与销售订单", "type": "crm_to_erp", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"from": "ERP订单、发运、发票、应收和付款事实", "to": "CRM只读状态", "type": "erp_to_crm", "source": "sources/erp-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"from": "CRM SaaS", "to": "API网关、编排、队列、ERP适配器、ERP", "type": "isolated_request_path", "source": "sources/integration-deployment.png; sources/erp-api-spec.pdf"},
+    {"from": "account_id", "to": "external_customer_id与ERP customer_code", "type": "customer_key_mapping", "source": "sources/field-mapping.xlsx"},
+    {"from": "contract_no", "to": "external_order_no", "type": "permanent_business_key", "source": "sources/field-mapping.xlsx; sources/erp-api-spec.pdf"},
+    {"from": "行级含税金额与税率", "to": "行级不含税金额与税额", "type": "deterministic_calculation", "source": "sources/crm-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"from": "相同业务键与相同摘要", "to": "返回既有订单", "type": "idempotency", "source": "sources/erp-api-spec.pdf; sources/field-mapping.xlsx"},
+    {"from": "超时结果未知", "to": "先查询业务键再决定重试", "type": "unknown_outcome_recovery", "source": "sources/erp-api-spec.pdf; sources/integration-deployment.png"},
+    {"from": "429或5xx第五次失败", "to": "死信与告警", "type": "retry_exhaustion", "source": "sources/crm-api-spec.pdf; sources/erp-api-spec.pdf; sources/integration-deployment.png"}
+  ]
+}

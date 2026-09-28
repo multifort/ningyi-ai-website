@@ -1,0 +1,37 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-12",
+  "project_name": "远岑科技 CRM 与 ERP 集成项目",
+  "customer_facing_name": "客户与订单一体化集成平台",
+  "customer_type": "跨境工业设备企业",
+  "target_users": ["销售运营", "客户主数据管理员", "订单运营", "财务", "ERP管理员", "集成运维", "审计人员"],
+  "primary_goal": "把CRM中的客户、批准报价和已签合同可靠同步为ERP客户引用与销售订单，并把履约和财务状态只读回写CRM",
+  "secondary_goal": "明确主数据边界，保证含税金额、原币、税码、业务键和版本可追溯，避免重复订单和状态互相覆盖",
+  "need_description": "当前销售在CRM完成签约后由运营人工录入ERP，客户名称匹配、含税换算、物料映射和重复订单问题频发。希望建立事件驱动集成、确定性字段映射、幂等、死信和对账闭环，同时保持ERP不向公网开放。",
+  "desired_product_form": ["集成编排服务", "字段映射与主数据路由", "队列与死信工作台", "对账与运行监控"],
+  "budget": {
+    "available": true,
+    "range_cny": {"min": 1200000, "max": 2000000},
+    "confidence": "tentative",
+    "note": "不含CRM或ERP核心产品许可、网络专线、历史订单全量清洗和主数据治理组织改造。"
+  },
+  "schedule": {
+    "desired_start": "2027-08-01",
+    "desired_go_live": "2028-03-31",
+    "flexibility": "以客户映射、金额对账、幂等冲突、死信恢复和安全连通验收为准"
+  },
+  "output_preferences": {
+    "primary_audience": "销售运营负责人、财务负责人、CRM与ERP产品负责人、架构师和集成运维负责人",
+    "language": "zh-CN",
+    "packages": ["接口与主数据评审包", "集成实施与运维交接包"],
+    "template_files": []
+  },
+  "constraints": [
+    "CRM与ERP字段按主数据所有权同步，不采用最后写入者获胜",
+    "CRM SaaS不得直连ERP或企业数据库",
+    "外部订单号永久唯一，超时结果未知时先查询再决定是否重试",
+    "保留订单原币与汇率，含税转不含税按行四舍五入到2位",
+    "429与5xx最多尝试5次，耗尽后进入死信并告警",
+    "首期不包含采购订单、实时库存预留、2025年以前历史订单回填、由CRM写回ERP付款状态或双方数据库直连"
+  ]
+}

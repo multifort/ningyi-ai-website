@@ -1,0 +1,114 @@
+{
+  "benchmarkId": "BM-12",
+  "benchmarkVersion": "1.0",
+  "title": "CRM 与 ERP 集成项目",
+  "projectType": "software",
+  "difficulty": "L3",
+  "coverageTags": [
+    "master_data_ownership",
+    "field_mapping",
+    "money_and_currency_reconciliation",
+    "idempotency_and_conflicts",
+    "retry_and_dead_letter",
+    "unknown_outcome_recovery",
+    "network_isolation",
+    "operational_reconciliation"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 16, "max": 44},
+    "features": {"min": 14, "max": 42},
+    "solutionCharacters": {"min": 15000, "max": 36000},
+    "slideCount": {"min": 12, "max": 24}
+  },
+  "timeoutSeconds": 2100,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "master_data_boundaries_preserved",
+    "network_isolation_preserved",
+    "field_mapping_and_money_rules_preserved",
+    "sample_amounts_reconciled",
+    "idempotency_and_unknown_outcome_rules_preserved",
+    "retry_dead_letter_and_reconciliation_preserved",
+    "scope_exclusions_preserved",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "a5816fa0b5bed3aa7f35f3525ee0c56d8ba95a99aeb868e6b4842aa6b63a6b87",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "44c57056e09bbe471e9f4bdf195027af70b9b09887cbf9850370edfcf52a051a",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "45bc45f8848ed28e44afbe3891cf8c0807573e19c2b2347fa3047dd5b865a511",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "574d53cf06746c8ab983e7d48f9c42672b16da4a456621218eecafe28bed1f43",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "fad5b377c2d43ba6515cc6471651e0a9a9b7bd5ef2a2b12924e18655c52ce717",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "3caa9916815cab31855fe086d220b8d78456218ddb0a90a81f72b7f93761fd4e",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "b5f9b53b722eaee343a075ab9f503f37115aa8573fcec37bd17513a501e2187f",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/crm-api-spec.pdf",
+      "sha256": "ab1071af0611e01543f216cb7b8404dc3d9380117b1ac4528d62400f2a5b2825",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/erp-api-spec.pdf",
+      "sha256": "8e162a401fba873ccf8c5c8abaf40f5f9136930861764174ec0f6ef73c648e6a",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/field-mapping.xlsx",
+      "sha256": "763caad4e31a1df74e2e6cb0fbf8c9ac05bbacf323b6af672f8cd1a2ab133032",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/integration-deployment.png",
+      "sha256": "8da5e00c6b558ae6ce695c7f39ade10ea8556180849a2348a98219ccc4076f85",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

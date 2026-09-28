@@ -1,0 +1,17 @@
+{
+  "benchmark_id": "BM-12",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.08,
+    "requirements_features": 0.08,
+    "master_data_boundaries": 0.16,
+    "field_mapping_and_money": 0.17,
+    "idempotency_and_conflicts": 0.15,
+    "error_recovery_and_reconciliation": 0.15,
+    "architecture_and_security": 0.10,
+    "implementation_effort": 0.05,
+    "traceability": 0.04,
+    "deliverable_quality": 0.015,
+    "runtime_cost": 0.005
+  }
+}

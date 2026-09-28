@@ -15,11 +15,11 @@
 | 官网与 CMS | `app/components/`、`app/admin/`、`app/api/content/` | 保留并已把主要 CTA 接入产品入口 | 完成内容发布复核和浏览器回归 |
 | 产品身份 | `lib/product/auth.ts`、`app/api/product/auth/`、`app/api/product/account/` | 产品用户与管理员隔离；已实现用户名密码、HttpOnly Session、登录限流、改密、导出与注销 | 密码找回、共享限流和外部身份方式延期 |
 | Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理 | 对象存储直传、恶意文件扫描与生产资源隔离 |
-| 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别 | 用 BM-12—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
+| 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别 | 用 BM-13—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退基础能力 | 补齐真实项目修改集与无关变化率验收 |
 | 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌 | 完整模板兼容、视觉质量回归和跨成果一致性验收 |
 | Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`worker-health.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、提交围栏、退避、自动修复、共享心跳健康判定、故障退出、备份恢复和存储维护；解析、正式生成与渲染均有租约接管回归 | 独立可扩展队列、多主机 Worker、容量压测和告警接入 |
-| 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—11 | 补齐 BM-12—18，并完成全量活动与故障探针 |
+| 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—12 | 补齐 BM-13—18，并完成全量活动与故障探针 |
 
 ## 3. 当前存储与部署形态
 
@@ -36,10 +36,10 @@
 - `pnpm typecheck`：通过。
 - `pnpm test`：33 项通过，0 项失败；除五类隔离故障探针外，已覆盖真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
-- `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-11 的 manifest 与文件摘要。
+- `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12 的 manifest 与文件摘要。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
 - `pnpm lint`：通过；0 项错误、0 项警告，使用 `--max-warnings=0` 阻止警告回归。
-- `pnpm quality:check`：通过；本地与 GitHub Actions 共用同一入口，覆盖上述 lint、类型、测试、API、契约和 BM-01—11 校验。
+- `pnpm quality:check`：通过；本地与 GitHub Actions 共用同一入口，覆盖上述 lint、类型、测试、API、契约和 BM-01—12 校验。
 - `pnpm build`：通过；Next.js 生产构建、页面静态生成和类型校验均完成。
 - 隔离浏览器冒烟：通过；覆盖需求提交登录门、注册后自动建方案、已有账号登录、成果列表、方案进度页和跨用户直接访问隔离；方案页等待完整轮询周期后控制台为 0 error / 0 warning。
 - 真实模型供应商调用和 30 次连续无人值守链路不计入本次基线结论，仍需在配置隔离的验收环境执行。
@@ -49,14 +49,14 @@
 | 路线阶段 | 当前判断 | 说明 |
 |---|---|---|
 | M0 最小完整链路 | 代码骨架已覆盖，待证据收口 | 身份、上传、解析、正式分析、成果、下载和删除均已有实现 |
-| M1 全部输入格式 | 部分完成 | 主流格式已接入，BM-12—18 和旧格式覆盖未完成 |
+| M1 全部输入格式 | 部分完成 | 主流格式已接入，BM-13—18 和旧格式覆盖未完成 |
 | M2 七类成果 | 已实现生成路径，待全量质量验收 | 不能只以文件存在判定完成 |
 | M3 模板、渲染与成果包 | 部分完成 | 默认渲染、模板 profile、版本与 ZIP 已有；兼容率和视觉门未闭环 |
 | M4 修改、锁定与版本 | 基础实现完成，待真实修改集验收 | 已有 R/C/S/P 影响与项目模型状态测试 |
 | M5 正式产品界面 | 基础页面与主流程浏览器冒烟已完成 | 仍缺可重复的完整桌面/移动端 E2E 和异常恢复矩阵 |
 | M6 外部开放安全 | 部分完成 | 鉴权、私有存储、签名下载、删除已有；生产存储、安全扫描与共享限流未完成 |
 | M7 无人化运维与灰度 | 单机实现完成，生产验证未完成 | Runner、健康、恢复、备份已有；监控接入、压测和多机运行待完成 |
-| M8 无人值守验收 | 未完成 | 只有 BM-01—11 实体样本，尚未完成 18 项和 30 次活动 |
+| M8 无人值守验收 | 未完成 | 只有 BM-01—12 实体样本，尚未完成 18 项和 30 次活动 |
 | M9 PPT 视觉优先复原 | 延期 | 保持在主流程验收之后 |
 
 ## 6. 文档与代码同步规则
@@ -70,7 +70,7 @@
 ## 7. 下一批研发顺序
 
 1. 把已通过的浏览器冒烟扩展为可重复的桌面/移动端异常状态矩阵。
-2. 补齐 BM-12—18 的材料、期望事实、评分规则和绑定流程。
+2. 补齐 BM-13—18 的材料、期望事实、评分规则和绑定流程。
 3. 迁移 PostgreSQL 与 S3 兼容对象存储，并完成备份、恢复和删除审计。
 4. 执行多用户并发、租约竞争、重复消费、崩溃恢复和供应商限流压测；现有提交围栏回归作为并发正确性基线。
 5. 完成 18 个项目、30 次连续运行和五类故障探针后，进入小流量灰度。
