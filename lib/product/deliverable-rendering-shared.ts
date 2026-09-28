@@ -53,6 +53,17 @@ export function documentPageSize(theme: RenderTheme | null) {
   return { widthTwips: 12240, heightTwips: 15840, pageRatio: 0.7727, fromTemplate: false, reason: theme ? "模板纸张尺寸缺失或超出安全范围" : "未提供 Word 企业模板" };
 }
 
+export function presentationCanvas(theme: RenderTheme | null) {
+  const widthEmu = theme?.slideSize?.widthEmu || 0;
+  const heightEmu = theme?.slideSize?.heightEmu || 0;
+  const aspectRatio = heightEmu > 0 ? widthEmu / heightEmu : 0;
+  if (aspectRatio >= 1.65 && aspectRatio <= 1.9) {
+    const width = 13.333;
+    return { width, height: width / aspectRatio, aspectRatio: Number(aspectRatio.toFixed(4)), fromTemplate: true, reason: null };
+  }
+  return { width: 13.333, height: 7.5, aspectRatio: 1.7777, fromTemplate: false, reason: theme ? "模板页面比例与当前安全版式不兼容" : "未提供 PPT 企业模板" };
+}
+
 export function mixWithWhite(value: string, ratio: number) {
   const color = officeColor(value);
   return [0, 2, 4].map((index) => {

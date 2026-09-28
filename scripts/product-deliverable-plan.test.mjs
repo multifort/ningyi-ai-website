@@ -7,6 +7,7 @@ const source = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliv
 const publicationSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-publication.ts"), "utf8");
 const docxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-docx-renderer.ts"), "utf8");
 const pdfRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pdf-renderer.ts"), "utf8");
+const pptxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pptx-renderer.ts"), "utf8");
 const sharedRenderingSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-rendering-shared.ts"), "utf8");
 
 test("渐进成果与最终渲染复用同一成果定义和生成入口", () => {
@@ -52,4 +53,12 @@ test("DOCX 渲染脱离成果编排模块并复用共享主题边界", () => {
   assert.match(docxRendererSource, /export async function buildFormalSolutionDocx/u);
   assert.match(docxRendererSource, /documentPageSize\(theme\)/u);
   assert.match(sharedRenderingSource, /export function documentPageSize/u);
+});
+
+test("PPTX 渲染脱离成果编排模块并复用共享画布边界", () => {
+  assert.match(source, /pptxRenderer\.buildSolutionPresentation/u);
+  assert.doesNotMatch(source, /new pptxgen/u);
+  assert.match(pptxRendererSource, /export async function buildSolutionPresentation/u);
+  assert.match(pptxRendererSource, /presentationCanvas\(theme\)/u);
+  assert.match(sharedRenderingSource, /export function presentationCanvas/u);
 });
