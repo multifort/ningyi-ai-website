@@ -18,13 +18,14 @@
 12. `11-deferred-integrations.md`：多方式登录、密码找回与支付等延期集成技术债务。
 13. `12-ppt-visual-first-rendering.md`：主流程完成后的 PPT 视觉优先、无损复原与可编辑交付专项。
 14. `13-current-implementation-status.md`：当前代码事实、设计阶段映射、验证基线和文档同步规则。
+15. `14-development-execution-plan.md`：后续研发任务、依赖关系、当前进度、验证命令和灰度退出条件的唯一执行主表。
 
 ## 机器可读契约与基准
 
 - 核心非基准契约校验：运行 `pnpm contracts:check`，由 uv 按 `uv.lock` 在隔离环境中校验正式项目模型、任务运行时、变更影响和产品 API 目录 Schema 及对应样例。
 - 产品 API 与代码同步校验：运行 `pnpm api:check`，检查机器可读 API 目录是否与 `app/api/product/**/route.ts` 双向一致。
-- 基准包聚合校验：运行 `pnpm benchmark:verify`，默认检查仓库中已有的 BM-01—BM-07；也可追加单个 manifest 路径。
-- 统一质量门：运行 `pnpm quality:check`，与 `.github/workflows/quality.yml` 使用相同的 lint、类型、测试、API、契约和基准校验顺序。
+- 基准包聚合校验：运行 `pnpm benchmark:verify`，默认检查仓库中已有的 BM-01—BM-12；也可追加单个 manifest 路径。该命令只证明基准包和摘要完整，不等同于产品运行或内容质量通过。
+- 本地统一质量门：运行 `pnpm quality:check`，按固定顺序执行 lint、类型、测试、API、契约和基准包校验。仓库当前不使用 GitHub Actions。
 
 - `contracts/project-model.schema.json`：正式项目模型 V1。
 - `contracts/benchmark-manifest.schema.json`：基准输入清单 V1。

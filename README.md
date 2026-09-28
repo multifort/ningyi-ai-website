@@ -2,7 +2,7 @@
 
 本仓库同时承载宁翼智能科技官网、CMS 管理端和 AI 企业方案产品域。产品域已经具备本地单机端到端骨架：用户提交需求与私有材料后，后台 Worker 完成材料理解、正式分析、项目模型维护、七类成果生成、版本与成果包管理，并提供下载、删除、运行监控、备份恢复和无人值守验收能力。
 
-当前处于外部灰度前的工程收口阶段，并非生产就绪。准确实施状态见 [当前代码实施状态](docs/product/v1-design/13-current-implementation-status.md)，完整产品规格见 [V1 设计基线](docs/product/v1-design/README.md)。
+当前处于外部灰度前的工程收口阶段，并非生产就绪。准确实施状态见 [当前代码实施状态](docs/product/v1-design/13-current-implementation-status.md)，后续任务与依赖见 [开发执行计划](docs/product/v1-design/14-development-execution-plan.md)，完整产品规格见 [V1 设计基线](docs/product/v1-design/README.md)。
 
 ## 技术与运行形态
 
@@ -44,9 +44,9 @@ pnpm contracts:check
 pnpm benchmark:verify
 ```
 
-- `quality:check` 是本地与 CI 的统一入口，依次执行 lint、类型检查、测试、API 同步、契约和基准校验。
+- `quality:check` 是本地统一质量入口，依次执行 lint、类型检查、测试、API 同步、契约和基准包校验；仓库当前不使用 GitHub Actions。
 - `api:check` 扫描全部 `app/api/product/**/route.ts`，并与产品 API 目录逐项比对；新增、删除或修改路由时必须同步目录。
-- `benchmark:verify` 默认聚合校验仓库中已有的 BM-01—BM-07，也可以追加单个 `manifest.json` 路径。
+- `benchmark:verify` 默认聚合校验仓库中已有的 BM-01—BM-12，也可以追加单个 `manifest.json` 路径；它只验证基准包完整性，不代表产品运行或内容质量通过。
 - `contracts:check` 通过 `uv.lock` 自动建立隔离环境并校验机器可读 JSON Schema，无需手工安装 `jsonschema`。
 - `lint` 使用非交互式 ESLint 9 配置，并以 0 warning 作为质量门。
 
@@ -68,10 +68,11 @@ data/                        本地 SQLite 数据（运行时文件不提交）
 
 `deploy/systemd/` 提供当前单机部署样例及生产环境变量模板，详见 [systemd 部署说明](deploy/systemd/README.md)。Vercel、Netlify 等仅 Web 运行形态不能直接承载本仓库当前的常驻 Worker、本地私有存储和 SQLite 产品数据。
 
-外部灰度前的主要阻断项：
+外部灰度前的主要阻断项按依赖顺序为：
 
-- PostgreSQL 与私有对象存储迁移；
-- BM-08—BM-18 实体样本和 30 次连续无人值守验收；
-- 多用户并发、租约竞争、崩溃恢复和供应商限流压测；
-- 将已完成的主流程浏览器冒烟扩展为可重复的全状态回归，并补齐恶意文件扫描、共享限流和安全开放门；
-- 清理现有 lint 警告，并完成 Worker 故障注入与多用户并发验证。
+- 隔离基准 `expected` 规则与正式生成链路，重新验证 BM-01—12；
+- 将主流程浏览器冒烟扩展为仓库内可重复的桌面/移动端全状态回归；
+- 收敛重复的交付物生成逻辑，完成企业模板渲染和视觉质量门；
+- 补齐 BM-13—18，并完成 18 项、30 次连续无人值守验收；
+- 迁移 PostgreSQL、私有对象存储和可水平扩展的 Worker，完成多用户并发与公平性压测；
+- 补齐恶意文件扫描、密码找回、共享限流和外部开放安全门。
