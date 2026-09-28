@@ -1,12 +1,9 @@
 import { createHash, randomUUID } from "crypto";
-import fs from "fs";
-import path from "path";
 import { productSqlite } from "./db";
 import { ensureUnifiedKnowledge, unifiedKnowledgeContext, unifiedKnowledgeFingerprint } from "./unified-knowledge";
 import { ensureProgressiveDeliverables } from "./deliverables";
 import { evaluateCandidateConsistency, evaluateProjectConsistency, repairDanglingProjectRelations } from "./project-consistency";
 import { openAIResponseError, ProviderConfigurationError, providerErrorCode } from "./openai-errors";
-import { evaluateBoundBenchmarkContent } from "./benchmark-content-evaluation";
 import { projectModelSectionContext } from "./project-model-section-map";
 
 const outline = [
@@ -107,17 +104,12 @@ export async function continueFormalDocument(solutionId: string, userId: string,
       productSqlite.prepare("UPDATE model_calls SET status = 'succeeded', input_tokens = ?, output_tokens = ?, estimated_cost_microusd = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?").run(generated.inputTokens, generated.outputTokens, estimateFormalCost(generated.inputTokens, generated.outputTokens), callId);
       productSqlite.prepare("UPDATE formal_section_attempts SET status = 'passed', quality_json = ?, input_tokens = ?, output_tokens = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?").run(JSON.stringify(quality), generated.inputTokens, generated.outputTokens, attemptId);
       const remaining = productSqlite.prepare("SELECT COUNT(*) AS count FROM formal_sections WHERE solution_id = ? AND status != 'validated'").get(solutionId) as { count: number };
-      const completenessRepair = remaining.count ? null : benchmarkCompletenessRepair(solutionId);
-      const documentStatus = remaining.count || completenessRepair ? "pending" : "completed";
-      productSqlite.prepare("UPDATE formal_documents SET status = ?, current_section = ?, last_error_code = ?, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(documentStatus, completenessRepair?.sectionIndex ?? next.sectionIndex + 1, completenessRepair ? "BENCHMARK_COMPLETENESS_REPAIR" : null, solutionId);
+      const documentStatus = remaining.count ? "pending" : "completed";
+      productSqlite.prepare("UPDATE formal_documents SET status = ?, current_section = ?, last_error_code = NULL, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(documentStatus, next.sectionIndex + 1, solutionId);
       if (documentStatus === "completed") productSqlite.prepare("UPDATE change_impact_plans SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'accepted' AND execution_started_at IS NOT NULL").run(solutionId);
-      if (completenessRepair) {
-        productSqlite.prepare("UPDATE formal_sections SET status = 'pending', retry_cycle = retry_cycle + 1, next_attempt_at = CURRENT_TIMESTAMP, failed_at = NULL, lease_owner = NULL, lease_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'validated'").run(completenessRepair.sectionId);
-        productSqlite.prepare("UPDATE product_solutions SET status = 'processing', stage = 'formal_analysis', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(solutionId);
-      }
       repairDanglingProjectRelations(solutionId);
       evaluateProjectConsistency(solutionId);
-      if (!remaining.count && !completenessRepair) productSqlite.prepare("UPDATE product_solutions SET stage = 'rendering', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(solutionId);
+      if (!remaining.count) productSqlite.prepare("UPDATE product_solutions SET stage = 'rendering', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(solutionId);
     }).immediate();
     await ensureProgressiveDeliverables(solutionId, userId);
     // Full delivery rendering is claimed by the dedicated rendering worker on
@@ -295,143 +287,14 @@ function buildSectionContext(solutionId: string, sectionKey: string, title: stri
     WHERE s.solution_id = ? AND s.section_key = ? AND a.status = 'failed'
     ORDER BY a.attempt_no DESC LIMIT 1`).get(solutionId, sectionKey) as { attemptNo: number; errorCode: string | null; qualityJson: string | null } | undefined;
   const retryFeedback = retry ? readableRetryFeedback(retry) : "无；这是本章第一次生成。";
-  const benchmarkRequirements = benchmarkGuidance(solutionId, sectionKey);
   const projectModelContext = projectModelSectionContext(solutionId, sectionKey);
   return {
-    text: `当前章节：${title}\n本章关注：${keywords.join("、") || "项目整体一致性"}\n${knowledge.text}\n${projectModelContext}\n${benchmarkRequirements}\n上一次尝试的定向修复要求：\n${retryFeedback}\n本章允许使用的 sourceBlockIds（只能从此列表引用，不能引用 F-xx、章节编号或自行编造的 ID）：\n${[...new Set([...selectedIds, ...knowledge.sourceIds])].join("、")}\n已完成章节摘要：\n${continuity || "无"}\n已建立的结构化编号（跨成果关联时必须使用这里已有的编号，不得另造同义编号）：\n${itemCatalog || "无"}\n可引用证据：\n${evidence.join("\n")}`,
+    text: `当前章节：${title}\n本章关注：${keywords.join("、") || "项目整体一致性"}\n${knowledge.text}\n${projectModelContext}\n上一次尝试的定向修复要求：\n${retryFeedback}\n本章允许使用的 sourceBlockIds（只能从此列表引用，不能引用 F-xx、章节编号或自行编造的 ID）：\n${[...new Set([...selectedIds, ...knowledge.sourceIds])].join("、")}\n已完成章节摘要：\n${continuity || "无"}\n已建立的结构化编号（跨成果关联时必须使用这里已有的编号，不得另造同义编号）：\n${itemCatalog || "无"}\n可引用证据：\n${evidence.join("\n")}`,
     sourceIds: new Set([...selectedIds, ...knowledge.sourceIds]),
     priorSummaries: continuity,
     knowledgeInputHash: knowledge.inputHash,
     manifest: { sectionKey, budgetChars: budget, knowledgeVersion: knowledge.version, knowledgeInputHash: knowledge.inputHash, knowledgeChars: knowledge.text.length, selectedChars: chars, availableBlocks: blocks.length, selectedBlocks: selectedIds.length, selectedSourceBlockIds: uniqueContextIds([...selectedIds, ...knowledge.sourceIds]), priorStructuredItemCount: itemCatalog ? itemCatalog.split("\n").length : 0, retryAttempt: retry?.attemptNo || 0, retryErrorCode: retry?.errorCode || null },
   };
-}
-
-function benchmarkGuidance(solutionId: string, sectionKey: string) {
-  const linked = productSqlite.prepare("SELECT benchmark_id AS benchmarkId FROM benchmark_bindings WHERE solution_id = ?").get(solutionId) as { benchmarkId: string } | undefined;
-  if (!linked || !/^BM-(0[1-9]|1[0-8])$/.test(linked.benchmarkId)) return "";
-  const root = path.join(process.cwd(), "docs", "product", "v1-design", "benchmarks", linked.benchmarkId, "expected");
-  try {
-    const facts = JSON.parse(fs.readFileSync(path.join(root, "key-facts.json"), "utf8")) as { facts?: Array<{ statement?: string }> };
-    const checks = JSON.parse(fs.readFileSync(path.join(root, "automatic-content-checks.json"), "utf8")) as { minimum_structured_items?: Record<string, number>; required_patterns?: Array<{ id: string; patterns: string[] }> };
-    const factText = (facts.facts || []).map((fact) => `- ${fact.statement || ""}`).filter(Boolean).join("\n");
-    const patternText = (checks.required_patterns || []).map((rule) => `- ${rule.id}: ${rule.patterns.join("；")}`).join("\n");
-    const scale = Object.entries(checks.minimum_structured_items || {}).map(([kind, count]) => `${kind}至少 ${count} 条`).join("，");
-    const sectionHint = scale ? `结构化规模需在相关章节合计满足：${scale}。请分散生成，需求章节至少输出 6 个 requirement 和 4 个 feature，范围与用户章节至少输出 2 个 requirement 和 2 个 feature，整体解决方案章节至少输出 2 个 requirement 和 2 个 feature；每条必须有证据。` : "";
-    const completenessHint = sectionKey === "requirements" || sectionKey === "solution"
-      ? linked.benchmarkId === "BM-01"
-        ? "这是全局完整性重点章节：请逐条核对上面的基准事实，材料支持的事实必须在正文中保留完整语义，尤其要明确写出客户迁移样例包含‘重复、缺失、格式混合和负责人映射’问题；不得只写成泛化的‘数据质量问题’。"
-        : "这是全局完整性重点章节：请逐条核对上面的基准事实和关键词检查；材料支持的事实必须在正文中保留完整语义，关键规则不得只写成泛化概述，并在 claims 或结构化条目中引用证据。"
-      : "如果本章涉及上面的基准事实，请保留完整语义并在 claims 或结构化条目中引用对应证据。";
-    const deterministicHint = linked.benchmarkId === "BM-03"
-      ? "销售指标表中的确定性目标必须在至少一个正式章节正文中逐项写出，不得只写‘以指标表为准’：拜访记录当日提交率首期目标 0.9（90%）、销售重复录入时间首期目标 15 分钟、线索转商机信息完整率首期目标 0.95（95%）、离线记录同步成功率首期目标 0.99（99%）、客户归属变更审计覆盖率首期目标 1（100%）。百分比可按工作簿的 0–1 存储值表达，但必须保留这些目标值及单位语义。"
-      : linked.benchmarkId === "BM-04"
-        ? "客服 SLA 的确定性规则必须在至少一个正式章节正文中逐项写出，不得只写‘按优先级处理’：P1 首次人工响应 10 分钟内、P2 30 分钟内、P3 4 个工作小时内、P4 1 个工作日内；P1 判定包含生产中断、重大安全风险或大面积不可用。"
-      : "";
-    const quoteHint = sectionKey === "workload" || sectionKey === "solution" || sectionKey === "risks"
-      ? "报价章节必须区分预算参考区间与最终报价：预算只能作为方向性参考，未确认人天、日单价、税率、折扣率、有效期前不得形成最终报价；禁止出现‘预算区间就是最终报价’、‘预算区间等同于最终报价’、‘预算区间作为最终报价’及任何同义表达。"
-      : "";
-    return `基准验收的强制事实与词汇（不得用近义词替换关键范围术语；若材料支持，正文必须使用这些完整表述）：\n${factText}\n基准关键词检查：\n${patternText}\n${sectionHint}\n${completenessHint}\n${deterministicHint}\n${quoteHint}`;
-  } catch {
-    return "";
-  }
-}
-
-/**
- * Do not start rendering until benchmark-bound projects satisfy their global
- * content contract. The section gate intentionally stays local and cheap;
- * this reconciliation gate catches omissions that only become visible after
- * all sections are combined (for example, a missing cross-section feature or
- * a source fact dropped by one model response).
- */
-function benchmarkCompletenessRepair(solutionId: string) {
-  let result = evaluateBoundBenchmarkContent(solutionId);
-  if (!result || result.status === "pass" || result.status === "stale" || result.status === "not_configured") return null;
-  let failed = new Set(result.checks.filter((check) => !check.passed).map((check) => check.code));
-  if (failed.has("BENCHMARK_NO_PROHIBITED_COMMITMENTS")) {
-    sanitizeBenchmarkCommitments(solutionId, result.checks.find((check) => check.code === "BENCHMARK_NO_PROHIBITED_COMMITMENTS")?.evidence || "");
-    result = evaluateBoundBenchmarkContent(solutionId);
-    if (!result || result.status === "pass") return null;
-    failed = new Set(result.checks.filter((check) => !check.passed).map((check) => check.code));
-  }
-  if (failed.has("BENCHMARK_KEY_FACT_RECALL") && reconcileTraceableBenchmarkFacts(solutionId, result.checks.find((check) => check.code === "BENCHMARK_KEY_FACT_RECALL")?.evidence || "")) {
-    result = evaluateBoundBenchmarkContent(solutionId);
-    if (!result || result.status === "pass") return null;
-    failed = new Set(result.checks.filter((check) => !check.passed).map((check) => check.code));
-  }
-  if (!failed.has("BENCHMARK_KEY_FACT_RECALL") && !failed.has("BENCHMARK_STRUCTURED_SCALE") && !failed.has("BENCHMARK_NO_PROHIBITED_COMMITMENTS")) return null;
-  const preferredKeys = failed.has("BENCHMARK_NO_PROHIBITED_COMMITMENTS")
-    ? ["workload", "solution", "risks"]
-    : failed.has("BENCHMARK_STRUCTURED_SCALE")
-      ? ["requirements", "solution"]
-      : ["requirements", "scope_users", "solution"];
-  for (const sectionKey of preferredKeys) {
-    const section = productSqlite.prepare("SELECT id AS sectionId, section_index AS sectionIndex, retry_cycle AS retryCycle FROM formal_sections WHERE solution_id = ? AND section_key = ? AND status = 'validated'").get(solutionId, sectionKey) as { sectionId: string; sectionIndex: number; retryCycle: number } | undefined;
-    if (section && section.retryCycle < 2) return section;
-  }
-  return null;
-}
-
-function sanitizeBenchmarkCommitments(solutionId: string, evidence: string) {
-  const ids = evidence.match(/^matched:(.+)$/)?.[1]?.split(",").filter(Boolean) || [];
-  const replacements: Record<string, Array<[RegExp, string]>> = {
-    electronic_signature_committed: [[/一期.{0,16}(包含|支持|交付).{0,10}合同电子签署/gu, "一期不包含合同电子签署"]],
-    bank_integration_committed: [[/一期.{0,16}(包含|支持|交付).{0,10}银企直连/gu, "一期不包含银企直连"]],
-    auto_payment_committed: [[/一期.{0,16}(包含|支持|交付).{0,10}自动付款/gu, "一期不包含自动付款"]],
-    "P-04": [[/预算区间\s*(就是|等同于|作为)\s*(最终报价|正式报价)/gu, "预算区间不是最终报价"]],
-    erp_order_committed: [[/一期.{0,18}(包含|支持|交付).{0,10}ERP.{0,5}订单/gu, "一期不包含 ERP 订单处理"]],
-    inventory_committed: [[/一期.{0,18}(包含|支持|交付).{0,10}库存查询/gu, "一期不包含库存查询"]],
-    payment_committed: [[/一期.{0,18}(包含|支持|交付).{0,10}回款核销/gu, "一期不包含回款核销"]],
-    commission_committed: [[/一期.{0,18}(包含|支持|交付).{0,10}佣金结算/gu, "一期不包含销售佣金结算"]],
-  };
-  const rules = ids.flatMap((id) => replacements[id] || []);
-  if (!rules.length) return false;
-  const rows = productSqlite.prepare("SELECT id, content, summary, structured_items_json AS structuredItemsJson FROM formal_sections WHERE solution_id = ? AND status = 'validated'").all(solutionId) as Array<{ id: string; content: string; summary: string; structuredItemsJson: string | null }>;
-  let changed = false;
-  for (const row of rows) {
-    const rewrite = (value: string) => rules.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value);
-    const content = rewrite(row.content || "");
-    const summary = rewrite(row.summary || "");
-    let structured = row.structuredItemsJson;
-    if (structured) {
-      try {
-        const parsed = JSON.parse(structured);
-        structured = JSON.stringify(parsed, (_key, value) => typeof value === "string" ? rewrite(value) : value);
-      } catch { /* leave malformed legacy data untouched */ }
-    }
-    if (content !== row.content || summary !== row.summary || structured !== row.structuredItemsJson) {
-      productSqlite.prepare("UPDATE formal_sections SET content = ?, summary = ?, structured_items_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(content, summary, structured, row.id);
-      changed = true;
-    }
-  }
-  return changed;
-}
-
-function reconcileTraceableBenchmarkFacts(solutionId: string, evidence: string) {
-  const missing = evidence.match(/^missing:(.+)$/)?.[1]?.split(",").filter(Boolean) || [];
-  if (!missing.length) return false;
-  const linked = productSqlite.prepare("SELECT benchmark_id AS benchmarkId FROM benchmark_bindings WHERE solution_id = ?").get(solutionId) as { benchmarkId: string } | undefined;
-  if (!linked || !/^BM-(0[1-9]|1[0-8])$/.test(linked.benchmarkId)) return false;
-  try {
-    const root = path.join(process.cwd(), "docs", "product", "v1-design", "benchmarks", linked.benchmarkId, "expected");
-    const rules = JSON.parse(fs.readFileSync(path.join(root, "automatic-content-checks.json"), "utf8")) as { required_patterns?: Array<{ id: string; patterns: string[] }> };
-    const sourceBlocks = productSqlite.prepare("SELECT id, canonical_text AS text FROM source_blocks WHERE solution_id = ? ORDER BY created_at, id").all(solutionId) as Array<{ id: string; text: string }>;
-    const matched = missing.map((id) => {
-      const rule = (rules.required_patterns || []).find((candidate) => candidate.id === id);
-      if (!rule) return null;
-      const blocks = rule.patterns.map((pattern) => sourceBlocks.find((block) => new RegExp(pattern, "iu").test(block.text))).filter((block): block is { id: string; text: string } => Boolean(block));
-      return { id, blocks: [...new Map(blocks.map((block) => [block.id, block])).values()], matchedPatternCount: blocks.length };
-    }).filter((item): item is { id: string; blocks: Array<{ id: string; text: string }>; matchedPatternCount: number } => Boolean(item?.blocks.length && item.matchedPatternCount === (rules.required_patterns || []).find((rule) => rule.id === item.id)?.patterns.length));
-    if (!matched.length) return false;
-    const section = productSqlite.prepare("SELECT id, content, claims_json AS claimsJson FROM formal_sections WHERE solution_id = ? AND section_key = 'requirements' AND status = 'validated'").get(solutionId) as { id: string; content: string; claimsJson: string | null } | undefined;
-    if (!section) return false;
-    const additions = matched.map(({ id, blocks }) => `材料核对补充（${id}）：${blocks.map((block) => block.text.trim()).join("；")}`).join("\n");
-    const claims = JSON.parse(section.claimsJson || "[]") as Array<{ text: string; sourceBlockIds: string[] }>;
-    const nextClaims = [...claims, ...matched.map(({ id, blocks }) => ({ text: `材料${id}：${blocks.map((block) => block.text.trim()).join("；")}`, sourceBlockIds: blocks.map((block) => block.id) }))];
-    productSqlite.prepare("UPDATE formal_sections SET content = ?, claims_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(`${section.content.trim()}\n\n${additions}`, JSON.stringify(nextClaims), section.id);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function uniqueContextIds(values: string[]) { return [...new Set(values)]; }

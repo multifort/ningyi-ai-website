@@ -244,7 +244,7 @@ export default function SolutionTabs() {
             <div className="relative mt-6 flex flex-col gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="flex items-start gap-2 text-xs leading-5 text-slate-500">
                 <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0 text-[#1769ed]" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 5h14v11H9l-4 3z" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                先交付可讨论版本，再与项目人员确认关键范围、成本与承诺。
+                系统先形成可讨论版本，并展示关键范围、成本依据与待确认方向。
               </p>
               <Link href={`/solution/${current.slug}`} className="inline-flex shrink-0 items-center text-sm font-semibold text-[#1769ed] transition hover:text-blue-800">
                 查看场景详情

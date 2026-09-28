@@ -10,7 +10,7 @@
 - 官网和 CMS 保留在 `app/`、`lib/db.ts` 与 `data/cms.db`。
 - 产品页面和 API 位于 `app/product/`、`app/api/product/`，核心业务位于 `lib/product/`。
 - `scripts/product-worker.mjs` 作为独立常驻进程推进解析、媒体、正式生成、渲染、删除和维护任务。
-- 本地开发使用独立的 `data/product.db` 与服务器私有目录；公网多用户开放前必须迁移 PostgreSQL、私有对象存储和可水平扩展的 Worker。
+- 本地开发使用独立的 `data/product.db` 与服务器私有目录；公网多用户开放前必须迁移 PostgreSQL、私有部署的 MinIO 对象存储和可水平扩展的 Worker。
 
 ## 本地启动
 
@@ -39,12 +39,14 @@ pnpm worker:product
 pnpm quality:check
 pnpm typecheck
 pnpm test
+pnpm e2e:product
 pnpm api:check
 pnpm contracts:check
 pnpm benchmark:verify
 ```
 
 - `quality:check` 是本地统一质量入口，依次执行 lint、类型检查、测试、API 同步、契约和基准包校验；仓库当前不使用 GitHub Actions。
+- `e2e:product` 先执行生产构建，再通过 uv 运行 Python Playwright；测试使用临时数据库/存储、本地假模型和系统 Chrome，覆盖桌面/移动端完整产品流程，不调用外部模型，也不依赖浏览器插件。非 macOS 环境可用 `PRODUCT_E2E_CHROME_PATH` 指定 Chrome/Chromium 可执行文件。
 - `api:check` 扫描全部 `app/api/product/**/route.ts`，并与产品 API 目录逐项比对；新增、删除或修改路由时必须同步目录。
 - `benchmark:verify` 默认聚合校验仓库中已有的 BM-01—BM-12，也可以追加单个 `manifest.json` 路径；它只验证基准包完整性，不代表产品运行或内容质量通过。
 - `contracts:check` 通过 `uv.lock` 自动建立隔离环境并校验机器可读 JSON Schema，无需手工安装 `jsonschema`。
@@ -70,9 +72,9 @@ data/                        本地 SQLite 数据（运行时文件不提交）
 
 外部灰度前的主要阻断项按依赖顺序为：
 
-- 隔离基准 `expected` 规则与正式生成链路，重新验证 BM-01—12；
-- 将主流程浏览器冒烟扩展为仓库内可重复的桌面/移动端全状态回归；
+- 有效验收模型凭证恢复后重新验证 BM-01—12；基准 `expected` 与正式生成链路的隔离已完成；
+- 仓库内桌面/移动端全状态 E2E 已完成，后续持续纳入发布前本地验证；
 - 收敛重复的交付物生成逻辑，完成企业模板渲染和视觉质量门；
 - 补齐 BM-13—18，并完成 18 项、30 次连续无人值守验收；
-- 迁移 PostgreSQL、私有对象存储和可水平扩展的 Worker，完成多用户并发与公平性压测；
+- 迁移 PostgreSQL、私有部署的 MinIO 对象存储和可水平扩展的 Worker，完成多用户并发与公平性压测；
 - 补齐恶意文件扫描、密码找回、共享限流和外部开放安全门。

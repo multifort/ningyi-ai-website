@@ -12,6 +12,7 @@
     "api:check": "node scripts/check-product-api-sync.mjs",
     "typecheck": "tsc --noEmit --incremental false",
     "test": "node --test scripts/*.test.mjs",
+    "e2e:product": "uv --cache-dir .uv-cache run --group dev python scripts/product-e2e.py",
     "provider:check": "node scripts/product-provider-check.mjs",
     "config:check": "node scripts/product-production-check.mjs",
     "contracts:check": "uv --cache-dir .uv-cache run --group dev python scripts/validate-product-contracts.py",

@@ -171,7 +171,7 @@ export default function DemoShowcase() {
 
               <div className="relative z-10 mt-4 flex gap-2.5 border-t border-white/15 pt-3 text-xs leading-5 text-slate-300">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent2 text-[11px] font-bold text-accent2">i</span>
-                <span>服务完成材料梳理和成果关联，范围、价格与承诺由项目人员确认。</span>
+                <span>系统完成材料梳理和成果关联，并展示来源、假设与影响；关键方向由用户确认。</span>
               </div>
             </div>
 

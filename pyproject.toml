@@ -8,4 +8,5 @@ dependencies = []
 [dependency-groups]
 dev = [
   "jsonschema>=4.25,<5",
+  "playwright>=1.63.0",
 ]

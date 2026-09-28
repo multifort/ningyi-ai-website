@@ -28,33 +28,36 @@ type RenderTheme = {
 };
 const renderWorkerContext = new AsyncLocalStorage<string>();
 
+type ProgressiveDeliverableResult = { artifactType: string; status: "available" | "waiting" | "failed"; errorCode?: string };
+type ProgressiveDeliverableDefinition = {
+  artifactType: string;
+  displayName: string;
+  label: string;
+  format: "docx" | "xlsx";
+  sectionTitles: readonly string[];
+};
+
+const progressiveDeliverableDefinitions: readonly ProgressiveDeliverableDefinition[] = [
+  { artifactType: "requirement_analysis_docx", displayName: "需求分析", label: "项目需求分析", format: "docx", sectionTitles: ["项目背景与目标", "范围、用户与关键约束", "业务需求与功能规划", "风险、假设与待确认事项"] },
+  { artifactType: "function_catalog_xlsx", displayName: "功能清单", label: "功能清单", format: "xlsx", sectionTitles: ["业务需求与功能规划", "整体解决方案"] },
+  { artifactType: "workload_estimate_xlsx", displayName: "工作量估算", label: "工作量估算", format: "xlsx", sectionTitles: ["工作量与成本依据"] },
+  { artifactType: "implementation_plan_xlsx", displayName: "实施计划", label: "实施计划", format: "xlsx", sectionTitles: ["实施计划与交付安排"] },
+  { artifactType: "project_quote_xlsx", displayName: "项目报价", label: "项目报价", format: "xlsx", sectionTitles: ["工作量与成本依据", "实施计划与交付安排"] },
+] as const;
+
 export async function ensurePrimaryDeliverables(solutionId: string, userId: string, options: { workerId?: string } = {}) {
   if (options.workerId && renderWorkerContext.getStore() !== options.workerId) {
     return renderWorkerContext.run(options.workerId, () => ensurePrimaryDeliverables(solutionId, userId));
   }
   const solution = productSqlite.prepare("SELECT title FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, userId) as { title: string } | undefined;
   if (!solution) throw new Error("SOLUTION_NOT_FOUND");
-  ensureTraceableBenchmarkFacts(solutionId);
   const sections = productSqlite.prepare("SELECT title, content, summary, structured_items_json AS structuredItemsJson FROM formal_sections WHERE solution_id = ? AND status = 'validated' ORDER BY section_index").all(solutionId) as FormalSection[];
   if (!sections.length || sections.some((section) => !section.content?.trim())) throw new Error("FORMAL_DOCUMENT_INCOMPLETE");
 
   supersedeStaleRenderedArtifacts(solutionId, userId);
-  await ensureProgressiveDeliverables(solutionId, userId);
+  await ensureDeclaredProgressiveDeliverables({ solutionId, userId, solutionTitle: solution.title, sections, bestEffort: false });
 
   const existingTypes = new Set((productSqlite.prepare("SELECT artifact_type AS artifactType FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ artifactType: string }>).map((item) => item.artifactType));
-
-  if (!existingTypes.has("requirement_analysis_docx")) {
-    const theme = templateTheme(solutionId, "docx");
-    const selected = selectSections(sections, ["项目背景与目标", "范围、用户与关键约束", "业务需求与功能规划", "风险、假设与待确认事项"]);
-    const bytes = await buildFormalSolutionDocx(solution.title, selected, theme, "项目需求分析");
-    await storeDeliverable({ solutionId, userId, artifactType: "requirement_analysis_docx", displayName: `${safeFilename(solution.title)}-需求分析.docx`, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", bytes, expectedFormat: "docx", qualityChecks: [
-      { code: "REQUIREMENT_SECTION_COVERAGE", passed: selected.length === 4, actual: selected.length },
-      { code: "VALIDATED_CONTENT_REUSE", passed: true },
-      themeQuality(theme),
-      documentLayoutQuality(theme),
-    ] });
-    markThemeResult(solutionId, "docx", theme);
-  }
 
   if (!existingTypes.has("requirement_analysis_pdf")) {
     const theme = templateTheme(solutionId, "docx");
@@ -66,27 +69,6 @@ export async function ensurePrimaryDeliverables(solutionId: string, userId: stri
       themeQuality(theme),
     ] });
   }
-
-  const workbookDefinitions = [
-    { artifactType: "function_catalog_xlsx", displayName: "功能清单", label: "功能清单", sectionTitles: ["业务需求与功能规划", "整体解决方案"] },
-    { artifactType: "workload_estimate_xlsx", displayName: "工作量估算", label: "工作量估算", sectionTitles: ["工作量与成本依据"] },
-    { artifactType: "implementation_plan_xlsx", displayName: "实施计划", label: "实施计划", sectionTitles: ["实施计划与交付安排"] },
-    { artifactType: "project_quote_xlsx", displayName: "项目报价", label: "项目报价", sectionTitles: ["工作量与成本依据", "实施计划与交付安排"] },
-  ] as const;
-  for (const definition of workbookDefinitions) {
-    if (existingTypes.has(definition.artifactType)) continue;
-    const selected = selectSections(sections, definition.sectionTitles);
-    const theme = templateTheme(solutionId, "xlsx");
-    const bytes = await buildOutcomeWorkbook(solution.title, definition.label, selected, theme, solutionId);
-    await storeDeliverable({ solutionId, userId, artifactType: definition.artifactType, displayName: `${safeFilename(solution.title)}-${definition.displayName}.xlsx`, mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes, expectedFormat: "xlsx", qualityChecks: [
-      { code: "SOURCE_SECTION_COVERAGE", passed: selected.length === definition.sectionTitles.length, actual: selected.length, expected: definition.sectionTitles.length },
-      { code: "VALIDATED_CONTENT_REUSE", passed: true },
-      { code: "NO_UNSUPPORTED_RECALCULATION", passed: true },
-      themeQuality(theme),
-    ] });
-    markThemeResult(solutionId, "xlsx", theme);
-  }
-
 
   const companionDefinitions = [
     { artifactType: "function_catalog_docx", displayName: "功能清单", format: "docx", label: "项目功能清单", sectionTitles: ["业务需求与功能规划", "整体解决方案"] },
@@ -193,69 +175,54 @@ export async function ensurePrimaryDeliverables(solutionId: string, userId: stri
 export async function ensureProgressiveDeliverables(solutionId: string, userId: string) {
   const solution = productSqlite.prepare("SELECT title FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, userId) as { title: string } | undefined;
   if (!solution) throw new Error("SOLUTION_NOT_FOUND");
-  ensureTraceableBenchmarkFacts(solutionId);
   const sections = productSqlite.prepare("SELECT title, content, summary, structured_items_json AS structuredItemsJson FROM formal_sections WHERE solution_id = ? AND status = 'validated' ORDER BY section_index").all(solutionId) as FormalSection[];
+  return ensureDeclaredProgressiveDeliverables({ solutionId, userId, solutionTitle: solution.title, sections, bestEffort: true });
+}
+
+async function ensureDeclaredProgressiveDeliverables(input: { solutionId: string; userId: string; solutionTitle: string; sections: FormalSection[]; bestEffort: boolean }) {
+  const { solutionId, userId, solutionTitle, sections, bestEffort } = input;
   const existingTypes = new Set((productSqlite.prepare("SELECT artifact_type AS artifactType FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ artifactType: string }>).map((item) => item.artifactType));
-  const results: Array<{ artifactType: string; status: "available" | "waiting" | "failed"; errorCode?: string }> = [];
-
-  const requirementTitles = ["项目背景与目标", "范围、用户与关键约束", "业务需求与功能规划", "风险、假设与待确认事项"] as const;
-  const requirementSections = selectSections(sections, requirementTitles);
-  if (!existingTypes.has("requirement_analysis_docx") && requirementSections.length === requirementTitles.length) {
-    try {
-      const theme = templateTheme(solutionId, "docx");
-      const bytes = await buildFormalSolutionDocx(solution.title, requirementSections, theme, "项目需求分析");
-      await storeDeliverable({ solutionId, userId, artifactType: "requirement_analysis_docx", displayName: `${safeFilename(solution.title)}-需求分析.docx`, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", bytes, expectedFormat: "docx", qualityChecks: [{ code: "REQUIREMENT_SECTION_COVERAGE", passed: true, actual: requirementSections.length }, { code: "VALIDATED_CONTENT_REUSE", passed: true }, themeQuality(theme), documentLayoutQuality(theme)] });
-      markThemeResult(solutionId, "docx", theme);
-      results.push({ artifactType: "requirement_analysis_docx", status: "available" });
-    } catch (error) { results.push({ artifactType: "requirement_analysis_docx", status: "failed", errorCode: renderErrorCode(error) }); }
-  } else results.push({ artifactType: "requirement_analysis_docx", status: existingTypes.has("requirement_analysis_docx") ? "available" : "waiting" });
-
-  const definitions = [
-    { artifactType: "function_catalog_xlsx", displayName: "功能清单", label: "功能清单", sectionTitles: ["业务需求与功能规划", "整体解决方案"] },
-    { artifactType: "workload_estimate_xlsx", displayName: "工作量估算", label: "工作量估算", sectionTitles: ["工作量与成本依据"] },
-    { artifactType: "implementation_plan_xlsx", displayName: "实施计划", label: "实施计划", sectionTitles: ["实施计划与交付安排"] },
-    { artifactType: "project_quote_xlsx", displayName: "项目报价", label: "项目报价", sectionTitles: ["工作量与成本依据", "实施计划与交付安排"] },
-  ] as const;
-  for (const definition of definitions) {
+  const results: ProgressiveDeliverableResult[] = [];
+  for (const definition of progressiveDeliverableDefinitions) {
     if (existingTypes.has(definition.artifactType)) { results.push({ artifactType: definition.artifactType, status: "available" }); continue; }
     const selected = selectSections(sections, definition.sectionTitles);
     if (selected.length !== definition.sectionTitles.length) { results.push({ artifactType: definition.artifactType, status: "waiting" }); continue; }
     try {
-      const theme = templateTheme(solutionId, "xlsx");
-      const bytes = await buildOutcomeWorkbook(solution.title, definition.label, selected, theme, solutionId);
-      await storeDeliverable({ solutionId, userId, artifactType: definition.artifactType, displayName: `${safeFilename(solution.title)}-${definition.displayName}.xlsx`, mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes, expectedFormat: "xlsx", qualityChecks: [{ code: "SOURCE_SECTION_COVERAGE", passed: true, actual: selected.length }, { code: "VALIDATED_CONTENT_REUSE", passed: true }, { code: "NO_UNSUPPORTED_RECALCULATION", passed: true }, themeQuality(theme)] });
-      markThemeResult(solutionId, "xlsx", theme);
+      await renderProgressiveDeliverable({ solutionId, userId, solutionTitle, selected, definition });
       results.push({ artifactType: definition.artifactType, status: "available" });
-    } catch (error) { results.push({ artifactType: definition.artifactType, status: "failed", errorCode: renderErrorCode(error) }); }
+    } catch (error) {
+      if (!bestEffort) throw error;
+      results.push({ artifactType: definition.artifactType, status: "failed", errorCode: renderErrorCode(error) });
+    }
   }
   return results;
 }
 
-export function ensureTraceableBenchmarkFacts(solutionId: string) {
-  const binding = productSqlite.prepare("SELECT benchmark_id AS benchmarkId FROM benchmark_bindings WHERE solution_id = ? AND status = 'ready'").get(solutionId) as { benchmarkId: string } | undefined;
-  if (!binding) return;
-  const sections = productSqlite.prepare("SELECT id, section_key AS sectionKey, content, claims_json AS claimsJson FROM formal_sections WHERE solution_id = ? AND status = 'validated' ORDER BY section_index").all(solutionId) as Array<{ id: string; sectionKey: string; content: string; claimsJson: string | null }>;
-  if (sections.length < 7) return;
-  let rules: { required_patterns?: Array<{ id: string; patterns: string[] }> };
-  try { rules = JSON.parse(fs.readFileSync(path.join(process.cwd(), "docs", "product", "v1-design", "benchmarks", binding.benchmarkId, "expected", "automatic-content-checks.json"), "utf8")); } catch { return; }
-  const corpus = sections.map((section) => `${section.content || ""}\n`).join("").normalize("NFKC");
-  const sourceBlocks = productSqlite.prepare("SELECT id, canonical_text AS text FROM source_blocks WHERE solution_id = ? ORDER BY created_at, id").all(solutionId) as Array<{ id: string; text: string }>;
-  const missingRules = (rules.required_patterns || []).map((rule) => {
-    if (rule.patterns.every((pattern) => { try { return new RegExp(pattern, "iu").test(corpus); } catch { return false; } })) return null;
-    const matched = rule.patterns.map((pattern) => {
-      try { return sourceBlocks.find((block) => new RegExp(pattern, "iu").test(block.text)); } catch { return undefined; }
-    }).filter((block): block is { id: string; text: string } => Boolean(block));
-    if (matched.length !== rule.patterns.length) return null;
-    return { id: rule.id, blocks: [...new Map(matched.map((block) => [block.id, block])).values()] };
-  }).filter((item): item is { id: string; blocks: Array<{ id: string; text: string }> } => Boolean(item));
-  if (!missingRules.length) return;
-  const section = sections.find((item) => item.sectionKey === "requirements") || sections[0];
-  let claims: Array<{ text?: string; sourceBlockIds?: string[] }> = [];
-  try { claims = JSON.parse(section.claimsJson || "[]"); } catch { /* keep an empty claim list */ }
-  const additions = missingRules.map(({ id, blocks }) => `材料核对补充（${id}）：${blocks.map((block) => block.text.trim()).join("；")}`);
-  const allBlocks = [...new Map(missingRules.flatMap((item) => item.blocks).map((block) => [block.id, block])).values()];
-  claims.push({ text: "基准事实补充：" + additions.join("；"), sourceBlockIds: allBlocks.map((block) => block.id) });
-  productSqlite.prepare("UPDATE formal_sections SET content = ?, claims_json = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(`${section.content.trim()}\n\n${additions.join("\n")}`, JSON.stringify(claims), section.id);
+async function renderProgressiveDeliverable(input: { solutionId: string; userId: string; solutionTitle: string; selected: FormalSection[]; definition: ProgressiveDeliverableDefinition }) {
+  const { solutionId, userId, solutionTitle, selected, definition } = input;
+  const theme = templateTheme(solutionId, definition.format);
+  const bytes = definition.format === "docx"
+    ? await buildFormalSolutionDocx(solutionTitle, selected, theme, definition.label)
+    : await buildOutcomeWorkbook(solutionTitle, definition.label, selected, theme, solutionId);
+  const coverageCode = definition.artifactType === "requirement_analysis_docx" ? "REQUIREMENT_SECTION_COVERAGE" : "SOURCE_SECTION_COVERAGE";
+  const qualityChecks: Array<Record<string, unknown>> = [
+    { code: coverageCode, passed: selected.length === definition.sectionTitles.length, actual: selected.length, expected: definition.sectionTitles.length },
+    { code: "VALIDATED_CONTENT_REUSE", passed: true },
+  ];
+  if (definition.format === "xlsx") qualityChecks.push({ code: "NO_UNSUPPORTED_RECALCULATION", passed: true });
+  qualityChecks.push(themeQuality(theme));
+  if (definition.format === "docx") qualityChecks.push(documentLayoutQuality(theme));
+  await storeDeliverable({
+    solutionId,
+    userId,
+    artifactType: definition.artifactType,
+    displayName: `${safeFilename(solutionTitle)}-${definition.displayName}.${definition.format}`,
+    mimeType: definition.format === "docx" ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    bytes,
+    expectedFormat: definition.format,
+    qualityChecks,
+  });
+  markThemeResult(solutionId, definition.format, theme);
 }
 
 export function listDeliverables(solutionId: string, userId: string) {
@@ -1314,14 +1281,19 @@ function artifactDependencyTitles(artifactType: string): string[] {
   const all = ["项目背景与目标", "范围、用户与关键约束", "业务需求与功能规划", "整体解决方案", "工作量与成本依据", "实施计划与交付安排", "风险、假设与待确认事项"];
   const dependencies: Record<string, string[]> = {
     requirement_analysis_docx: [all[0], all[1], all[2], all[6]],
+    requirement_analysis_pdf: [all[0], all[1], all[2], all[6]],
     function_catalog_xlsx: [all[2], all[3]],
+    function_catalog_docx: [all[2], all[3]],
     workload_estimate_xlsx: [all[4]],
+    workload_estimate_pdf: [all[4]],
     implementation_plan_xlsx: [all[5]],
+    implementation_plan_pdf: [all[5]],
     project_quote_xlsx: [all[4], all[5]],
     project_quote_pdf: [all[4], all[5]],
     formal_solution_docx: all,
     formal_solution_pdf: all,
     solution_briefing_pptx: all,
+    solution_briefing_pdf: all,
     project_traceability_xlsx: all,
   };
   return dependencies[artifactType] || all;

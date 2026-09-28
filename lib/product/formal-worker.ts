@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { productSqlite } from "./db";
-import { ensurePrimaryDeliverables, ensureTraceableBenchmarkFacts } from "./deliverables";
+import { ensurePrimaryDeliverables } from "./deliverables";
 import { requiredDeliverableArtifactTypes } from "./deliverable-catalog";
 import { continueFormalDocument, reactivateConfiguredFormalDocuments, recoverStaleFormalWork, repairExhaustedFormalWork } from "./formal-analysis";
 import { modelExecutionWindow } from "./model-execution-window";
@@ -68,7 +68,6 @@ async function processOneFormalWork(workerId: string) {
     const claimed = productSqlite.prepare("UPDATE product_solutions SET status = 'rendering', render_attempt_count = render_attempt_count + 1, render_lease_owner = ?, render_lease_until = datetime('now', ?), render_next_attempt_at = NULL, render_error_code = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND stage = 'rendering' AND status IN ('processing', 'recovering') AND (render_next_attempt_at IS NULL OR render_next_attempt_at <= CURRENT_TIMESTAMP)").run(workerId, `+${leaseSeconds} seconds`, rendering.solutionId);
     if (!claimed.changes) return { status: "contended", solutionId: rendering.solutionId };
     try {
-      ensureTraceableBenchmarkFacts(rendering.solutionId);
       const deliverables = await ensurePrimaryDeliverables(rendering.solutionId, rendering.userId, { workerId });
       return { status: "rendered", solutionId: rendering.solutionId, deliverableCount: deliverables.length };
     } catch (error) {

@@ -8,6 +8,7 @@ const benchmarkId = valueAfter("--benchmark") || "BM-01";
 const execute = process.argv.includes("--execute");
 const startCampaignScope = valueAfter("--start-campaign");
 const campaignId = valueAfter("--campaign-id");
+const reportDirectory = path.resolve(valueAfter("--report-dir") || process.env.PRODUCT_BENCHMARK_REPORT_DIR || path.join("tmp", "product-benchmark-runs"));
 const origin = String(process.env.PRODUCT_APP_ORIGIN || "http://127.0.0.1:3000").replace(/\/$/, "");
 const root = path.resolve(process.cwd(), "docs", "product", "v1-design", "benchmarks", benchmarkId);
 const username = process.env.PRODUCT_BENCHMARK_USERNAME || "";
@@ -67,8 +68,9 @@ for (const upload of handoff.payload.data.uploads) {
   form.append("file", new File([bytes], item.displayName, { type: item.declaredMime }));
   await api(`/api/product/solutions/${solutionId}/uploads/${upload.fileId}`, { method: "POST", cookie, body: form });
 }
-// Bind the benchmark before processing so generation, reconciliation and
-// rendering all see its deterministic content contract.
+// Bind the immutable input snapshot before processing so the independent
+// acceptance scorer can verify this exact run. Generation and rendering must
+// not read benchmark expected data through this binding.
 await api("/api/product/internal/acceptance/benchmarks", { method: "POST", worker: true, json: { benchmarkId, solutionId } });
 await api(`/api/product/solutions/${solutionId}/process`, { method: "POST", cookie, allow: [200, 202] });
 
@@ -89,7 +91,9 @@ const acceptance = campaignId
   ? await api("/api/product/internal/acceptance/campaign", { method: "POST", worker: true, json: { action: "tick", campaignId, benchmarkId, solutionId } })
   : await api("/api/product/internal/acceptance/run", { method: "POST", worker: true, json: { solutionId } });
 const run = campaignId ? acceptance.payload.data.run : acceptance.payload.data;
-output({ status: run.status, benchmarkId, solutionId, campaign: campaignId ? acceptance.payload.data.campaign : null, elapsedSeconds: Math.round((Date.now() - startedAt) / 1000), acceptance: run });
+const result = { status: run.status, benchmarkId, solutionId, campaign: campaignId ? acceptance.payload.data.campaign : null, elapsedSeconds: Math.round((Date.now() - startedAt) / 1000), acceptance: run };
+const reportPath = await persistRunResult(result);
+output({ ...result, reportPath });
 if (run.status !== "passed") process.exitCode = 1;
 
 async function api(pathname, options = {}) {
@@ -138,5 +142,13 @@ function mimeFor(format) {
 }
 function valueAfter(flag) { const index = process.argv.indexOf(flag); return index >= 0 ? process.argv[index + 1] : ""; }
 async function readJson(filename) { return JSON.parse(await fs.readFile(filename, "utf8")); }
+async function persistRunResult(result) {
+  await fs.mkdir(reportDirectory, { recursive: true });
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const filename = `${benchmarkId}-${timestamp}-${result.solutionId}.json`;
+  const reportPath = path.join(reportDirectory, filename);
+  await fs.writeFile(reportPath, `${JSON.stringify(result, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
+  return reportPath;
+}
 function output(value) { process.stdout.write(`${JSON.stringify(value)}\n`); }
 function fail(code, details = {}) { output({ status: "failed", code, ...details }); process.exit(1); }

@@ -13,6 +13,8 @@ const config = [
   {
     ignores: [
       ".next/**",
+      ".venv/**",
+      ".uv-cache/**",
       "node_modules/**",
       "coverage/**",
       "data/**",
