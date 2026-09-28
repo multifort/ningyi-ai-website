@@ -1,0 +1,18 @@
+{
+  "benchmark_id": "BM-10",
+  "facts": [
+    {"id": "KF-01", "fact": "模板中的30/60/10付款比例是示例而非默认付款安排，正式比例必须由项目确认并审批", "source": "sources/software-service-contract-template.docx; sources/requirements-notes.md"},
+    {"id": "KF-02", "fact": "12个月或24个月质保期属于可选条款且无默认选项；每日0.03%违约金仅用于展示格式，不构成承诺", "source": "sources/software-service-contract-template.docx"},
+    {"id": "KF-03", "fact": "模板字段分为占位字段、可选条款、标准条款、项目附件和示例数字，正式合同必须保存所用模板版本", "source": "sources/software-service-contract-template.docx; sources/requirements-notes.md"},
+    {"id": "KF-04", "fact": "含税总额低于500000元由部门经理与法务审批；500000元至低于2000000元由事业部负责人、财务和法务审批；2000000元及以上增加CFO审批", "source": "sources/approval-rules.xlsx"},
+    {"id": "KF-05", "fact": "恰好500000元进入中金额档，恰好2000000元进入高金额档", "source": "sources/approval-rules.xlsx"},
+    {"id": "KF-06", "fact": "所有对外合同均须法务审核，采用标准模板不能免除法务审核", "source": "sources/requirements-notes.md; sources/approval-rules.xlsx"},
+    {"id": "KF-07", "fact": "金额、非标准条款、境外主体和跨境数据可以累计触发审批；非标准条款增加法务专项审核，境外主体或跨境数据增加财务与合规审核", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"id": "KF-08", "fact": "全部审批完成并锁定合同版本后才能发起用印，且用印文件摘要必须与批准版本一致", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"id": "KF-09", "fact": "合同经办人只能编辑本人草稿或被退回版本；法务管理模板；印章管理员只处理已批准文件且不能管理模板", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"id": "KF-10", "fact": "签署后归档最终可编辑文件、签署扫描件、全部附件、审批记录、用印记录和版本链，只保存盖章页不完整", "source": "sources/requirements-notes.md; sources/approval-rules.xlsx"},
+    {"id": "KF-11", "fact": "已签署合同在到期或终止后保存10年，撤回或驳回记录保存3年，模板版本永久保存；诉讼、调查或法律保全期间暂停删除", "source": "sources/approval-rules.xlsx"},
+    {"id": "KF-12", "fact": "首期不提供电子签名或电子印章，不自动判断条款合法性，不自动生成谈判意见或付款、质保、赔偿和争议解决承诺", "source": "sources/requirements-notes.md; intake.json"},
+    {"id": "KF-13", "fact": "2024年以前历史合同仅迁移索引和最终签署扫描件，不迁移完整审批过程；付款、发票和收入确认仍由财务系统处理", "source": "sources/requirements-notes.md"}
+  ]
+}

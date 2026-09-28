@@ -1,0 +1,15 @@
+{
+  "benchmark_id": "BM-10",
+  "pass_score": 95,
+  "weights": {
+    "project_understanding": 0.10,
+    "requirements_features": 0.10,
+    "template_classification": 0.18,
+    "approval_determinism": 0.20,
+    "permissions_and_seal": 0.14,
+    "archive_and_versions": 0.12,
+    "traceability": 0.08,
+    "deliverable_quality": 0.05,
+    "runtime_cost": 0.03
+  }
+}

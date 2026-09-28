@@ -1,0 +1,35 @@
+{
+  "benchmark_id": "BM-10",
+  "source_of_truth": "sources/software-service-contract-template.docx; sources/approval-rules.xlsx; sources/requirements-notes.md",
+  "template": {
+    "code": "TPL-SOFTWARE-032",
+    "version": "v3.2",
+    "field_types": ["占位字段", "可选条款", "标准条款", "项目附件", "示例数字"],
+    "example_payment_percentages": [30, 60, 10],
+    "selectable_warranty_months": [12, 24],
+    "example_daily_penalty_rate_percent": 0.03
+  },
+  "amount_approval_bands_cny": [
+    {"minimum_inclusive": 0, "maximum_exclusive": 500000, "approvers": ["部门经理", "法务"]},
+    {"minimum_inclusive": 500000, "maximum_exclusive": 2000000, "approvers": ["事业部负责人", "财务", "法务"]},
+    {"minimum_inclusive": 2000000, "maximum_exclusive": null, "approvers": ["事业部负责人", "财务", "CFO", "法务"]}
+  ],
+  "additional_triggers": {
+    "nonstandard_terms": ["法务专项"],
+    "overseas_entity_or_cross_border_data": ["财务", "合规"]
+  },
+  "sample_contracts": {
+    "CT-SYN-1001": {"amount_cny": 300000, "expected_approvers": ["部门经理", "法务"]},
+    "CT-SYN-1002": {"amount_cny": 500000, "expected_approvers": ["事业部负责人", "财务", "法务"]},
+    "CT-SYN-1003": {"amount_cny": 2000000, "expected_approvers": ["事业部负责人", "财务", "CFO", "法务"]},
+    "CT-SYN-1004": {"amount_cny": 200000, "nonstandard_terms": true, "expected_approvers": ["部门经理", "法务", "法务专项"]},
+    "CT-SYN-1005": {"amount_cny": 450000, "overseas_entity": true, "cross_border_data": true, "expected_approvers": ["部门经理", "法务", "财务", "合规"]}
+  },
+  "retention_years": {
+    "executed_after_expiry_or_termination": 10,
+    "withdrawn_or_rejected": 3,
+    "seal_logs": 10,
+    "template_versions": "permanent"
+  },
+  "budget_cny": {"minimum": 750000, "maximum": 1350000}
+}

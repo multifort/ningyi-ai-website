@@ -1,0 +1,108 @@
+{
+  "benchmarkId": "BM-10",
+  "benchmarkVersion": "1.0",
+  "title": "合同管理系统建设项目",
+  "projectType": "software",
+  "difficulty": "L2",
+  "coverageTags": [
+    "template_content_separation",
+    "placeholder_classification",
+    "cumulative_approval_rules",
+    "approval_threshold_boundaries",
+    "least_privilege_permissions",
+    "seal_version_lock",
+    "archive_retention",
+    "cross_deliverable_consistency"
+  ],
+  "expectedScale": {
+    "requirements": {"min": 12, "max": 34},
+    "features": {"min": 12, "max": 38},
+    "solutionCharacters": {"min": 11000, "max": 30000},
+    "slideCount": {"min": 10, "max": 22}
+  },
+  "timeoutSeconds": 1800,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "template_examples_not_promoted_to_commitments",
+    "template_field_classification_preserved",
+    "approval_amount_boundaries_preserved",
+    "cumulative_approval_triggers_preserved",
+    "mandatory_legal_review_preserved",
+    "least_privilege_and_seal_boundaries_preserved",
+    "archive_package_and_retention_preserved",
+    "scope_exclusions_preserved",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "844be4088b550daa93affcf3f91687af5e302e2087b6c3d7465aaac3af51a2a2",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "b515af8fc146394d51e1c8001b52a4f9473b79c181846dae4fddbe8a98f0623b",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "3c1f94af925ef15214b1b8bc1b30080596dce47c37c202f32e8f38e95faef864",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "d5c900ab65b8cf847b9fcf0faab9e6778debd683ae8b69d1832c97f8644d34cc",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "1fd1491df41ad073c2800e09a4ad119bff5caa4875cf94d567161b2fb340af32",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "b769c150e3352bfac111c5b7040a1861e8220faf0386cf3c6b362c7622dbee17",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "7cc2ad0db1cbe748fe148377875f538d8cb6c12995e68d0996a4b611d761cc26",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/approval-rules.xlsx",
+      "sha256": "a75fec47d3cd1d38c485c0bd404dccd679fd91a2218c5d0f81344869d8f3ace3",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/requirements-notes.md",
+      "sha256": "5767dea8c87d46988029aca817e453d8e85500980762411d5ae56aad02a61739",
+      "category": "content",
+      "format": "md",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/software-service-contract-template.docx",
+      "sha256": "76aca1c975b7e8b8919ee4de8581ad0a5662cb812e993048fd8a767543a28867",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

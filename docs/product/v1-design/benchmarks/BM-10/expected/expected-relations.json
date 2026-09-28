@@ -1,0 +1,15 @@
+{
+  "benchmark_id": "BM-10",
+  "relations": [
+    {"from": "模板示例数字与可选条款", "to": "项目需求、默认值和正式承诺", "type": "must_not_infer", "source": "sources/software-service-contract-template.docx; sources/requirements-notes.md"},
+    {"from": "正式合同", "to": "所用模板版本", "type": "version_traceability", "source": "sources/requirements-notes.md"},
+    {"from": "合同含税总额人民币折算值", "to": "金额审批档位", "type": "approval_boundary", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "金额、非标准条款、境外主体、跨境数据", "to": "审批人并集", "type": "cumulative_trigger", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "全部对外合同", "to": "法务审核", "type": "mandatory_review", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "全部审批完成且版本锁定", "to": "允许发起用印", "type": "precondition", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "用印文件摘要", "to": "批准版本摘要", "type": "must_match", "source": "sources/requirements-notes.md"},
+    {"from": "角色", "to": "最小必要权限", "type": "access_control", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "签署完成", "to": "完整合同档案", "type": "archive_package", "source": "sources/approval-rules.xlsx; sources/requirements-notes.md"},
+    {"from": "诉讼、调查或法律保全", "to": "暂停删除", "type": "retention_hold", "source": "sources/approval-rules.xlsx"}
+  ]
+}
