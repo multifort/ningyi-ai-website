@@ -1,32 +1,17 @@
 import { createHash } from "crypto";
 import { AsyncLocalStorage } from "async_hooks";
-import fs from "fs";
-import path from "path";
-import { AlignmentType, BorderStyle, Document, Footer, Header, HeadingLevel, Packer, PageNumber, Paragraph, ShadingType, Table, TableCell, TableRow, TextRun, VerticalAlign, WidthType } from "docx";
 import ExcelJS from "exceljs";
-import PDFDocument from "pdfkit";
 import pptxgen from "pptxgenjs";
 import { productSqlite } from "./db";
 import { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables, publishDeliverable, supersedeStaleRenderedArtifacts } from "./deliverable-publication";
-import { quoteParameterOverrides } from "./quote-parameters";
+import * as docxRenderer from "./deliverable-docx-renderer";
+import * as pdfRenderer from "./deliverable-pdf-renderer";
+import * as renderingShared from "./deliverable-rendering-shared";
+import type { FormalSection, RenderTheme, StructuredItem } from "./deliverable-rendering-shared";
 
 export { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables };
 
-type StructuredItem = { kind: string; code: string; title: string; description: string; sourceBlockIds: string[]; attributes: Array<{ key: string; value: string }> };
-type FormalSection = { title: string; content: string; summary: string | null; structuredItemsJson?: string | null };
 type SourceBlock = { id: string; blockType: string; canonicalText: string; sourceName: string | null; locatorJson: string };
-type RenderTheme = {
-  sourceFileId: string;
-  templateSourceFileId?: string;
-  origin: "brand" | "template" | "brand_template";
-  primary: string;
-  accent: string;
-  colors: string[];
-  slideSize?: { widthEmu: number; heightEmu: number } | null;
-  pageSize?: { widthTwips: number; heightTwips: number } | null;
-  slideLayouts?: number;
-  placeholderTypes?: string[];
-};
 const renderWorkerContext = new AsyncLocalStorage<string>();
 
 type ProgressiveDeliverableResult = { artifactType: string; status: "available" | "waiting" | "failed"; errorCode?: string };
@@ -227,48 +212,7 @@ async function renderProgressiveDeliverable(input: { solutionId: string; userId:
 }
 
 export async function buildFormalSolutionDocx(title: string, sections: FormalSection[], theme: RenderTheme | null, documentLabel = "企业项目整体解决方案") {
-  const accent = officeColor(theme?.accent || "#2E74B5");
-  const pageSize = documentPageSize(theme);
-  const children: Array<Paragraph | Table> = [
-    new Paragraph({ heading: HeadingLevel.TITLE, spacing: { before: 0, after: 120 }, children: [new TextRun({ text: title, bold: true, size: 38, color: "000000", font: "Hiragino Sans GB" })] }),
-    new Paragraph({ spacing: { after: 260 }, children: [new TextRun({ text: documentLabel, size: 25, color: "516174", font: "Hiragino Sans GB" })] }),
-    new Paragraph({ spacing: { after: 320, line: 300 }, children: [new TextRun({ text: "本文件将项目背景、范围、需求、方案、估算、实施与风险组织为可审阅的正式交付成果。金额、周期和待确认边界以表格与正文标记为准。", size: 20, color: "516174", italics: true, font: "Hiragino Sans GB" })] }),
-  ];
-  sections.forEach((section, index) => {
-    children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: index > 0, keepNext: true, children: [new TextRun({ text: `${index + 1}. ${section.title}`, bold: true, color: accent, font: "Hiragino Sans GB" })] }));
-    if (section.summary?.trim()) children.push(new Paragraph({ spacing: { after: 180, line: 280 }, children: [new TextRun({ text: section.summary.trim(), bold: true, size: 21, color: "16365C", font: "Hiragino Sans GB" })] }));
-    for (const block of documentContentBlocks(section.content)) {
-      children.push(new Paragraph({ heading: block.heading ? HeadingLevel.HEADING_2 : undefined, keepNext: Boolean(block.heading), spacing: { before: block.heading ? 180 : 0, after: block.heading ? 100 : 140, line: block.heading ? 260 : 300 }, children: [new TextRun({ text: block.text, bold: block.heading, size: block.heading ? 24 : 21, color: block.heading ? accent : "202B38", font: "Hiragino Sans GB" })] }));
-    }
-    const items = parseStructuredItems(section.structuredItemsJson);
-    if (items.length) {
-      children.push(new Paragraph({ spacing: { before: 180, after: 90 }, children: [new TextRun({ text: "结构化交付要点", bold: true, size: 23, color: accent, font: "Hiragino Sans GB" })] }));
-      children.push(buildStructuredTable(items, accent));
-    }
-  });
-  const document = new Document({
-    styles: {
-      default: { document: { run: { font: "Hiragino Sans GB", size: 22, color: "202B38" }, paragraph: { spacing: { after: 120, line: 280 } } } },
-      paragraphStyles: [{ id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true, run: { size: 32, bold: true, color: accent, font: "Hiragino Sans GB" }, paragraph: { spacing: { before: 320, after: 160 }, keepNext: true } }],
-    },
-    sections: [{
-      properties: { page: { size: { width: pageSize.widthTwips, height: pageSize.heightTwips }, margin: { top: 1440, right: 1440, bottom: 1440, left: 1440, header: 708, footer: 708 } } },
-      headers: { default: new Header({ children: [new Paragraph({ children: [new TextRun({ text: documentLabel, size: 18, color: "7A8796", font: "Hiragino Sans GB" })] })] }) },
-      footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "第 ", size: 18, color: "7A8796", font: "Hiragino Sans GB" }), new TextRun({ children: [PageNumber.CURRENT], size: 18, color: "7A8796", font: "Hiragino Sans GB" }), new TextRun({ text: " 页", size: 18, color: "7A8796", font: "Hiragino Sans GB" })] })] }) },
-      children,
-    }],
-  });
-  return Buffer.from(await Packer.toBuffer(document));
-}
-
-function buildStructuredTable(items: StructuredItem[], accent: string) {
-  const widths = [10, 16, 26, 48];
-  const header = ["编号", "类型", "标题", "说明"].map((text, index) => new TableCell({ width: { size: widths[index], type: WidthType.PERCENTAGE }, shading: { type: ShadingType.CLEAR, fill: accent }, verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ children: [new TextRun({ text, bold: true, color: "FFFFFF", size: 18, font: "Hiragino Sans GB" })] })] }));
-  const rows = [new TableRow({ children: header })];
-  for (const item of items) {
-    rows.push(new TableRow({ children: [item.code, readableItemKind(item.kind), item.title, item.description].map((text, column) => new TableCell({ width: { size: widths[column], type: WidthType.PERCENTAGE }, verticalAlign: VerticalAlign.CENTER, children: [new Paragraph({ spacing: { after: 40, line: 240 }, children: [new TextRun({ text: summarize(text, column === 3 ? 420 : 80), size: 17, color: "202B38", font: "Hiragino Sans GB" })] })] })) }));
-  }
-  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, borders: { top: { style: BorderStyle.SINGLE, size: 4, color: "D9D9D9" }, bottom: { style: BorderStyle.SINGLE, size: 4, color: "D9D9D9" }, left: { style: BorderStyle.SINGLE, size: 4, color: "D9D9D9" }, right: { style: BorderStyle.SINGLE, size: 4, color: "D9D9D9" }, insideHorizontal: { style: BorderStyle.SINGLE, size: 2, color: "D9D9D9" }, insideVertical: { style: BorderStyle.SINGLE, size: 2, color: "D9D9D9" } }, rows });
+  return docxRenderer.buildFormalSolutionDocx(title, sections, theme, documentLabel);
 }
 
 export async function buildOutcomeWorkbook(title: string, outcomeLabel: string, sections: FormalSection[], theme: RenderTheme | null, solutionId?: string) {
@@ -463,166 +407,15 @@ export async function buildSolutionPresentation(title: string, sections: FormalS
 }
 
 async function buildFormalSolutionPdf(title: string, sections: FormalSection[], theme: RenderTheme | null, documentLabel = "企业项目整体解决方案") {
-  const primary = theme?.primary || "#0B2545";
-  const accent = theme?.accent || "#3D8DFF";
-  const accentLight = theme ? `#${mixWithWhite(officeColor(accent), 0.68)}` : "#6DCBF4";
-  const fontPath = path.join(process.cwd(), "assets", "fonts", "NotoSansCJKsc-Regular.otf");
-  if (!fs.existsSync(fontPath)) throw new Error("PDF_CJK_FONT_MISSING");
-  const document = new PDFDocument({ size: "A4", margins: { top: 76, right: 62, bottom: 72, left: 62 }, bufferPages: true, info: { Title: title, Author: "企业方案服务平台", Subject: documentLabel } });
-  const chunks: Buffer[] = [];
-  document.on("data", (chunk: Buffer) => chunks.push(chunk));
-  const completed = new Promise<Buffer>((resolve, reject) => {
-    document.on("end", () => resolve(Buffer.concat(chunks)));
-    document.on("error", reject);
-  });
-  document.registerFont("CJK", fontPath);
-
-  document.rect(0, 0, document.page.width, document.page.height).fill(primary);
-  document.rect(62, 82, 72, 4).fill(accentLight);
-  document.fillColor("#FFFFFF").font("CJK").fontSize(30).text(title, 62, 185, { width: 470, lineGap: 8 });
-  document.fillColor(accentLight).fontSize(18).text(documentLabel, 62, 315, { width: 470 });
-  document.fillColor("#CBD5E1").fontSize(11).text("从业务需求到实施落地的正式交付成果", 62, 360, { width: 470 });
-  document.fillColor("#94A3B8").fontSize(8.5).text("本成果复用已校验正式章节，不新增未确认事实。", 62, 742, { width: 470 });
-
-  sections.forEach((section, index) => {
-    document.addPage();
-    document.fillColor("#0F172A").font("CJK").fontSize(22).text(`${index + 1}. ${section.title}`, 62, 92, { width: 470, lineGap: 4 });
-    if (section.summary?.trim()) {
-      document.fillColor("#16365C").fontSize(11.5).text(section.summary.trim(), 62, document.y + 20, { width: 470, lineGap: 5 });
-      document.moveDown(1.1);
-    }
-    for (const block of splitContent(section.content)) {
-      const estimatedHeight = document.heightOfString(block, { width: 470, lineGap: 5 });
-      if (document.y + Math.min(estimatedHeight, 180) > 755) document.addPage();
-      document.fillColor("#334155").fontSize(10.5).text(block, 62, document.y, { width: 470, align: "justify", lineGap: 5, paragraphGap: 11 });
-    }
-  });
-
-  const range = document.bufferedPageRange();
-  for (let pageIndex = 0; pageIndex < range.count; pageIndex += 1) {
-    document.switchToPage(pageIndex);
-    if (pageIndex > 0) {
-      document.rect(62, 44, 42, 2.5).fill(accent);
-      document.fillColor("#64748B").font("CJK").fontSize(7.5).text(documentLabel, 350, 39, { width: 182, align: "right", lineBreak: false });
-    }
-    const originalBottomMargin = document.page.margins.bottom;
-    document.page.margins.bottom = 0;
-    document.fillColor("#94A3B8").font("CJK").fontSize(7.5).text(`第 ${pageIndex + 1} 页`, 470, 808, { width: 62, align: "right", lineBreak: false });
-    document.page.margins.bottom = originalBottomMargin;
-  }
-  document.end();
-  return completed;
+  return pdfRenderer.buildFormalSolutionPdf(title, sections, theme, documentLabel);
 }
 
 export async function buildQuotePdf(title: string, sections: FormalSection[], theme: RenderTheme | null, solutionId: string) {
-  const primary = theme?.primary || "#0B2545";
-  const accent = theme?.accent || "#3D8DFF";
-  const fontPath = path.join(process.cwd(), "assets", "fonts", "NotoSansCJKsc-Regular.otf");
-  if (!fs.existsSync(fontPath)) throw new Error("PDF_CJK_FONT_MISSING");
-  const doc = new PDFDocument({ size: "A4", layout: "landscape", margins: { top: 54, right: 34, bottom: 48, left: 34 }, bufferPages: true, info: { Title: `${title}-项目报价`, Author: "企业方案服务平台", Subject: "确定性报价测算" } });
-  const chunks: Buffer[] = [];
-  doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-  const completed = new Promise<Buffer>((resolve, reject) => { doc.on("end", () => resolve(Buffer.concat(chunks))); doc.on("error", reject); });
-  doc.registerFont("CJK", fontPath);
-  const rawItems = sections.flatMap((section) => parseStructuredItems(section.structuredItemsJson));
-  const items = withQuoteOverrides(solutionId, rawItems);
-  const quote = calculateQuoteSummary(items);
-  const { rows, validDays, budgetMin, budgetMax, allComplete, total } = quote;
-  const widths = [54, 108, 48, 132, 56, 66, 54, 48, 95, 76];
-  const headers = ["编号", "估算项", "基准人天", "复杂×复用×集成×安全×不确定", "调整人天", "日单价", "折扣率", "税率", "含税金额", "状态"];
-  const tableWidth = widths.reduce((sum, width) => sum + width, 0);
-  const drawPageHeading = (continued = false) => {
-    doc.fillColor(primary).font("CJK").fontSize(21).text(continued ? "项目报价明细（续）" : "项目报价明细", 36, 30, { width: 430 });
-    doc.fillColor("#475569").fontSize(9).text(title, 480, 37, { width: 300, align: "right" });
-    doc.moveTo(36, 70).lineTo(36 + tableWidth, 70).lineWidth(1.2).stroke(accent);
-  };
-  const drawTableHeader = (y: number) => {
-    let x = 36;
-    headers.forEach((header, index) => {
-      doc.rect(x, y, widths[index], 28).fillAndStroke(primary, "#FFFFFF");
-      doc.fillColor("#FFFFFF").font("CJK").fontSize(8).text(header, x + 3, y + 9, { width: widths[index] - 6, align: "center", ellipsis: true, lineBreak: false });
-      x += widths[index];
-    });
-  };
-  const drawRow = (row: typeof rows[number], y: number, index: number) => {
-    const values = [row.code, row.title, row.baseDays == null ? "待补" : `${row.baseDays}`, row.factorChain, row.adjustedDays == null ? "待补" : `${row.adjustedDays}`, row.rate == null ? "待补" : row.rate.toLocaleString("zh-CN"), row.discount == null ? "待补" : `${(row.discount * 100).toFixed(2)}%`, row.tax == null ? "待补" : `${(row.tax * 100).toFixed(2)}%`, row.amount == null ? "待补参数" : row.amount.toLocaleString("zh-CN", { maximumFractionDigits: 2 }), row.complete ? "可计算" : "待补参数"];
-    let x = 36;
-    values.forEach((value, column) => {
-      doc.rect(x, y, widths[column], 32).fillAndStroke(index % 2 ? "#F8FAFC" : "#FFFFFF", "#CBD5E1");
-      doc.fillColor(column === 9 && !row.complete ? "#B45309" : "#334155").font("CJK").fontSize(column === 3 ? 6.5 : 7.5).text(value, x + 3, y + 10, { width: widths[column] - 6, align: column === 1 ? "left" : "center", ellipsis: true, lineBreak: false });
-      x += widths[column];
-    });
-  };
-  drawPageHeading();
-  doc.fillColor("#334155").font("CJK").fontSize(9).text(`报价状态：${allComplete ? "参数齐备，可计算确定性金额；仍需商务确认" : "参数未齐，当前不是完整报价"}`, 36, 82, { width: tableWidth });
-  doc.fillColor("#475569").fontSize(8.5).text(`有效期：${validDays == null ? "待确认" : `${validDays} 天`}    预算范围：${budgetMin == null || budgetMax == null ? "未提供" : `${budgetMin.toLocaleString("zh-CN")}–${budgetMax.toLocaleString("zh-CN")} 元`}`, 36, 101, { width: tableWidth });
-  drawTableHeader(124);
-  let y = 152;
-  rows.forEach((row, index) => {
-    if (y > 500) { doc.addPage(); drawPageHeading(true); drawTableHeader(84); y = 112; }
-    drawRow(row, y, index);
-    y += 32;
-  });
-  if (!rows.length) {
-    doc.fillColor("#B45309").font("CJK").fontSize(10).text("未找到结构化估算项，未生成金额。请补充估算数据后重新出具。", 40, 166, { width: tableWidth });
-    y = 205;
-  }
-  y += 12;
-  if (y + 80 > 545) {
-    doc.addPage();
-    drawPageHeading(true);
-    y = 92;
-  }
-  doc.roundedRect(36, y, tableWidth, 45, 6).fill("#EFF6FF");
-  doc.fillColor(primary).font("CJK").fontSize(11).text(`报价总额（含税）：${total == null ? "待补齐参数" : `${total.toLocaleString("zh-CN", { maximumFractionDigits: 2 })} 元`}`, 50, y + 9, { width: tableWidth - 28 });
-  doc.fillColor("#64748B").fontSize(7.2).text("报价金额 = 调整人天 × 日单价 ×（1－折扣率）×（1＋税率）。调整人天 = 基准人天 × 复杂度 × 复用 × 集成 × 安全 × 不确定性系数。", 38, y + 54, { width: tableWidth, lineGap: 2 });
-  doc.fillColor("#64748B").fontSize(7.2).text("系数顺序与表头一致；任一系数、基准人天或价格参数缺失时标记待补，不推定为 1 或 0。本测算不替代最终商务报价。", 38, y + 67, { width: tableWidth, lineGap: 2 });
-  for (const section of sections) {
-    const paragraphs = splitContent(section.summary || section.content).filter(Boolean);
-    if (!paragraphs.length) continue;
-    doc.addPage();
-    doc.fillColor(primary).font("CJK").fontSize(15).text(section.title, 38, 42, { width: tableWidth });
-    let contentY = 78;
-    paragraphs.forEach((paragraph) => {
-      const text = paragraph.length > 1400 ? `${paragraph.slice(0, 1400)}……` : paragraph;
-      doc.font("CJK").fontSize(9);
-      const height = doc.heightOfString(text, { width: tableWidth, lineGap: 4 });
-      if (contentY + height > 545) { doc.addPage(); contentY = 48; }
-      doc.fillColor("#334155").font("CJK").fontSize(9).text(text, 38, contentY, { width: tableWidth, lineGap: 4 });
-      contentY = doc.y + 11;
-    });
-  }
-  const pageRange = doc.bufferedPageRange();
-  for (let pageIndex = 0; pageIndex < pageRange.count; pageIndex += 1) {
-    doc.switchToPage(pageIndex);
-    doc.fillColor("#94A3B8").font("CJK").fontSize(7.5).text(`第 ${pageIndex + 1} 页`, 740, 565, { width: 52, align: "right", lineBreak: false });
-  }
-  doc.end();
-  return completed;
+  return pdfRenderer.buildQuotePdf(title, sections, theme, solutionId);
 }
 
 export function calculateQuoteSummary(items: StructuredItem[]) {
-  const assumption = items.find((item) => item.kind === "quote_assumption");
-  const rows = items.filter((item) => item.kind === "estimation_item").map((item) => {
-    const factors = ["complexity_factor", "reuse_factor", "integration_factor", "security_factor", "uncertainty_factor"];
-    const baseDays = numericAttribute(item, "base_days");
-    const factorValues = factors.map((key) => numericAttribute(item, key));
-    const factorChain = factorValues.map((value) => value == null ? "待补" : Number(value.toFixed(2))).join("×");
-    const adjustedDays = baseDays == null || factorValues.some((value) => value == null) ? null : Number((baseDays * factorValues.reduce<number>((total, value) => total * (value as number), 1)).toFixed(2));
-    const rate = numericAttribute(item, "daily_rate") ?? (assumption ? numericAttribute(assumption, "daily_rate") : null);
-    const discount = numericAttribute(item, "discount_rate") ?? (assumption ? numericAttribute(assumption, "discount_rate") : null);
-    const tax = numericAttribute(item, "tax_rate") ?? (assumption ? numericAttribute(assumption, "tax_rate") : null);
-    const complete = adjustedDays != null && rate != null && discount != null && tax != null;
-    const beforeDiscount = complete ? adjustedDays! * rate! : null;
-    const amount = complete ? beforeDiscount! * (1 - discount!) * (1 + tax!) : null;
-    return { code: item.code, title: item.title, baseDays, factorValues, factorChain, adjustedDays, rate, beforeDiscount, discount, tax, amount, complete };
-  });
-  const validDays = assumption ? numericAttribute(assumption, "valid_days") : null;
-  const budgetMin = assumption ? numericAttribute(assumption, "budget_min") : null;
-  const budgetMax = assumption ? numericAttribute(assumption, "budget_max") : null;
-  const allComplete = rows.length > 0 && rows.every((row) => row.complete) && validDays != null;
-  const total = allComplete ? rows.reduce((sum, row) => sum + (row.amount || 0), 0) : null;
-  return { rows, validDays, budgetMin, budgetMax, allComplete, total };
+  return pdfRenderer.calculateQuoteSummary(items);
 }
 
 function addSlideTitle(slide: pptxgen.Slide, title: string) {
@@ -776,8 +569,7 @@ async function storeDeliverable(input: { solutionId: string; userId: string; art
 }
 
 function summarize(value: string, limit = 180) {
-  const normalized = value.replace(/\s+/g, " ").trim();
-  return normalized.length > limit ? `${normalized.slice(0, limit - 1)}…` : normalized;
+  return renderingShared.summarize(value, limit);
 }
 
 function readableLocator(value: string) {
@@ -842,13 +634,7 @@ function documentLayoutQuality(theme: RenderTheme | null) {
 }
 
 function documentPageSize(theme: RenderTheme | null) {
-  const widthTwips = theme?.pageSize?.widthTwips || 0;
-  const heightTwips = theme?.pageSize?.heightTwips || 0;
-  const ratio = heightTwips > 0 ? widthTwips / heightTwips : 0;
-  if (ratio >= 0.64 && ratio <= 0.79 && widthTwips >= 10000 && widthTwips <= 14000 && heightTwips >= 14000 && heightTwips <= 18000) {
-    return { widthTwips, heightTwips, pageRatio: Number(ratio.toFixed(4)), fromTemplate: true, reason: null };
-  }
-  return { widthTwips: 12240, heightTwips: 15840, pageRatio: 0.7727, fromTemplate: false, reason: theme ? "模板纸张尺寸缺失或超出安全范围" : "未提供 Word 企业模板" };
+  return renderingShared.documentPageSize(theme);
 }
 
 function presentationCanvas(theme: RenderTheme | null) {
@@ -903,7 +689,7 @@ function brandTheme(solutionId: string): RenderTheme | null {
 }
 
 function officeColor(value: string) {
-  return value.replace(/^#/, "").toUpperCase().padStart(6, "0").slice(0, 6);
+  return renderingShared.officeColor(value);
 }
 
 function isUsefulThemeColor(value: string) {
@@ -915,32 +701,11 @@ function isUsefulThemeColor(value: string) {
 }
 
 function mixWithWhite(value: string, ratio: number) {
-  const color = officeColor(value);
-  return [0, 2, 4].map((index) => {
-    const channel = Number.parseInt(color.slice(index, index + 2), 16);
-    return Math.round(channel + (255 - channel) * ratio).toString(16).padStart(2, "0");
-  }).join("").toUpperCase();
+  return renderingShared.mixWithWhite(value, ratio);
 }
 
 function splitContent(content: string) {
-  return documentContentBlocks(content).filter((block) => !block.heading).map((block) => block.text);
-}
-
-function documentContentBlocks(content: string) {
-  const lines = content.replace(/\r/g, "").split(/\n+/).map((item) => item.replace(/^[-*•]\s*/, "").trim()).filter(Boolean);
-  const blocks: Array<{ heading: boolean; text: string }> = [];
-  for (const line of lines) {
-    const text = line.replace(/^#{1,6}\s*/, "").trim();
-    const looksLikeHeading = text.length <= 90 && /^(?:[一二三四五六七八九十]+[、.)]|\d{1,2}[、.)]|(?:背景|目标|范围|现状|交付|风险|实施|验收|上线|报价|数据|权限|集成|安全|成本|计划)[：:])/.test(text);
-    if (looksLikeHeading) blocks.push({ heading: true, text });
-    else {
-      const sentences = text.split(/(?<=[。！？；])\s*/).filter(Boolean);
-      if (sentences.length > 2 && text.length > 260) {
-        for (let index = 0; index < sentences.length; index += 2) blocks.push({ heading: false, text: sentences.slice(index, index + 2).join("") });
-      } else blocks.push({ heading: false, text });
-    }
-  }
-  return blocks;
+  return renderingShared.splitContent(content);
 }
 
 function selectSections(sections: FormalSection[], titles: readonly string[]) {
@@ -957,13 +722,7 @@ function structuredContentItems(content: string) {
 }
 
 function parseStructuredItems(value?: string | null): StructuredItem[] {
-  if (!value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter((item) => item && typeof item.code === "string" && typeof item.kind === "string") : [];
-  } catch {
-    return [];
-  }
+  return renderingShared.parseStructuredItems(value);
 }
 
 function outcomeAcceptsItem(label: string, kind: string) {
@@ -977,8 +736,7 @@ function outcomeAcceptsItem(label: string, kind: string) {
 }
 
 function readableItemKind(kind: string) {
-  const labels: Record<string, string> = { requirement: "需求", feature: "功能", estimation_item: "估算项", phase: "实施阶段", milestone: "里程碑", risk: "风险", quote_assumption: "报价假设" };
-  return labels[kind] || kind;
+  return renderingShared.readableItemKind(kind);
 }
 
 function readableAttributes(attributes: StructuredItem["attributes"] | undefined) {
@@ -986,12 +744,11 @@ function readableAttributes(attributes: StructuredItem["attributes"] | undefined
 }
 
 function itemAttribute(item: StructuredItem, key: string) {
-  return item.attributes?.find((attribute) => attribute.key === key)?.value?.trim() || "";
+  return renderingShared.itemAttribute(item, key);
 }
 
 function numericAttribute(item: StructuredItem, key: string) {
-  const value = itemAttribute(item, key);
-  return /^-?\d+(?:\.\d+)?$/.test(value) ? Number(value) : null;
+  return renderingShared.numericAttribute(item, key);
 }
 
 function addCalculationSheet(workbook: ExcelJS.Workbook, outcomeLabel: string, sections: FormalSection[], primary: string, accent: string, solutionId: string) {
@@ -1134,14 +891,5 @@ function renderErrorCode(error: unknown) {
 }
 
 function withQuoteOverrides(solutionId: string, items: StructuredItem[]) {
-  if (!items.some((item) => item.kind === "quote_assumption")) items = [...items, { kind: "quote_assumption", code: "QUOTE-DEFAULT", title: "项目报价整体参数", description: "用户确认的项目级报价参数", sourceBlockIds: [], attributes: [] }];
-  const overrides = quoteParameterOverrides(solutionId);
-  return items.map((item) => {
-    const attributes = new Map((item.attributes || []).map(({ key, value }) => [key, value]));
-    for (const key of ["base_days", "complexity_factor", "reuse_factor", "integration_factor", "security_factor", "uncertainty_factor", "daily_rate", "tax_rate", "discount_rate", "valid_days", "budget_min", "budget_max"]) {
-      const value = overrides.get(`${item.code}:${key}`);
-      if (value != null) attributes.set(key, String(value));
-    }
-    return { ...item, attributes: [...attributes].map(([key, value]) => ({ key, value })) };
-  });
+  return renderingShared.withQuoteOverrides(solutionId, items);
 }
