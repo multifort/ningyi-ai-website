@@ -9,6 +9,7 @@ const docxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "prod
 const pdfRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pdf-renderer.ts"), "utf8");
 const pptxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pptx-renderer.ts"), "utf8");
 const sharedRenderingSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-rendering-shared.ts"), "utf8");
+const xlsxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-xlsx-renderer.ts"), "utf8");
 
 test("渐进成果与最终渲染复用同一成果定义和生成入口", () => {
   const definitionBlock = source.split("const progressiveDeliverableDefinitions", 2)[1]?.split("export async function ensurePrimaryDeliverables", 1)[0] || "";
@@ -61,4 +62,14 @@ test("PPTX 渲染脱离成果编排模块并复用共享画布边界", () => {
   assert.match(pptxRendererSource, /export async function buildSolutionPresentation/u);
   assert.match(pptxRendererSource, /presentationCanvas\(theme\)/u);
   assert.match(sharedRenderingSource, /export function presentationCanvas/u);
+});
+
+test("XLSX 渲染、公式和追溯工作簿脱离成果编排模块", () => {
+  assert.match(source, /xlsxRenderer\.buildOutcomeWorkbook/u);
+  assert.match(source, /xlsxRenderer\.buildTraceabilityWorkbook/u);
+  assert.doesNotMatch(source, /new ExcelJS\.Workbook/u);
+  assert.match(xlsxRendererSource, /export async function buildOutcomeWorkbook/u);
+  assert.match(xlsxRendererSource, /export async function buildTraceabilityWorkbook/u);
+  assert.match(xlsxRendererSource, /function addCalculationSheet/u);
+  assert.match(xlsxRendererSource, /function addQuoteSummarySheet/u);
 });

@@ -1,6 +1,6 @@
 # 13 当前代码实施状态
 
-> 状态日期：2026-09-28。本文描述仓库当前代码事实；`01`—`12` 文档继续描述产品目标、验收规则和演进边界。当二者表述不一致时，先以本文判断“已经实现什么”，再以设计文档判断“最终必须达到什么”。
+> 状态日期：2026-09-29。本文描述仓库当前代码事实；`01`—`12` 文档继续描述产品目标、验收规则和演进边界。当二者表述不一致时，先以本文判断“已经实现什么”，再以设计文档判断“最终必须达到什么”。
 
 ## 1. 当前结论
 
@@ -17,7 +17,7 @@
 | Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理 | MinIO 短期凭证上传、恶意文件扫描与生产资源隔离 |
 | 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别 | 用 BM-13—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退基础能力 | 补齐真实项目修改集与无关变化率验收 |
-| 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-docx-renderer.ts`、`deliverable-pdf-renderer.ts`、`deliverable-pptx-renderer.ts`、`deliverable-rendering-shared.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式生成、修复与渲染已不读取基准 expected；渐进/最终成果复用同一定义和渲染入口；发布/版本/质量/存储写入、DOCX/PDF/PPTX 渲染和共享内容解析已从成果编排模块分离 | 在隔离后重跑 BM-01—12；继续拆分 XLSX 渲染器；完成模板兼容、视觉质量回归和跨成果一致性验收 |
+| 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-*-renderer.ts`、`deliverable-rendering-shared.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式生成、修复与渲染已不读取基准 expected；渐进/最终成果复用同一定义和渲染入口；发布/版本/质量/存储写入与 DOCX/PDF/PPTX/XLSX 渲染均已从成果编排模块分离 | 在隔离后重跑 BM-01—12；完成模板兼容、视觉质量回归和跨成果一致性验收 |
 | Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`worker-health.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、提交围栏、退避、自动修复、共享心跳健康判定、故障退出、备份恢复和存储维护；解析、正式生成与渲染均有租约接管回归 | 独立可扩展队列、多主机 Worker、容量压测和告警接入 |
 | 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—12；manifest 完整性校验通过 | 先移除 expected 对生成的影响并重跑 BM-01—12，再补齐 BM-13—18、全量活动与故障探针 |
 
@@ -34,7 +34,7 @@
 2026-09-28 的仓库基线校验结果：
 
 - `pnpm typecheck`：通过。
-- `pnpm test`：45 项通过，0 项失败；除五类隔离故障探针外，已覆盖基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布边界、DOCX/PDF/PPTX 渲染边界、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
+- `pnpm test`：46 项通过，0 项失败；除五类隔离故障探针外，已覆盖基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布边界、DOCX/PDF/PPTX/XLSX 渲染边界、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
 - `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12 的 manifest 与文件摘要。该结果只证明基准包完整，不作为独立内容质量通过证据。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
@@ -75,6 +75,6 @@
 详细执行状态见 `14-development-execution-plan.md`。当前可直接开始的是：
 
 1. 有效验收模型凭证恢复后重新运行 BM-01—12，形成新的独立可信基线。
-2. 项目模型状态测试、成果发布边界及 DOCX/PDF/PPTX 渲染器已完成拆分；当前继续拆分 XLSX 渲染器。
+2. 高风险成果模块和项目模型测试已完成拆分；当前进入企业模板与视觉质量门。
 3. 完成企业模板与视觉质量门后补齐 BM-13—18。
 4. 再进入 PostgreSQL、私有 MinIO、多 Worker、安全开放和最终 30 次验收。
