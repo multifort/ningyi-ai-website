@@ -47,10 +47,15 @@ test("存储维护只清理超过宽限期且没有数据库引用的私有文�
   assert.equal(audit.referencedFiles, 1);
   assert.equal(audit.orphanFiles, 1);
   assert.equal(audit.removedFiles, 0);
+  assert.deepEqual(
+    productSqlite.prepare("SELECT status, scanned_files AS scannedFiles, referenced_files AS referencedFiles, orphan_files AS orphanFiles, removed_files AS removedFiles FROM storage_maintenance_runs WHERE id = ?").get(audit.runId),
+    { status: "completed", scannedFiles: 3, referencedFiles: 1, orphanFiles: 1, removedFiles: 0 },
+  );
   assert.equal(await fs.readFile(orphanPath, "utf8"), "remove");
 
   const cleanup = await maintainPrivateStorage("cleanup");
   assert.equal(cleanup.removedFiles, 1);
+  assert.equal(productSqlite.prepare("SELECT status FROM storage_maintenance_runs WHERE id = ?").get(cleanup.runId).status, "completed");
   await assert.rejects(fs.access(orphanPath));
   assert.equal(await fs.readFile(referencedPath, "utf8"), "keep");
   assert.equal(await fs.readFile(freshPath, "utf8"), "wait");

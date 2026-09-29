@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "strict": true
+  },
+  "include": [
+    "lib/product/object-storage-port.ts",
+    "lib/product/local-object-storage.ts",
+    "lib/product/private-storage.ts",
+    "lib/product/storage-maintenance-repository.ts",
+    "lib/product/sqlite-storage-maintenance-repository.ts",
+    "lib/product/product-data-ports.ts",
+    "lib/product/storage-maintenance.ts"
+  ],
+  "exclude": ["node_modules"]
+}
