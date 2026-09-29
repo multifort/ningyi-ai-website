@@ -66,8 +66,12 @@ export function validateBenchmarkManifest(definition: Definition, manifest: any)
   if (!Array.isArray(manifest.coverageTags) || !uniqueStrings(manifest.coverageTags) || !Array.isArray(manifest.blockingChecks) || !manifest.blockingChecks.length || !uniqueStrings(manifest.blockingChecks)) throw new Error("BENCHMARK_MANIFEST_INVALID");
   if (manifest.timeoutSeconds != null && (!Number.isInteger(manifest.timeoutSeconds) || manifest.timeoutSeconds < 1)) throw new Error("BENCHMARK_MANIFEST_INVALID");
   if (manifest.expectedScale != null) for (const value of Object.values(manifest.expectedScale) as any[]) if (!value || !Number.isInteger(value.min) || !Number.isInteger(value.max) || value.min < 0 || value.max < value.min) throw new Error("BENCHMARK_MANIFEST_INVALID");
-  const sourceFiles = manifest.files.filter((file: any) => file.path.startsWith("sources/"));
-  const missing = definition.requiredInputs.filter((requirement) => !sourceFiles.some((file: any) => file.category === requirement.category && requirement.formats.includes(file.format)));
+  const missing = definition.requiredInputs.filter((requirement) => !manifest.files.some((file: any) => {
+    if (file.category !== requirement.category || !requirement.formats.includes(file.format)) return false;
+    if (requirement.category === "content") return file.path.startsWith("sources/");
+    if (requirement.category === "template") return file.path.startsWith("sources/") || file.path.startsWith("templates/");
+    return file.path.startsWith("sources/") || file.path.startsWith("brand/");
+  }));
   if (missing.length) throw new Error(`BENCHMARK_MANIFEST_INPUTS_INCOMPLETE:${missing.map((item) => `${item.category}/${item.formats.join("|")}`).join(",")}`);
 }
 

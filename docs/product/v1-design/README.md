@@ -24,7 +24,7 @@
 
 - 核心非基准契约校验：运行 `pnpm contracts:check`，由 uv 按 `uv.lock` 在隔离环境中校验正式项目模型、任务运行时、变更影响和产品 API 目录 Schema 及对应样例。
 - 产品 API 与代码同步校验：运行 `pnpm api:check`，检查机器可读 API 目录是否与 `app/api/product/**/route.ts` 双向一致。
-- 基准包聚合校验：运行 `pnpm benchmark:verify`，默认检查仓库中已有的 BM-01—BM-12；也可追加单个 manifest 路径。该命令只证明基准包和摘要完整，不等同于产品运行或内容质量通过。
+- 基准包聚合校验：运行 `pnpm benchmark:verify`，默认检查仓库中已有的 BM-01—BM-12、BM-14—15；也可追加单个 manifest 路径。该命令只证明基准包和摘要完整，不等同于产品运行或内容质量通过。
 - 本地统一质量门：运行 `pnpm quality:check`，按固定顺序执行 lint、类型、测试、API、契约和基准包校验。仓库当前不使用 GitHub Actions。
 
 - `contracts/project-model.schema.json`：正式项目模型 V1。

@@ -1,0 +1,18 @@
+{
+  "benchmark_id": "BM-15",
+  "pass_score": 96,
+  "weights": {
+    "project_understanding": 0.06,
+    "multi_format_parsing": 0.12,
+    "requirements_features": 0.08,
+    "safe_template_profile": 0.16,
+    "brand_application": 0.10,
+    "deterministic_effort_pricing": 0.14,
+    "cross_deliverable_consistency": 0.12,
+    "package_visibility_boundary": 0.08,
+    "private_storage_and_security": 0.06,
+    "traceability": 0.04,
+    "deliverable_quality": 0.03,
+    "runtime_cost": 0.01
+  }
+}

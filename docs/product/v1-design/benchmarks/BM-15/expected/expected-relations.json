@@ -1,0 +1,12 @@
+{
+  "benchmark_id": "BM-15",
+  "relations": [
+    {"from":"多格式项目材料","to":"统一知识层、项目模型和来源引用","type":"traceable_ingestion","source":"sources/platform-requirements.docx; sources/solution-reference.pdf"},
+    {"from":"统一项目模型","to":"七类成果和成果包","type":"single_content_version","source":"sources/platform-requirements.docx; sources/current-process.pptx"},
+    {"from":"三类企业模板与品牌规范","to":"颜色、字体和兼容页面尺寸","type":"safe_template_profile","source":"templates/enterprise-template.docx; templates/enterprise-template.xlsx; templates/enterprise-template.pptx; brand/brand-guidelines.pdf"},
+    {"from":"角色人天和日单价","to":"角色小计、风险储备和含税总额","type":"deterministic_pricing","source":"sources/project-metrics.xlsx; sources/platform-requirements.docx"},
+    {"from":"内容版本或锁定对象变更","to":"影响计划、重新生成和审计记录","type":"versioned_change_control","source":"sources/platform-requirements.docx"},
+    {"from":"客户交付包","to":"客户可见成果且排除内部与模板示例内容","type":"package_visibility_boundary","source":"sources/platform-requirements.docx; intake.json"},
+    {"from":"生产文件","to":"隔离扫描、私有 MinIO 和 10 分钟签名下载","type":"private_object_flow","source":"sources/platform-requirements.docx; intake.json"}
+  ]
+}

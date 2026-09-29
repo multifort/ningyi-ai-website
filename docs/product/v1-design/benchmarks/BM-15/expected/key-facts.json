@@ -1,0 +1,17 @@
+{
+  "benchmark_id": "BM-15",
+  "facts": [
+    {"id":"KF-01","fact":"首期服务销售顾问、方案架构师、项目经理和商务人员，共 260 名注册用户","source":"sources/platform-requirements.docx; intake.json"},
+    {"id":"KF-02","fact":"项目材料支持 DOCX、PDF、PPTX、XLSX、CSV、TXT 和图片，并形成可追溯的统一项目模型","source":"sources/platform-requirements.docx; sources/solution-reference.pdf"},
+    {"id":"KF-03","fact":"系统从同一内容版本生成需求分析、功能清单、工作量估算、实施计划、项目报价、整体解决方案和汇报演示","source":"sources/platform-requirements.docx"},
+    {"id":"KF-04","fact":"企业模板只提取品牌颜色、字体和兼容页面尺寸，不复制正文、宏、外部链接、嵌入对象或示例数字","source":"sources/platform-requirements.docx; brand/brand-guidelines.pdf; intake.json"},
+    {"id":"KF-05","fact":"品牌主色为 #17365D、辅色为 #1F7A8C、浅色背景为 #EAF3F7，中文字体为 Noto Sans CJK SC","source":"brand/brand-guidelines.pdf; templates/enterprise-template.docx; templates/enterprise-template.xlsx; templates/enterprise-template.pptx"},
+    {"id":"KF-06","fact":"产品经理、架构师、后端工程师、前端工程师和测试工程师共 324 人天，角色费用小计为 519600 元","source":"sources/project-metrics.xlsx; sources/platform-requirements.docx"},
+    {"id":"KF-07","fact":"加 12% 风险储备后未税金额为 581952 元，加 6% 税后总额为 616869.12 元","source":"sources/project-metrics.xlsx; sources/platform-requirements.docx"},
+    {"id":"KF-08","fact":"项目从 2027-11-01 开始，目标上线日期为 2028-05-31","source":"sources/platform-requirements.docx; sources/project-metrics.xlsx; intake.json"},
+    {"id":"KF-09","fact":"生产使用私有 PostgreSQL 和私有 MinIO，文件不得进入 AWS S3 或公共 Bucket","source":"sources/platform-requirements.docx; sources/current-process.pptx; intake.json"},
+    {"id":"KF-10","fact":"下载链接有效期 10 分钟，上传文件先进入隔离区并在扫描通过后进入正式对象存储","source":"sources/platform-requirements.docx"},
+    {"id":"KF-11","fact":"客户交付包不得包含内部成本、利润、原始材料、内部备注或模板示例内容","source":"sources/platform-requirements.docx; sources/solution-reference.pdf; intake.json"},
+    {"id":"KF-12","fact":"首期不包含通用 CRM、财务核算、合同电子签章、模板交易市场、AWS S3、人工代写交付或无人确认的外部动作","source":"sources/platform-requirements.docx; sources/current-process.pptx; intake.json"}
+  ]
+}

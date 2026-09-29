@@ -1,0 +1,36 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-15",
+  "project_name": "明澜科技项目交付协同平台",
+  "customer_facing_name": "智能项目成果协同平台",
+  "customer_type": "多事业部企业服务公司",
+  "target_users": ["业务负责人", "销售顾问", "方案架构师", "项目经理", "商务人员", "信息化团队"],
+  "primary_goal": "把多格式项目材料统一为可追溯项目模型，并从同一内容版本生成七类一致、可编辑、可交付的成果",
+  "secondary_goal": "安全复用企业模板的品牌属性，在私有 PostgreSQL 和私有 MinIO 环境中完成版本、权限、交付包和审计治理",
+  "need_description": "现有需求、估算、报价、计划和汇报分别维护在 DOCX、PDF、PPTX、XLSX 和图片中，版本与关键数字经常不一致。项目需要识别材料冲突，以明确来源和确定性程序形成统一基线。",
+  "desired_product_form": ["私有化 Web 平台", "材料解析与来源追溯", "七类成果生成", "企业模板安全提取", "内部包与客户包"],
+  "budget": {
+    "available": true,
+    "range_cny": {"min": 550000, "max": 850000},
+    "confidence": "tentative",
+    "note": "预算为软件实施区间，不包含客户基础设施、第三方软件、云资源或外部采购。"
+  },
+  "schedule": {
+    "desired_start": "2027-11-01",
+    "desired_go_live": "2028-05-31",
+    "flexibility": "以需求基线、方案评审、开发完成、试运行和正式上线的退出条件为准"
+  },
+  "output_preferences": {
+    "primary_audience": "业务负责人、销售顾问、方案架构师、项目经理、商务人员和信息化团队",
+    "language": "zh-CN",
+    "packages": ["内部评审包", "客户交付包"],
+    "template_files": ["templates/enterprise-template.docx", "templates/enterprise-template.xlsx", "templates/enterprise-template.pptx"]
+  },
+  "constraints": [
+    "企业模板只提取品牌颜色、字体和兼容页面尺寸，不复制正文、示例数字、宏、外部链接或嵌入对象",
+    "角色工作量、单价、风险储备和税率必须由确定性程序计算并跨成果一致",
+    "生产使用私有 PostgreSQL 和私有 MinIO，不使用 AWS S3 或公共 Bucket",
+    "客户交付包不得包含内部成本、利润、原始材料、内部备注或模板示例内容",
+    "首期不包含通用 CRM、财务核算、合同电子签章、模板交易市场或无人确认的外部动作"
+  ]
+}

@@ -19,7 +19,7 @@ test("所有实体基准包同时满足哈希锁定和注册表输入覆盖", ()
     .filter((entry) => entry.isDirectory() && /^BM-(0[1-9]|1[0-8])$/.test(entry.name))
     .map((entry) => entry.name)
     .sort();
-  assert.ok(ids.length >= 13);
+  assert.ok(ids.length >= 14);
   for (const id of ids) {
     const definition = benchmarkDefinition(id);
     assert.ok(definition, `${id} must be registered`);

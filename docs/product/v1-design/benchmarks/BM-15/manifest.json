@@ -1,0 +1,159 @@
+{
+  "benchmarkId": "BM-15",
+  "benchmarkVersion": "1.0",
+  "title": "多格式与企业模板综合项目",
+  "projectType": "hybrid",
+  "difficulty": "L4",
+  "coverageTags": [
+    "all_supported_formats",
+    "enterprise_templates",
+    "brand_profile",
+    "long_document",
+    "deterministic_pricing",
+    "cross_deliverable_consistency",
+    "deliverable_package"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 24,
+      "max": 60
+    },
+    "features": {
+      "min": 20,
+      "max": 52
+    },
+    "solutionCharacters": {
+      "min": 22000,
+      "max": 50000
+    },
+    "slideCount": {
+      "min": 14,
+      "max": 28
+    }
+  },
+  "timeoutSeconds": 3000,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "all_input_formats_parsed",
+    "three_template_profiles_compatible",
+    "template_sample_content_excluded",
+    "brand_policy_applied",
+    "deterministic_amounts_consistent",
+    "seven_deliverables_and_packages_valid",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "a55b68b621f7ca4314efd3b7c459aa895768ce4548e0cd91c654aa99e2c35b97",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "9fb46ffe06684ca10cbc11df0ebb6a1afd59520f0efb8c14d289b2a0cfcf8911",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "a6436a1db55058cddf09dd963be9f6640c0019f95b46b82a8ce0e129c4632d5f",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "ccbeaedbc9a51e7c0eabfe5752795189f013fd1c3bfc9ec24b8ab0349ded5023",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "10fef667e32e3f603bbc1409be30ad94971f458a1b8a784de04d470d3d389791",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "cbcbeb56e81c61663f8f119f44aa32aea7caf8ee2517bad37f7b09c7e0e8cfcb",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "0a41f64a36e43a03a35631932e5689b7d4345c3a751bf74e5e671d379101a560",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/platform-requirements.docx",
+      "sha256": "93cb188fef7be5b185ee0dca693fce828e6215a72f9c97ae286d4aa3cb490d1f",
+      "category": "content",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/solution-reference.pdf",
+      "sha256": "48583777eaef998c995c0bc1a4c5738081d65d9fb32169f8a27c983d882dd6ac",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/current-process.pptx",
+      "sha256": "08516c3d196d0665df70916849d72c19620c2d50b43f30172598f00c3c896517",
+      "category": "content",
+      "format": "pptx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/project-metrics.xlsx",
+      "sha256": "aee656c2312966745534ea0300d9c3725eee68211dbda39a8805dcec0ad407aa",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/current-workspace.png",
+      "sha256": "d6f931ef0c95a0c4e0fc215b3e9438b666c8a27fd2bf62cb793614c422d5b8f8",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "templates/enterprise-template.docx",
+      "sha256": "f02236c834239a6c262088615b89e40f9982517e5c5d3e73d47df9440dc95daa",
+      "category": "template",
+      "format": "docx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "templates/enterprise-template.xlsx",
+      "sha256": "42b978ac2629db61ca5ce494086972da6876f9b28063d4a9ca05e790889c5eaf",
+      "category": "template",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "templates/enterprise-template.pptx",
+      "sha256": "2b5fe6c1d500fe64a06f0dfb1cb8a166c11fdba0372180500f112dea126cf7b9",
+      "category": "template",
+      "format": "pptx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "brand/brand-guidelines.pdf",
+      "sha256": "36906be8582e33fb05a6029a1fb8590cc6d6d5379980705375467e844be44edd",
+      "category": "brand",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

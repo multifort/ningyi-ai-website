@@ -70,3 +70,18 @@ test("受支持的 Office 模板样本识别率为 100% 且损坏模板明确回
   assert.equal(fallback.status, "fallback");
   assert.match(fallback.fallbackReason, /无法完整解析/u);
 });
+
+test("BM-15 三类企业模板仅形成安全样式配置", async () => {
+  const templateRoot = path.join(process.cwd(), "docs", "product", "v1-design", "benchmarks", "BM-15", "templates");
+  const samples = ["docx", "xlsx", "pptx"].map((detectedFormat) => ({
+    detectedFormat,
+    bytes: fs.readFileSync(path.join(templateRoot, `enterprise-template.${detectedFormat}`)),
+  }));
+  const results = await Promise.all(samples.map((sample) => analyzeTemplateBytes(sample)));
+  assert.ok(results.every((result) => result.status === "profiled_default_renderer"));
+  assert.ok(results.every((result) => result.profile.structurallyCompatible === true));
+  assert.ok(results.every((result) => result.profile.colors.includes("#17365D") && result.profile.colors.includes("#1F7A8C")));
+  assert.ok(results.every((result) => result.profile.fonts.includes("Noto Sans CJK SC")));
+  assert.ok(results.every((result) => result.renderPolicy.themeColors === "apply"));
+  assert.ok(results.every((result) => result.renderPolicy.excludedContent.includes("sample_text")));
+});

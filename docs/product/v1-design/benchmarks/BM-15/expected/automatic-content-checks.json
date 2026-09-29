@@ -1,0 +1,24 @@
+{
+  "benchmark_id": "BM-15",
+  "minimum_structured_items": {"requirement":24,"feature":20,"phase":5,"risk":8},
+  "maximum_runtime_seconds": 3000,
+  "required_patterns": [
+    {"id":"formats","patterns":["DOCX","PDF","PPTX","XLSX","图片","来源|追溯"]},
+    {"id":"deliverables","patterns":["需求分析","功能清单","工作量估算","实施计划","项目报价","整体解决方案","汇报演示"]},
+    {"id":"template_policy","patterns":["模板","颜色","字体","页面尺寸","不得复制|不复制","正文|示例","宏|外部链接|嵌入"]},
+    {"id":"brand","patterns":["#?17365D","#?1F7A8C","#?EAF3F7","Noto Sans CJK SC"]},
+    {"id":"effort","patterns":["324.{0,3}人天","519,?600","581,?952","616,?869\\.12","12%","6%"]},
+    {"id":"schedule","patterns":["2027[-年/]?11[-月/]?0?1","2028[-年/]?0?5[-月/]?31","需求基线","方案评审","试运行","正式上线"]},
+    {"id":"storage","patterns":["私有.{0,4}PostgreSQL","私有.{0,4}MinIO","AWS S3","公共.{0,4}Bucket","隔离|扫描","10.{0,3}分钟"]},
+    {"id":"package_boundary","patterns":["客户交付包","内部成本","利润","原始材料","内部备注","模板示例","不得包含|排除"]},
+    {"id":"scope","patterns":["CRM","财务核算","电子签章","模板交易","人工代写","不包含|排除"]}
+  ],
+  "prohibited_commitment_patterns": [
+    {"id":"template_sample","pattern":"(?:TEMPLATE-ONLY|999999|模板占位金额|占位需求|占位功能|占位报价)"},
+    {"id":"incorrect_total","pattern":"(?:518,?400|580,?608|615,?444\\.48)"},
+    {"id":"aws_storage","pattern":"对象存储[^。；\\n]{0,16}(?:采用|使用)[^。；\\n]{0,6}AWS S3"},
+    {"id":"public_bucket","pattern":"(?:公共|公网)[^。；\\n]{0,6}Bucket"},
+    {"id":"client_internal_data","pattern":"客户交付包[^。；\\n]{0,24}(?:包含|附带)[^。；\\n]{0,12}(?:内部成本|利润|原始材料|内部备注)"},
+    {"id":"automatic_external_action","pattern":"(?:自动|无需确认)[^。；\\n]{0,12}(?:签署合同|发布报价|购买资源|生产变更)"}
+  ]
+}
