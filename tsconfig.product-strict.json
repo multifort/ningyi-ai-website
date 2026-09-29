@@ -17,7 +17,12 @@
     "lib/product/deletion-worker.ts",
     "lib/product/source-processing-repository.ts",
     "lib/product/sqlite-source-processing-repository.ts",
-    "lib/product/process-solution.ts"
+    "lib/product/process-solution.ts",
+    "lib/product/model-call-repository.ts",
+    "lib/product/sqlite-model-call-repository.ts",
+    "lib/product/media-task-repository.ts",
+    "lib/product/sqlite-media-task-repository.ts",
+    "lib/product/media-analysis.ts"
   ],
   "exclude": ["node_modules"]
 }

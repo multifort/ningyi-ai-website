@@ -1,6 +1,10 @@
 import type { DeletionRepository } from "./deletion-repository";
+import type { MediaTaskRepository } from "./media-task-repository";
+import type { ModelCallRepository } from "./model-call-repository";
 import type { StorageMaintenanceRepository } from "./storage-maintenance-repository";
 import { SqliteDeletionRepository } from "./sqlite-deletion-repository";
+import { SqliteMediaTaskRepository } from "./sqlite-media-task-repository";
+import { SqliteModelCallRepository } from "./sqlite-model-call-repository";
 import { SqliteSourceProcessingRepository } from "./sqlite-source-processing-repository";
 import { SqliteStorageMaintenanceRepository } from "./sqlite-storage-maintenance-repository";
 import type { SourceProcessingRepository } from "./source-processing-repository";
@@ -8,6 +12,8 @@ import type { SourceProcessingRepository } from "./source-processing-repository"
 const sqliteStorageMaintenance = new SqliteStorageMaintenanceRepository();
 const sqliteDeletion = new SqliteDeletionRepository();
 const sqliteSourceProcessing = new SqliteSourceProcessingRepository();
+const sqliteMediaTask = new SqliteMediaTaskRepository();
+const sqliteModelCall = new SqliteModelCallRepository();
 
 function assertSqliteDriver() {
   const driver = process.env.PRODUCT_DATA_DRIVER || "sqlite";
@@ -27,4 +33,14 @@ export function deletionRepository(): DeletionRepository {
 export function sourceProcessingRepository(): SourceProcessingRepository {
   assertSqliteDriver();
   return sqliteSourceProcessing;
+}
+
+export function mediaTaskRepository(): MediaTaskRepository {
+  assertSqliteDriver();
+  return sqliteMediaTask;
+}
+
+export function modelCallRepository(): ModelCallRepository {
+  assertSqliteDriver();
+  return sqliteModelCall;
 }

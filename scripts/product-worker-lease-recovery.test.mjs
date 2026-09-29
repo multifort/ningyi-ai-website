@@ -59,7 +59,7 @@ test("解析、媒体、正式章节和渲染的过期租约都恢复为可接�
     VALUES ('74000000-0000-4000-8000-000000000011', ?, ?, 1, 'running')`).run(solutionId, sectionId);
 
   assert.equal(await recoverStaleSourceProcessing(), 1);
-  assert.equal(recoverStaleMediaTasks(), 1);
+  assert.equal(await recoverStaleMediaTasks(), 1);
   assert.equal(recoverStaleFormalWork(solutionId), 1);
   assert.equal(recoverStaleRendering(), 1);
 
