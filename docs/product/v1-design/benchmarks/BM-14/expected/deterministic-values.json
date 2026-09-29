@@ -1,0 +1,10 @@
+{
+  "benchmark_id":"BM-14",
+  "source_of_truth":"sources/security-requirements.pdf; sources/resource-capacity.xlsx; sources/network-topology.png",
+  "topology":{"web_api_instances":3,"worker_instances":4,"postgres_data_nodes":2,"postgres_witness_nodes":1,"minio_nodes":4,"malware_scanner_instances":2,"waf_gateway_instances":2},
+  "capacity":{"registered_users":400,"peak_concurrent_users":80,"daily_files":12000,"max_file_mb":30,"daily_raw_gb":180,"online_days":365,"derived_version_factor":1.35,"minio_redundancy_factor":1.5,"headroom_factor":1.2,"annual_raw_tb":64.16015625,"planned_object_storage_tb":155.9091796875},
+  "recovery":{"database_rpo_minutes":15,"database_rto_hours":2,"object_rpo_hours":1,"object_rto_hours":4,"backup_retention_days":35,"restore_drill_months":3},
+  "security":{"signed_download_minutes":10,"service_account_rotation_days":90,"security_log_online_days":180,"security_log_archive_years":3,"critical_vulnerability_hours":72,"medium_vulnerability_days":30},
+  "performance":{"normal_queue_p95_seconds":5,"burst_queue_p95_seconds":30,"per_user_worker_share_max":0.25},
+  "budget_cny":{"software_implementation_min":1800000,"software_implementation_max":2800000,"external_hardware_and_security_included":false}
+}

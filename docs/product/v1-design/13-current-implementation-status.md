@@ -15,11 +15,11 @@
 | 官网与 CMS | `app/components/`、`app/admin/`、`app/api/content/` | 保留并已把主要 CTA 接入产品入口；两处人工确认交付表述已修正并有文案回归 | 完成内容发布复核 |
 | 产品身份 | `lib/product/auth.ts`、`app/api/product/auth/`、`app/api/product/account/` | 产品用户与管理员隔离；已实现用户名密码、HttpOnly Session、登录限流、改密、导出与注销 | 密码找回、共享限流和外部身份方式延期 |
 | Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理 | MinIO 短期凭证上传、恶意文件扫描与生产资源隔离 |
-| 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别 | 用 BM-13—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
+| 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别；BM-14 私有部署实体样本已补齐 | 用 BM-13、BM-15—18 补足旧格式、复杂模板和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退基础能力 | 补齐真实项目修改集与无关变化率验收 |
 | 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-*-renderer.ts`、`deliverable-rendering-shared.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式生成、修复与渲染已不读取基准 expected；渐进/最终成果复用同一定义和渲染入口；发布/版本/质量/存储写入与 DOCX/PDF/PPTX/XLSX 渲染均已从成果编排模块分离；模板安全样式进入渲染，四格式发布结构门和真实回渲染门已接入 | 在隔离后重跑 BM-01—12；用 BM-13—18 验证复杂/旧格式模板，并完成跨成果一致性验收 |
 | Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`worker-health.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、提交围栏、退避、自动修复、共享心跳健康判定、故障退出、备份恢复和存储维护；解析、正式生成与渲染均有租约接管回归 | 独立可扩展队列、多主机 Worker、容量压测和告警接入 |
-| 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—12；manifest 完整性校验通过 | 先移除 expected 对生成的影响并重跑 BM-01—12，再补齐 BM-13—18、全量活动与故障探针 |
+| 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—12、BM-14；manifest 哈希和注册表输入覆盖校验通过 | 凭证恢复后重跑 BM-01—12；继续补齐 BM-13、BM-15—18、全量活动与故障探针 |
 
 ## 3. 当前存储与部署形态
 
@@ -34,9 +34,9 @@
 2026-09-28 的仓库基线校验结果：
 
 - `pnpm typecheck`：通过。
-- `pnpm test`：49 项通过，0 项失败；除五类隔离故障探针外，已覆盖基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布与四格式版式边界、模板样本识别与损坏回退、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
+- `pnpm test`：50 项通过，0 项失败；除五类隔离故障探针外，已覆盖实体基准包的哈希锁定与注册表输入覆盖、基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布与四格式版式边界、模板样本识别与损坏回退、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
-- `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12 的 manifest 与文件摘要。该结果只证明基准包完整，不作为独立内容质量通过证据。
+- `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12、BM-14 共 13 个 manifest 与文件摘要。该结果只证明基准包完整，不作为独立内容质量通过证据。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
 - `pnpm lint`：通过；0 项错误、0 项警告，使用 `--max-warnings=0` 阻止警告回归。
 - `pnpm templates:check`：通过；使用生产渲染器生成 DOCX/XLSX/PPTX/PDF，将前三种格式回渲染为 PDF，共检查 30 页的页面尺寸、文字恢复和图片产物，并验证 XLSX 公式重算结果 `20,352.00`。服务端回渲染通过仓库内 Noto CJK 字体映射避免依赖 macOS 字体。

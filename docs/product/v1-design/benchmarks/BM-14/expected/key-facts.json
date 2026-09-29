@@ -1,0 +1,17 @@
+{
+  "benchmark_id": "BM-14",
+  "facts": [
+    {"id":"KF-01","fact":"平台部署在客户自有数据中心，对象存储采用客户内网私有 MinIO 并通过 S3 兼容 API 接入，不使用 AWS S3","source":"sources/security-requirements.pdf; intake.json"},
+    {"id":"KF-02","fact":"生产、UAT、开发环境使用独立数据库、Bucket、密钥和服务账号","source":"sources/security-requirements.pdf; sources/network-topology.png"},
+    {"id":"KF-03","fact":"互联网流量只可经双机 WAF 和 API 网关进入应用区，数据区无公网出口，运维必须经过堡垒机","source":"sources/security-requirements.pdf; sources/network-topology.png"},
+    {"id":"KF-04","fact":"生产应用为 Web/API 3 实例、Worker 4 实例、PostgreSQL 2 数据节点加 1 仲裁节点、MinIO 4 节点、恶意文件扫描 2 实例","source":"sources/resource-capacity.xlsx; sources/security-requirements.pdf"},
+    {"id":"KF-05","fact":"MinIO Bucket 必须私有，下载签名 URL 有效期 10 分钟，上传先进入 quarantine Bucket 并在扫描通过后转入正式 Bucket","source":"sources/security-requirements.pdf; sources/network-topology.png"},
+    {"id":"KF-06","fact":"数据库 RPO 为 15 分钟、RTO 为 2 小时；对象存储 RPO 为 1 小时、RTO 为 4 小时","source":"sources/security-requirements.pdf"},
+    {"id":"KF-07","fact":"备份保留 35 天且每季度执行一次恢复演练，数据库持续归档 WAL，MinIO 每日增量复制到备份区","source":"sources/security-requirements.pdf"},
+    {"id":"KF-08","fact":"一期注册用户 400 人、峰值并发 80 人、每日新增文件 12000 个、单文件最大 30 MB、日均原始新增量 180 GB","source":"sources/security-requirements.pdf; sources/resource-capacity.xlsx"},
+    {"id":"KF-09","fact":"一年对象存储原始量约 64.1602 TB，按 1.35 派生版本、1.5 MinIO 冗余和 1.2 余量计算的规划容量约 155.9092 TB","source":"sources/resource-capacity.xlsx"},
+    {"id":"KF-10","fact":"正常容量排队 P95 不超过 5 秒、突发容量 P95 不超过 30 秒，单用户不得占用超过 25% 的 Worker 并发","source":"sources/security-requirements.pdf; sources/resource-capacity.xlsx"},
+    {"id":"KF-11","fact":"硬件、KMS、WAF、堡垒机、杀毒引擎、备份介质和专线属于客户采购或第三方成本，不包含在默认软件实施报价中","source":"sources/security-requirements.pdf; sources/resource-capacity.xlsx; intake.json"},
+    {"id":"KF-12","fact":"首期不包含双数据中心双活、跨境数据传输、公共互联网 Bucket、AWS S3、自动购买硬件或自动执行生产扩容","source":"sources/security-requirements.pdf; intake.json"}
+  ]
+}

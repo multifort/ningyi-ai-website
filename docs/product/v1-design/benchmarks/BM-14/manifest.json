@@ -1,0 +1,117 @@
+{
+  "benchmarkId": "BM-14",
+  "benchmarkVersion": "1.0",
+  "title": "私有化部署项目",
+  "projectType": "deployment",
+  "difficulty": "L3",
+  "coverageTags": [
+    "private_deployment",
+    "network_isolation",
+    "private_minio",
+    "capacity_planning",
+    "backup_restore",
+    "security_operations",
+    "external_cost_boundary"
+  ],
+  "expectedScale": {
+    "requirements": {
+      "min": 18,
+      "max": 46
+    },
+    "features": {
+      "min": 14,
+      "max": 38
+    },
+    "solutionCharacters": {
+      "min": 16000,
+      "max": 38000
+    },
+    "slideCount": {
+      "min": 12,
+      "max": 24
+    }
+  },
+  "timeoutSeconds": 2400,
+  "blockingChecks": [
+    "all_manifest_hashes_match",
+    "private_minio_boundary_preserved",
+    "network_zones_and_environment_isolation_preserved",
+    "capacity_formula_and_resource_counts_preserved",
+    "rpo_rto_and_backup_policy_preserved",
+    "external_costs_separated",
+    "scope_exclusions_preserved",
+    "all_formal_claims_have_source_refs"
+  ],
+  "files": [
+    {
+      "path": "expected/automatic-content-checks.json",
+      "sha256": "0e0a11bf09f38d6757515c7d82d36ba13976bd366fd832a57e96635b2338f273",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/deterministic-values.json",
+      "sha256": "7cb9a96ce4de63fa6d8b5068135b058e6cdcf768e9248f7364c2b4bfc9c68130",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/expected-relations.json",
+      "sha256": "3816fec04dc094c436ba49ef6f7bd790e53bf9eca67eb82e32dc0282a317b9d6",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/key-facts.json",
+      "sha256": "d1e6893d04376134ddf795645ca8048372946b38462d4782b36e228b6e6edca6",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/prohibited-claims.json",
+      "sha256": "73dd0402828faa7e4dea53f8d5c202d9013c4421d08a90f41ee5e8573f8036bc",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "expected/scoring-rubric.json",
+      "sha256": "0982ca65034492ee242d56e3cef5c5223abdc109dfc429b92a5dc46828871c21",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "intake.json",
+      "sha256": "3d9fc59ea25ac416bd88463e57f276c67bc712bcb83252a8a0bc8c39de642bf2",
+      "category": "content",
+      "format": "json",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/network-topology.png",
+      "sha256": "36ec1b9391c57cd69cdcdfc47fa7fadadf8976fc828a0a628258b63a832d5f26",
+      "category": "content",
+      "format": "png",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/resource-capacity.xlsx",
+      "sha256": "5dabf6d39e2076f0dd516541802d31366c3a37ff6b77fbb7a2e77c625032aa29",
+      "category": "content",
+      "format": "xlsx",
+      "licenseStatus": "synthetic"
+    },
+    {
+      "path": "sources/security-requirements.pdf",
+      "sha256": "d99c88557d0e665ae0fcc7b18944872b21497287fd62c736a5d6a993faac9153",
+      "category": "content",
+      "format": "pdf",
+      "licenseStatus": "synthetic"
+    }
+  ]
+}

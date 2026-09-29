@@ -1,0 +1,23 @@
+{
+  "intake_version": "1.0",
+  "benchmark_id": "BM-14",
+  "project_name": "澄川制造智能方案平台私有化部署项目",
+  "customer_facing_name": "企业智能方案私有化平台",
+  "customer_type": "多基地装备制造企业",
+  "target_users": ["业务顾问", "售前工程师", "项目经理", "信息安全", "基础设施运维", "审计人员"],
+  "primary_goal": "在客户自有数据中心部署可追溯的智能方案生成平台，并满足网络隔离、私有存储、容量、备份恢复和安全运营要求",
+  "secondary_goal": "明确软件实施与客户硬件及第三方安全产品的责任和成本边界，形成可执行的部署、迁移、验收与回退计划",
+  "need_description": "客户禁止业务材料进入公有云存储，希望在自有数据中心运行 Web、Worker、PostgreSQL 和私有 MinIO。项目需要基于明确的容量参数完成资源规划，并把安全扫描、审计、备份恢复和环境隔离纳入正式方案。",
+  "desired_product_form": ["私有化 Web 平台", "独立 Worker 集群", "PostgreSQL 高可用", "私有 MinIO 对象存储", "监控审计与备份恢复"],
+  "budget": {"available": true, "range_cny": {"min": 1800000, "max": 2800000}, "confidence": "tentative", "note": "软件实施预算不包含服务器、存储、KMS、WAF、堡垒机、杀毒引擎、备份介质和专线。"},
+  "schedule": {"desired_start": "2027-10-08", "desired_go_live": "2028-04-30", "flexibility": "以网络区划、容量验证、安全基线、备份恢复演练和生产切换验收为准"},
+  "output_preferences": {"primary_audience": "业务负责人、CIO、信息安全负责人、基础设施负责人、项目经理和采购", "language": "zh-CN", "packages": ["架构与安全评审包", "实施报价与上线交接包"], "template_files": []},
+  "constraints": [
+    "对象存储必须使用客户内网私有 MinIO，通过 S3 兼容 API 接入，不使用 AWS S3",
+    "生产、UAT、开发环境的数据库、Bucket、密钥和服务账号完全隔离",
+    "数据库 RPO 15 分钟、RTO 2 小时；对象存储 RPO 1 小时、RTO 4 小时",
+    "上传文件先进入 quarantine Bucket 并通过恶意文件扫描",
+    "硬件和第三方安全产品成本必须与软件实施报价分开",
+    "首期不包含双数据中心双活、跨境数据传输、公共互联网 Bucket、自动购买硬件或自动执行生产扩容"
+  ]
+}

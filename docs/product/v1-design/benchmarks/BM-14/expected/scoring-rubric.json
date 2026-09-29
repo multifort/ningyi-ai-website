@@ -1,0 +1,1 @@
+{"benchmark_id":"BM-14","pass_score":95,"weights":{"project_understanding":0.07,"requirements_features":0.08,"private_deployment_architecture":0.16,"security_and_environment_isolation":0.16,"capacity_and_performance":0.15,"backup_restore":0.12,"external_cost_and_scope":0.10,"implementation_effort":0.06,"traceability":0.05,"deliverable_quality":0.04,"runtime_cost":0.01}}
