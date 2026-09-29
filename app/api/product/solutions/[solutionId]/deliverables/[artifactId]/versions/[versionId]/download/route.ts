@@ -1,8 +1,7 @@
-import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../../../../../lib/product/auth";
 import { productSqlite } from "../../../../../../../../../../lib/product/db";
-import { safePrivatePath } from "../../../../../../../../../../lib/product/private-storage";
+import { privateStorageKey, readPrivateFile } from "../../../../../../../../../../lib/product/private-storage";
 import { issueDownloadToken, verifyDownloadToken } from "../../../../../../../../../../lib/product/download-tokens";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ solutionId: string; artifactId: string; versionId: string }> }) {
@@ -26,9 +25,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   if (!verifyDownloadToken(token, { userId: auth.session.userId, solutionId, artifactId, versionId })) return NextResponse.json({ success: false, error: { code: "DOWNLOAD_TOKEN_INVALID", message: "下载链接无效或已过期，请重新获取。", retryable: false } }, { status: 403 });
   const version = findVersion(versionId, artifactId, solutionId, auth.session.userId);
   if (!version) return versionNotFound();
-  const target = safePrivatePath(auth.session.userId, solutionId, version.artifactId);
-  if (target.relativeKey !== version.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "历史版本暂时无法读取。", retryable: true } }, { status: 409 });
-  const bytes = await fs.readFile(target.absolutePath);
+  const expectedKey = privateStorageKey(auth.session.userId, solutionId, version.artifactId);
+  if (expectedKey !== version.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "历史版本暂时无法读取。", retryable: true } }, { status: 409 });
+  const bytes = await readPrivateFile(expectedKey);
   const extension = version.displayName.match(/\.[a-z0-9]+$/i)?.[0] || extensionForMimeType(version.mimeType);
   const asciiName = `deliverable-version-${versionId}${extension}`;
   return new NextResponse(new Uint8Array(bytes), { headers: { "Content-Type": version.mimeType, "Content-Length": String(bytes.length), "Content-Disposition": `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(version.displayName)}`, "Cache-Control": "private, no-store" } });

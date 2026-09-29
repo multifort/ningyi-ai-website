@@ -1,9 +1,7 @@
-import { randomUUID, timingSafeEqual } from "crypto";
-import fs from "fs/promises";
-import path from "path";
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { productSqlite } from "../../../../../lib/product/db";
-import { privateStorageRoot } from "../../../../../lib/product/private-storage";
+import { privateStorageReadiness } from "../../../../../lib/product/private-storage";
 import { unifiedKnowledgeBacklog } from "../../../../../lib/product/unified-knowledge";
 import { sanitizeWorkerLoopHealth, workerCapabilityLoopHealthy, workerLoopHealthy } from "../../../../../lib/product/worker-health";
 
@@ -74,16 +72,7 @@ async function checkDependencies() {
     const row = productSqlite.prepare("SELECT 1 AS ok").get() as { ok: number };
     database = row.ok === 1;
   } catch {}
-  const root = path.resolve(privateStorageRoot());
-  const probe = path.join(root, `.readiness-${randomUUID()}`);
-  try {
-    await fs.mkdir(root, { recursive: true, mode: 0o700 });
-    await fs.writeFile(probe, "ready", { mode: 0o600 });
-    await fs.unlink(probe);
-    storage = true;
-  } catch {
-    await fs.unlink(probe).catch(() => undefined);
-  }
+  storage = await privateStorageReadiness().catch(() => false);
   const sessionSecret = Boolean(process.env.PRODUCT_SESSION_SECRET);
   return { ready: database && storage && sessionSecret, database, storage, sessionSecret };
 }

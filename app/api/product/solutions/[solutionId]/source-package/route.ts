@@ -1,11 +1,10 @@
-import fs from "fs/promises";
 import JSZip from "jszip";
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../lib/product/auth";
 import { productSqlite } from "../../../../../../lib/product/db";
 import { projectInputFingerprint } from "../../../../../../lib/product/input-fingerprint";
 import { recordProjectEvent } from "../../../../../../lib/product/project-events";
-import { safePrivatePath } from "../../../../../../lib/product/private-storage";
+import { privateStorageKey, readPrivateFile } from "../../../../../../lib/product/private-storage";
 
 const configuredPackageBytes = Number(process.env.PRODUCT_SOURCE_PACKAGE_MAX_BYTES || 200 * 1024 * 1024);
 const MAX_PACKAGE_BYTES = Number.isFinite(configuredPackageBytes) ? Math.max(10 * 1024 * 1024, configuredPackageBytes) : 200 * 1024 * 1024;
@@ -18,8 +17,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
     FROM product_solutions s JOIN intake_drafts i ON i.solution_id = s.id
     WHERE s.id = ? AND s.owner_user_id = ? AND s.status NOT IN ('deletion_pending', 'deleted')`).get(solutionId, auth.session.userId) as { title: string; purposePrimary: string; needDescription: string; formData: string } | undefined;
   if (!solution) return failure("SOLUTION_NOT_FOUND", "方案不存在或无法访问。", 404);
-  const files = productSqlite.prepare(`SELECT id, category, original_name AS originalName, size_bytes AS sizeBytes, detected_format AS detectedFormat, sha256
-    FROM source_files WHERE solution_id = ? AND user_id = ? AND status = 'uploaded' ORDER BY created_at, id`).all(solutionId, auth.session.userId) as Array<{ id: string; category: string; originalName: string; sizeBytes: number; detectedFormat: string | null; sha256: string | null }>;
+  const files = productSqlite.prepare(`SELECT id, category, original_name AS originalName, size_bytes AS sizeBytes, detected_format AS detectedFormat, sha256, storage_key AS storageKey
+    FROM source_files WHERE solution_id = ? AND user_id = ? AND status = 'uploaded' ORDER BY created_at, id`).all(solutionId, auth.session.userId) as Array<{ id: string; category: string; originalName: string; sizeBytes: number; detectedFormat: string | null; sha256: string | null; storageKey: string | null }>;
   const totalBytes = files.reduce((total, file) => total + file.sizeBytes, 0);
   if (totalBytes > MAX_PACKAGE_BYTES) return failure("SOURCE_PACKAGE_TOO_LARGE", "当前输入材料超过可下载包大小限制，请先移除不需要的材料后重试。", 413);
   try {
@@ -27,8 +26,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
     const usedNamesByFolder = new Map<string, Set<string>>();
     const exportedFiles: Array<{ category: string; originalName: string; exportPath: string; sizeBytes: number; detectedFormat: string | null; sha256: string | null }> = [];
     for (const file of files) {
-      const target = safePrivatePath(auth.session.userId, solutionId, file.id);
-      const bytes = await fs.readFile(target.absolutePath);
+      const expectedKey = privateStorageKey(auth.session.userId, solutionId, file.id);
+      if (file.storageKey !== expectedKey) throw new Error("SOURCE_STORAGE_MISMATCH");
+      const bytes = await readPrivateFile(expectedKey);
       const folder = sourceFolder(file.category);
       const usedNames = usedNamesByFolder.get(folder) ?? new Set<string>();
       usedNamesByFolder.set(folder, usedNames);

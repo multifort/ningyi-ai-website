@@ -1,4 +1,3 @@
-import fs from "fs/promises";
 import path from "path";
 import JSZip from "jszip";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,7 +7,7 @@ import { projectInputFingerprint } from "../../../../../../../lib/product/input-
 import { recordProjectEvent } from "../../../../../../../lib/product/project-events";
 import { deliverableOutcomeCatalog, outcomeForArtifactType as findOutcomeForArtifactType, requiredDeliverableArtifactTypes } from "../../../../../../../lib/product/deliverable-catalog";
 import { validatePackageContentVersion } from "../../../../../../../lib/product/deliverable-package";
-import { safePrivatePath } from "../../../../../../../lib/product/private-storage";
+import { privateStorageKey, readPrivateFile } from "../../../../../../../lib/product/private-storage";
 
 const clientArtifactTypes = new Set<string>(requiredDeliverableArtifactTypes);
 
@@ -48,18 +47,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   const zip = new JSZip();
   const fileManifest = [];
   for (const artifact of artifacts) {
-    const target = safePrivatePath(auth.session.userId, solutionId, artifact.id);
-    if (target.relativeKey !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "成果包暂时无法生成，系统会自动重试。", retryable: true } }, { status: 409 });
-    const bytes = await fs.readFile(target.absolutePath);
+    const target = privateStorageKey(auth.session.userId, solutionId, artifact.id);
+    if (target !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "成果包暂时无法生成，系统会自动重试。", retryable: true } }, { status: 409 });
+    const bytes = await readPrivateFile(target);
     const actualName = safePackageFilename(artifact.displayName, artifact.id);
     zip.file(`交付成果/${actualName}`, bytes);
     fileManifest.push({ ...outcomeManifestFields(artifact.artifactType), artifactType: artifact.artifactType, filename: actualName, mimeType: artifact.mimeType, sizeBytes: artifact.sizeBytes, sha256: artifact.sha256, contentFingerprint: artifact.contentFingerprint, contentVersion: artifact.contentVersion, renderVersion: artifact.renderVersion, versionLabel: `V${artifact.contentVersion}.R${artifact.renderVersion}` });
   }
   const inputManifest = [];
   for (const file of sourceFiles) {
-    const target = safePrivatePath(auth.session.userId, solutionId, file.id);
-    if (target.relativeKey !== file.storageKey) return NextResponse.json({ success: false, error: { code: "SOURCE_STORAGE_MISMATCH", message: "归档包暂时无法生成，系统会自动重试。", retryable: true } }, { status: 409 });
-    const bytes = await fs.readFile(target.absolutePath);
+    const target = privateStorageKey(auth.session.userId, solutionId, file.id);
+    if (target !== file.storageKey) return NextResponse.json({ success: false, error: { code: "SOURCE_STORAGE_MISMATCH", message: "归档包暂时无法生成，系统会自动重试。", retryable: true } }, { status: 409 });
+    const bytes = await readPrivateFile(target);
     const category = file.category === "template" ? "企业模板" : file.category === "brand" ? "品牌素材" : "项目材料";
     const actualName = safePackageFilename(file.originalName, file.id);
     zip.file(`原始材料/${category}/${actualName}`, bytes);
@@ -67,9 +66,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   }
   const historyManifest = [];
   for (const artifact of historicalArtifacts) {
-    const target = safePrivatePath(auth.session.userId, solutionId, artifact.artifactId);
-    if (target.relativeKey !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "HISTORY_STORAGE_MISMATCH", message: "历史成果暂时无法归档，系统会自动重试。", retryable: true } }, { status: 409 });
-    const bytes = await fs.readFile(target.absolutePath);
+    const target = privateStorageKey(auth.session.userId, solutionId, artifact.artifactId);
+    if (target !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "HISTORY_STORAGE_MISMATCH", message: "历史成果暂时无法归档，系统会自动重试。", retryable: true } }, { status: 409 });
+    const bytes = await readPrivateFile(target);
     const outcome = outcomeManifestFields(artifact.artifactType);
     const actualName = safePackageFilename(artifact.displayName, artifact.artifactId);
     const versionLabel = `V${artifact.contentVersion}.R${artifact.renderVersion}`;

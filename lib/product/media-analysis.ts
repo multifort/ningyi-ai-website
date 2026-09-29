@@ -1,11 +1,10 @@
 import { createHash, randomUUID } from "crypto";
-import fs from "fs/promises";
 import path from "path";
 import JSZip from "jszip";
 import { productSqlite } from "./db";
 import { generateFreeAnalysis } from "./free-analysis";
 import { initializeFormalDocument } from "./formal-analysis";
-import { privateStorageRoot } from "./private-storage";
+import { readPrivateFile } from "./private-storage";
 import { rebuildUnifiedKnowledge } from "./unified-knowledge";
 import { openAIResponseError, ProviderConfigurationError, providerErrorCode } from "./openai-errors";
 import { modelExecutionWindow } from "./model-execution-window";
@@ -131,8 +130,7 @@ function remainingMediaTasks(solutionId: string) {
 }
 
 async function loadTaskMedia(task: MediaTask) {
-  const storedPath = storageKeyToPath(task.storageKey);
-  let bytes = await fs.readFile(storedPath);
+  let bytes = await readPrivateFile(task.storageKey);
   let mimeType = mimeFor(task.detectedFormat, task.originalName);
   if (task.detectedFormat === "pptx") {
     const metadata = JSON.parse(task.metadataJson || "{}") as { structuredData?: { target?: string } };
@@ -213,7 +211,6 @@ function configuredFallback(task: MediaTask) {
   if (task.route === "ocr_standard" && process.env.OPENAI_API_KEY) return { route: "vision_low_cost", fallback: "vision_premium" };
   return null;
 }
-function storageKeyToPath(key: string) { const parts = key.split("/"); if (parts.length !== 4 || parts[0] !== "private" || parts.slice(1).some((part) => !/^[0-9a-f-]{36}$/i.test(part))) throw new Error("INVALID_STORAGE_KEY"); return path.join(privateStorageRoot(), ...parts.slice(1)); }
 function mimeFor(format: string, filename: string) { const value = format.toLowerCase(); if (value === "png") return "image/png"; if (value === "jpg" || value === "jpeg") return "image/jpeg"; if (value === "webp") return "image/webp"; if (value === "pdf") return "application/pdf"; const ext = path.extname(filename).toLowerCase(); return ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg"; }
 function errorCode(error: unknown) { return providerErrorCode(error, "MEDIA_ANALYSIS_FAILED"); }
 class LeaseLostError extends Error { constructor() { super("MEDIA_LEASE_LOST"); } }

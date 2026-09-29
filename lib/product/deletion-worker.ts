@@ -1,8 +1,6 @@
 import { randomUUID } from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import { productSqlite } from "./db";
-import { safePrivatePath } from "./private-storage";
+import { deletePrivateSolution } from "./private-storage";
 
 type DeletionRun = { id: string; solutionId: string; ownerUserId: string; attemptCount: number };
 
@@ -72,8 +70,7 @@ function claimDeletionRun(workerId: string): DeletionRun | undefined {
 async function executeDeletion(run: DeletionRun, workerId: string): Promise<"completed" | "retry_wait" | "failed"> {
   try {
     assertLease(run.id, workerId);
-    const probe = safePrivatePath(run.ownerUserId, run.solutionId, "00000000-0000-4000-8000-000000000000");
-    await fs.rm(path.dirname(probe.absolutePath), { recursive: true, force: true });
+    await deletePrivateSolution(run.ownerUserId, run.solutionId);
     assertLease(run.id, workerId);
     productSqlite.transaction(() => {
       assertLease(run.id, workerId);

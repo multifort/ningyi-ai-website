@@ -1,10 +1,9 @@
-import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../../lib/product/auth";
 import { productSqlite } from "../../../../../../../lib/product/db";
 import { invalidateForMaterialRevision } from "../../../../../../../lib/product/material-revision";
 import { enqueueSourceProcessing } from "../../../../../../../lib/product/process-solution";
-import { safePrivatePath } from "../../../../../../../lib/product/private-storage";
+import { deletePrivateFile, privateStorageKey } from "../../../../../../../lib/product/private-storage";
 import { recordProjectEvent } from "../../../../../../../lib/product/project-events";
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ solutionId: string; fileId: string }> }) {
@@ -26,10 +25,10 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       recordProjectEvent({ solutionId, userId: auth.session.userId, type: "source_file_removed", summary: "移除了一份项目材料" });
     })();
     if (file.storageKey) {
-      const target = safePrivatePath(auth.session.userId, solutionId, fileId);
+      const target = privateStorageKey(auth.session.userId, solutionId, fileId);
       // The database state is authoritative. If the storage removal is delayed,
       // the existing orphan-file maintenance job safely clears the leftover.
-      await fs.rm(target.absolutePath, { force: true }).catch(() => undefined);
+      if (file.storageKey === target) await deletePrivateFile(target).catch(() => undefined);
     }
     const queue = enqueueSourceProcessing(solutionId, auth.session.userId);
     return NextResponse.json({ success: true, data: { fileId, status: "removed", queue } });

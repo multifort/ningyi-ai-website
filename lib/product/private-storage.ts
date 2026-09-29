@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
-import fs from "fs/promises";
 import path from "path";
+import { LocalObjectStorage } from "./local-object-storage";
+import { privateObjectKey, privateSolutionPrefix } from "./object-storage-port";
 
 export const PRODUCT_UPLOAD_MAX_BYTES = 50 * 1024 * 1024;
 
@@ -8,21 +9,44 @@ export function privateStorageRoot() {
   return process.env.PRODUCT_PRIVATE_STORAGE_PATH || path.join(process.cwd(), "data", "product-private");
 }
 
-export function safePrivatePath(userId: string, solutionId: string, fileId: string) {
-  for (const value of [userId, solutionId, fileId]) {
-    if (!/^[0-9a-f-]{36}$/i.test(value)) throw new Error("INVALID_PRIVATE_PATH_ID");
-  }
-  const relativeKey = path.posix.join("private", userId, solutionId, fileId);
-  return { relativeKey, absolutePath: path.join(privateStorageRoot(), userId, solutionId, fileId) };
+const localStorage = new LocalObjectStorage(privateStorageRoot);
+
+export function privateObjectStorage() {
+  const driver = process.env.PRODUCT_OBJECT_STORAGE_DRIVER || "local";
+  if (driver !== "local") throw new Error(`OBJECT_STORAGE_DRIVER_UNAVAILABLE:${driver}`);
+  return localStorage;
 }
 
+export const privateStorageKey = privateObjectKey;
+
 export async function writePrivateFile(userId: string, solutionId: string, fileId: string, bytes: Buffer) {
-  const target = safePrivatePath(userId, solutionId, fileId);
-  await fs.mkdir(path.dirname(target.absolutePath), { recursive: true, mode: 0o700 });
-  const temporaryPath = `${target.absolutePath}.uploading`;
-  await fs.writeFile(temporaryPath, bytes, { mode: 0o600 });
-  await fs.rename(temporaryPath, target.absolutePath);
-  return { storageKey: target.relativeKey, sha256: createHash("sha256").update(bytes).digest("hex") };
+  const storageKey = privateObjectKey(userId, solutionId, fileId);
+  await privateObjectStorage().put(storageKey, bytes);
+  return { storageKey, sha256: createHash("sha256").update(bytes).digest("hex") };
+}
+
+export function readPrivateFile(storageKey: string) {
+  return privateObjectStorage().read(storageKey);
+}
+
+export function deletePrivateFile(storageKey: string) {
+  return privateObjectStorage().delete(storageKey);
+}
+
+export function deletePrivateSolution(userId: string, solutionId: string) {
+  return privateObjectStorage().deletePrefix(privateSolutionPrefix(userId, solutionId));
+}
+
+export function listPrivateSolutionFiles(userId: string, solutionId: string) {
+  return privateObjectStorage().list(privateSolutionPrefix(userId, solutionId));
+}
+
+export function listAllPrivateFiles() {
+  return privateObjectStorage().list("private");
+}
+
+export function privateStorageReadiness() {
+  return privateObjectStorage().readiness();
 }
 
 export function detectFormat(bytes: Buffer, filename = "") {

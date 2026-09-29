@@ -1,10 +1,8 @@
 import { createHash, randomUUID } from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import JSZip from "jszip";
 import { productSqlite } from "./db";
 import { deliverableOutcomeCatalog, requiredDeliverableArtifactTypes } from "./deliverable-catalog";
-import { detectFormat, extensionMatches, privateStorageRoot } from "./private-storage";
+import { detectFormat, extensionMatches, readPrivateFile } from "./private-storage";
 import { evaluateProjectConsistency } from "./project-consistency";
 import { evaluateBoundBenchmarkContent, scoreBoundBenchmarkChecks } from "./benchmark-content-evaluation";
 import { UNIFIED_KNOWLEDGE_VERSION } from "./unified-knowledge";
@@ -253,7 +251,7 @@ function auditUnifiedKnowledge(value: string | undefined, sourceBlockIds: Set<st
 async function verifyStoredFiles(rows: Array<Record<string, any>>, userId: string, solutionId: string, validateArtifactFormat = false, validateSourceFormat = false) {
   return Promise.all(rows.map(async (row) => {
     try {
-      const bytes = await fs.readFile(path.join(privateStorageRoot(), userId, solutionId, row.id));
+      const bytes = await readPrivateFile(`private/${userId}/${solutionId}/${row.id}`);
       const expectedFormat = validateArtifactFormat ? artifactExpectedFormat(row.artifactType) : validateSourceFormat ? row.detectedFormat : null;
       const formatMatches = !expectedFormat || await artifactFormatOpenable(bytes, expectedFormat) || (validateSourceFormat && extensionMatches(row.originalName || "", expectedFormat));
       return { name: row.originalName || row.artifactType || row.id, exists: true, sizeMatches: bytes.length === row.sizeBytes, hashMatches: createHash("sha256").update(bytes).digest("hex") === row.sha256, formatMatches };

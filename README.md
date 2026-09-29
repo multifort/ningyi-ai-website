@@ -10,7 +10,7 @@
 - 官网和 CMS 保留在 `app/`、`lib/db.ts` 与 `data/cms.db`。
 - 产品页面和 API 位于 `app/product/`、`app/api/product/`，核心业务位于 `lib/product/`。
 - `scripts/product-worker.mjs` 作为独立常驻进程推进解析、媒体、正式生成、渲染、删除和维护任务。
-- 本地开发使用独立的 `data/product.db` 与服务器私有目录；公网多用户开放前必须迁移 PostgreSQL、私有部署的 MinIO 对象存储和可水平扩展的 Worker。
+- 本地开发使用独立的 `data/product.db` 与对象存储端口后的服务器私有目录；公网多用户开放前必须迁移 PostgreSQL、私有部署的 MinIO 对象存储和可水平扩展的 Worker。
 
 ## 本地启动
 

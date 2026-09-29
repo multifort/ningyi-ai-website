@@ -14,7 +14,7 @@
 |---|---|---|---|
 | 官网与 CMS | `app/components/`、`app/admin/`、`app/api/content/` | 保留并已把主要 CTA 接入产品入口；两处人工确认交付表述已修正并有文案回归 | 完成内容发布复核 |
 | 产品身份 | `lib/product/auth.ts`、`app/api/product/auth/`、`app/api/product/account/` | 产品用户与管理员隔离；已实现用户名密码、HttpOnly Session、登录限流、改密、导出与注销 | 密码找回、共享限流和外部身份方式延期 |
-| Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理 | MinIO 短期凭证上传、恶意文件扫描与生产资源隔离 |
+| Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理；上传、读取、下载、清理与健康探针已统一通过对象存储端口 | MinIO 适配器、短期凭证上传、恶意文件扫描与生产资源隔离 |
 | 材料理解 | `lib/product/process-solution.ts`、`media-analysis.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别；BM-14 私有部署与 BM-15 全格式/模板综合实体样本已补齐 | 用 BM-13、BM-16—18 补足旧格式和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、`change-sets/`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退；BM-15 固定修改集覆盖 R/C/S/P、80 个稳定对象、锁冲突、局部重生成、越界拒绝和回退，并量化受影响召回与无关变化率 | 在真实模型候选恢复后补充跨模型版本的内容级重复运行证据 |
 | 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-*-renderer.ts`、`deliverable-rendering-shared.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式生成、修复与渲染已不读取基准 expected；渐进/最终成果复用同一定义和渲染入口；发布/版本/质量/存储写入与 DOCX/PDF/PPTX/XLSX 渲染均已从成果编排模块分离；模板安全样式进入渲染，四格式发布结构门和真实回渲染门已接入；BM-15 综合模板与跨格式离线样本已通过 | 在隔离后重跑 BM-01—12；用 BM-13、BM-16—18 验证旧格式与 Agent 项目，并完成跨成果一致性验收 |
@@ -24,7 +24,7 @@
 ## 3. 当前存储与部署形态
 
 - CMS 继续使用 `data/cms.db`；产品域独立使用 `data/product.db`，两套身份与表不共用。
-- 产品文件进入 `PRODUCT_PRIVATE_STORAGE_PATH` 指定的本地私有目录，不进入 `public/`；访问仍经过用户、方案和文件三重校验。
+- 产品文件通过 `ObjectStoragePort` 访问，当前开发适配器写入 `PRODUCT_PRIVATE_STORAGE_PATH` 指定的本地私有目录，不进入 `public/`；业务处理、下载、删除、维护和健康检查不再拼接本地绝对路径，访问仍经过用户、方案和文件三重校验。
 - Web 只负责短事务和调度接口；`scripts/product-worker.mjs` 以独立进程持续调用流水线、删除、监控和维护接口。
 - `deploy/systemd/` 提供 Web、Worker、健康恢复和加密备份的单机部署模板。
 - 以上形态适合本地完整链路和单机灰度验证；公网多用户开放前必须迁移 PostgreSQL、私有部署的 MinIO 对象存储和可水平扩展的 Worker 运行环境。MinIO 通过 S3 兼容 API 接入，但不使用 AWS S3。
@@ -34,7 +34,7 @@
 2026-09-29 的仓库基线校验结果：
 
 - `pnpm typecheck`：通过。
-- `pnpm test`：54 项通过，0 项失败；除五类隔离故障探针外，已覆盖实体基准包的哈希锁定与注册表输入覆盖、BM-15 三类企业模板的安全 profile、R/C/S/P 真实修改集和 `<2%` 无关变化率、基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布与四格式版式边界、模板样本识别与损坏回退、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
+- `pnpm test`：57 项通过，0 项失败；除五类隔离故障探针外，已覆盖对象存储读写/列举/删除合同、租户键隔离、原子覆盖、实体基准包的哈希锁定与注册表输入覆盖、BM-15 三类企业模板的安全 profile、R/C/S/P 真实修改集和 `<2%` 无关变化率、基准答案与生产生成链路隔离、渐进/最终成果单一定义边界、成果发布与四格式版式边界、模板样本识别与损坏回退、公开产品文案边界、项目模型 5 个独立状态场景、真实 Worker 子进程连续失败退出、停止心跳、健康时间边界、operations/storage 循环停滞告警、删除租约接管、全阶段过期租约恢复、解析 Worker 接管后完成提交，以及正式生成/渲染旧 Worker 晚到结果的提交围栏。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
 - `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12、BM-14—15 共 14 个 manifest 与文件摘要。该结果只证明基准包完整，不作为独立内容质量通过证据。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
@@ -78,6 +78,6 @@
 详细执行状态见 `14-development-execution-plan.md`。当前可直接开始的是：
 
 1. 有效验收模型凭证恢复后重新运行 BM-01—12，形成新的独立可信基线。
-2. BM-14—15 与 G2-04 已完成；当前直接推进 G3-01 数据/文件端口和 G3-06 渐进 strict。
+2. BM-14—15 与 G2-04 已完成；G3-01 文件端口第一批已完成，当前继续提取数据端口并推进 G3-06 渐进 strict。
 3. G0-02 恢复后补齐 BM-13、BM-16—18，并重跑完整基准。
 4. 再进入 PostgreSQL、私有 MinIO、多 Worker、安全开放和最终 30 次验收。

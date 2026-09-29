@@ -1,10 +1,8 @@
 import { randomUUID } from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../lib/product/auth";
 import { productSqlite } from "../../../../../../lib/product/db";
-import { safePrivatePath, writePrivateFile } from "../../../../../../lib/product/private-storage";
+import { deletePrivateSolution, privateStorageKey, readPrivateFile, writePrivateFile } from "../../../../../../lib/product/private-storage";
 import { projectInputFingerprint } from "../../../../../../lib/product/input-fingerprint";
 import { recordProjectEvent } from "../../../../../../lib/product/project-events";
 
@@ -34,13 +32,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
   const facts = productSqlite.prepare("SELECT text FROM project_user_facts WHERE solution_id = ? AND user_id = ? AND status = 'active' ORDER BY created_at, id").all(solutionId, auth.session.userId) as Array<{ text: string }>;
   const newSolutionId = randomUUID();
   const copiedFiles: Array<SourceFile & { newFileId: string; bytes: Buffer }> = [];
-  const cleanupTarget = safePrivatePath(auth.session.userId, newSolutionId, randomUUID());
-
   try {
     for (const file of files) {
-      const existing = safePrivatePath(auth.session.userId, solutionId, file.id);
-      if (!file.storageKey || file.storageKey !== existing.relativeKey) return failure("SOURCE_STORAGE_MISMATCH", "原项目中有材料暂时无法读取，暂不能复制。", 409, true);
-      copiedFiles.push({ ...file, newFileId: randomUUID(), bytes: await fs.readFile(existing.absolutePath) });
+      const existing = privateStorageKey(auth.session.userId, solutionId, file.id);
+      if (!file.storageKey || file.storageKey !== existing) return failure("SOURCE_STORAGE_MISMATCH", "原项目中有材料暂时无法读取，暂不能复制。", 409, true);
+      copiedFiles.push({ ...file, newFileId: randomUUID(), bytes: await readPrivateFile(existing) });
     }
 
     for (const file of copiedFiles) {
@@ -60,8 +56,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
       const copyBrandProfile = productSqlite.prepare(`INSERT INTO brand_profiles (source_file_id, solution_id, user_id, detected_format, status, profile_json, fallback_reason)
         SELECT ?, ?, ?, detected_format, status, profile_json, fallback_reason FROM brand_profiles WHERE source_file_id = ?`);
       for (const file of copiedFiles) {
-        const target = safePrivatePath(auth.session.userId, newSolutionId, file.newFileId);
-        insertFile.run(file.newFileId, newSolutionId, auth.session.userId, `duplicate:${file.id}:${file.newFileId}`, file.category, file.originalName, file.declaredMime, file.detectedFormat, file.sizeBytes, file.sha256, target.relativeKey);
+        const target = privateStorageKey(auth.session.userId, newSolutionId, file.newFileId);
+        insertFile.run(file.newFileId, newSolutionId, auth.session.userId, `duplicate:${file.id}:${file.newFileId}`, file.category, file.originalName, file.declaredMime, file.detectedFormat, file.sizeBytes, file.sha256, target);
         if (file.category === "template") copyTemplateProfile.run(file.newFileId, newSolutionId, auth.session.userId, file.id);
         if (file.category === "brand") copyBrandProfile.run(file.newFileId, newSolutionId, auth.session.userId, file.id);
       }
@@ -72,7 +68,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
     })();
     return NextResponse.json({ success: true, data: { sourceSolutionId: solutionId, solutionId: newSolutionId, title, inputFingerprint: projectInputFingerprint(newSolutionId, auth.session.userId), copied: { sourceFiles: copiedFiles.length, userConfirmedFacts: facts.length }, autoStarted: false, nextStep: "review_and_process" } }, { status: 201 });
   } catch {
-    await fs.rm(path.dirname(cleanupTarget.absolutePath), { recursive: true, force: true });
+    await deletePrivateSolution(auth.session.userId, newSolutionId);
     return failure("SOLUTION_DUPLICATE_FAILED", "暂时无法复制项目输入，请稍后重试。", 500, true);
   }
 }

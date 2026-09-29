@@ -1,12 +1,13 @@
 import { execFile } from "child_process";
 import { createHash, randomUUID } from "crypto";
 import fs from "fs/promises";
+import os from "os";
 import path from "path";
 import { promisify } from "util";
 import { productSqlite } from "./db";
 import { generateFreeAnalysis } from "./free-analysis";
 import { initializeFormalDocument } from "./formal-analysis";
-import { privateStorageRoot } from "./private-storage";
+import { readPrivateFile } from "./private-storage";
 import { rebuildUnifiedKnowledge } from "./unified-knowledge";
 
 const execFileAsync = promisify(execFile);
@@ -16,18 +17,17 @@ type SourceBlock = { id: string; blockType: string; canonicalText: string; locat
 
 export async function processSolution(solutionId: string, userId: string, options: { runAlreadyClaimed?: boolean; workerId?: string } = {}) {
   const runId = randomUUID();
+  let workRoot: string | null = null;
   if (!options.runAlreadyClaimed) productSqlite.prepare("INSERT INTO processing_runs (id, solution_id, user_id, run_type, status, attempt_count, started_at) VALUES (?, ?, ?, 'source_ingestion', 'running', 1, CURRENT_TIMESTAMP) ON CONFLICT(solution_id, run_type) DO UPDATE SET status = 'running', attempt_count = attempt_count + 1, error_code = NULL, started_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP").run(runId, solutionId, userId);
   try {
     const files = productSqlite.prepare("SELECT id, original_name, detected_format, storage_key, category FROM source_files WHERE solution_id = ? AND user_id = ? AND status = 'uploaded' ORDER BY created_at, id").all(solutionId, userId) as StoredFile[];
     const intake = productSqlite.prepare("SELECT purpose_primary, need_description, form_data FROM intake_drafts WHERE solution_id = ? AND user_id = ?").get(solutionId, userId) as { purpose_primary: string; need_description: string; form_data: string };
     const blocks: Array<SourceBlock & { sourceFileId: string | null }> = [];
-    const workRoot = path.join(privateStorageRoot(), userId, solutionId, ".processing");
-    await fs.mkdir(workRoot, { recursive: true, mode: 0o700 });
+    workRoot = await fs.mkdtemp(path.join(os.tmpdir(), `ningyi-source-${solutionId}-`));
     for (const file of files.filter((item) => item.category === "content")) {
       const inputPath = path.join(workRoot, `${file.id}-${safeName(file.original_name)}`);
       const outputPath = path.join(workRoot, `${file.id}.jsonl`);
-      const storedPath = storageKeyToPath(file.storage_key);
-      await fs.copyFile(storedPath, inputPath);
+      await fs.writeFile(inputPath, await readPrivateFile(file.storage_key), { mode: 0o600 });
       await execFileAsync(process.env.PRODUCT_PYTHON_PATH || "python3", [
         path.join(process.cwd(), "docs/product/v1-design/spikes/source-ingestion/extract_source_blocks.py"),
         "--input", inputPath, "--base", workRoot, "--output", outputPath,
@@ -66,6 +66,7 @@ export async function processSolution(solutionId: string, userId: string, option
     const freeAnalysis = await generateFreeAnalysis(solutionId, userId, unified.facts.slice(0, 24));
     const formalDocument = pendingMedia.length ? null : initializeFormalDocument(solutionId);
     await fs.rm(workRoot, { recursive: true, force: true });
+    workRoot = null;
     return { blockCount: blocks.length, factCount: unified.facts.length, conflictCount: unified.knowledge.stats.conflictCount, mediaTaskCount: mediaRoutes.length, pendingMediaTaskCount: pendingMedia.length, summary: unified.summary, freeAnalysisOrigin: freeAnalysis.origin, freeAnalysisModel: freeAnalysis.model, formalStatus: formalDocument?.status || null };
   } catch (error) {
     if (!(error instanceof Error && error.message === "SOURCE_LEASE_LOST")) {
@@ -81,6 +82,8 @@ export async function processSolution(solutionId: string, userId: string, option
       productSqlite.prepare("UPDATE product_solutions SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(exhausted ? "blocked" : "recovering", solutionId);
     }
     throw error;
+  } finally {
+    if (workRoot) await fs.rm(workRoot, { recursive: true, force: true }).catch(() => undefined);
   }
 }
 
@@ -140,11 +143,6 @@ function repairExhaustedSourceProcessing() {
   })();
 }
 
-function storageKeyToPath(key: string) {
-  const parts = key.split("/");
-  if (parts.length !== 4 || parts[0] !== "private" || parts.slice(1).some((part) => !/^[0-9a-f-]{36}$/i.test(part))) throw new Error("INVALID_STORAGE_KEY");
-  return path.join(privateStorageRoot(), ...parts.slice(1));
-}
 function safeName(name: string) { return path.basename(name).replace(/[^\p{L}\p{N}._-]+/gu, "_").slice(-160); }
 function digest(value: string) { return createHash("sha256").update(value).digest("hex"); }
 

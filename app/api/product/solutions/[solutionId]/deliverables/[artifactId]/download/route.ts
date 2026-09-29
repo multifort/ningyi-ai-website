@@ -1,8 +1,7 @@
-import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../../../lib/product/auth";
 import { productSqlite } from "../../../../../../../../lib/product/db";
-import { safePrivatePath } from "../../../../../../../../lib/product/private-storage";
+import { privateStorageKey, readPrivateFile } from "../../../../../../../../lib/product/private-storage";
 import { issueDownloadToken, verifyDownloadToken } from "../../../../../../../../lib/product/download-tokens";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ solutionId: string; artifactId: string }> }) {
@@ -26,9 +25,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   if (!verifyDownloadToken(token, { userId: auth.session.userId, solutionId, artifactId })) return NextResponse.json({ success: false, error: { code: "DOWNLOAD_TOKEN_INVALID", message: "下载链接无效或已过期，请重新获取。", retryable: false } }, { status: 403 });
   const artifact = findArtifact(artifactId, solutionId, auth.session.userId);
   if (!artifact) return notFound();
-  const target = safePrivatePath(auth.session.userId, solutionId, artifactId);
-  if (target.relativeKey !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "交付成果暂时无法读取。", retryable: true } }, { status: 409 });
-  const bytes = await fs.readFile(target.absolutePath);
+  const expectedKey = privateStorageKey(auth.session.userId, solutionId, artifactId);
+  if (expectedKey !== artifact.storageKey) return NextResponse.json({ success: false, error: { code: "DELIVERABLE_STORAGE_MISMATCH", message: "交付成果暂时无法读取。", retryable: true } }, { status: 409 });
+  const bytes = await readPrivateFile(expectedKey);
   const extension = artifact.displayName.match(/\.[a-z0-9]+$/i)?.[0] || extensionForMimeType(artifact.mimeType);
   const asciiName = `deliverable-${artifactId}${extension}`;
   return new NextResponse(bytes, { headers: { "Content-Type": artifact.mimeType, "Content-Length": String(bytes.length), "Content-Disposition": `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(artifact.displayName)}`, "Cache-Control": "private, no-store" } });
