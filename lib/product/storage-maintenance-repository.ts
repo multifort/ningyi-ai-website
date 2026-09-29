@@ -9,8 +9,8 @@ export type StorageMaintenanceResult = {
 };
 
 export interface StorageMaintenanceRepository {
-  start(runId: string, mode: StorageMaintenanceMode): void;
-  referencedObjectKeys(): Set<string>;
-  complete(runId: string, result: StorageMaintenanceResult): void;
-  fail(runId: string): void;
+  start(runId: string, mode: StorageMaintenanceMode): Promise<void>;
+  referencedObjectKeys(): Promise<Set<string>>;
+  complete(runId: string, result: StorageMaintenanceResult): Promise<void>;
+  fail(runId: string): Promise<void>;
 }

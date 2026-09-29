@@ -31,7 +31,7 @@ const progressiveDeliverableDefinitions: readonly ProgressiveDeliverableDefiniti
   { artifactType: "project_quote_xlsx", displayName: "项目报价", label: "项目报价", format: "xlsx", sectionTitles: ["工作量与成本依据", "实施计划与交付安排"] },
 ] as const;
 
-export async function ensurePrimaryDeliverables(solutionId: string, userId: string, options: { workerId?: string } = {}) {
+export async function ensurePrimaryDeliverables(solutionId: string, userId: string, options: { workerId?: string } = {}): Promise<unknown[]> {
   if (options.workerId && renderWorkerContext.getStore() !== options.workerId) {
     return renderWorkerContext.run(options.workerId, () => ensurePrimaryDeliverables(solutionId, userId));
   }

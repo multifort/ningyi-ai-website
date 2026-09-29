@@ -10,17 +10,17 @@ const solutionDataTables = [
 ] as const;
 
 export class SqliteDeletionRepository implements DeletionRepository {
-  repairFailed(olderThanSeconds: number) {
+  async repairFailed(olderThanSeconds: number) {
     return productSqlite.prepare(`UPDATE solution_deletion_runs SET status = 'retry_wait', attempt_count = 0, error_code = 'DELETION_AUTO_REPAIR', next_attempt_at = CURRENT_TIMESTAMP, completed_at = NULL, updated_at = CURRENT_TIMESTAMP
       WHERE status = 'failed' AND completed_at <= datetime('now', ?)`).run(`-${olderThanSeconds} seconds`).changes;
   }
 
-  recoverExpiredLeases() {
+  async recoverExpiredLeases() {
     return productSqlite.prepare(`UPDATE solution_deletion_runs SET status = 'retry_wait', lease_owner = NULL, lease_until = NULL, next_attempt_at = CURRENT_TIMESTAMP, error_code = 'DELETION_LEASE_EXPIRED', updated_at = CURRENT_TIMESTAMP
       WHERE status = 'running' AND lease_until IS NOT NULL AND lease_until < CURRENT_TIMESTAMP`).run().changes;
   }
 
-  claimNext(workerId: string, leaseSeconds: number) {
+  async claimNext(workerId: string, leaseSeconds: number) {
     return productSqlite.transaction(() => {
       const candidate = productSqlite.prepare(`SELECT id, solution_id AS solutionId, owner_user_id AS ownerUserId, attempt_count AS attemptCount
         FROM solution_deletion_runs
@@ -33,28 +33,28 @@ export class SqliteDeletionRepository implements DeletionRepository {
     })();
   }
 
-  assertLease(runId: string, workerId: string) {
+  async assertLease(runId: string, workerId: string) {
     const owned = productSqlite.prepare("SELECT 1 FROM solution_deletion_runs WHERE id = ? AND status = 'running' AND lease_owner = ? AND lease_until >= CURRENT_TIMESTAMP").get(runId, workerId);
     if (!owned) throw new Error("DELETION_LEASE_LOST");
   }
 
-  completeSolution(run: DeletionRun, workerId: string) {
+  async completeSolution(run: DeletionRun, workerId: string) {
     productSqlite.transaction(() => {
-      this.assertLease(run.id, workerId);
+      this.assertLeaseSync(run.id, workerId);
       for (const table of solutionDataTables) productSqlite.prepare(`DELETE FROM ${table} WHERE solution_id = ?`).run(run.solutionId);
       productSqlite.prepare("UPDATE product_solutions SET title = '已删除成果', status = 'deleted', stage = 'deleted', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_user_id = ?").run(run.solutionId, run.ownerUserId);
       productSqlite.prepare(`UPDATE solution_deletion_runs SET status = 'completed', manifest_json = '{"verified":true}', error_code = NULL, lease_owner = NULL, lease_until = NULL, next_attempt_at = NULL, completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND lease_owner = ?`).run(run.id, workerId);
     })();
   }
 
-  recordFailure(runId: string, workerId: string, exhausted: boolean, retrySeconds: number) {
+  async recordFailure(runId: string, workerId: string, exhausted: boolean, retrySeconds: number) {
     const status = exhausted ? "failed" : "retry_wait";
     productSqlite.prepare(`UPDATE solution_deletion_runs SET status = ?, error_code = ?, lease_owner = NULL, lease_until = NULL,
       next_attempt_at = CASE WHEN ? = 'failed' THEN NULL ELSE datetime('now', ?) END, completed_at = CASE WHEN ? = 'failed' THEN CURRENT_TIMESTAMP ELSE NULL END,
       updated_at = CURRENT_TIMESTAMP WHERE id = ? AND lease_owner = ?`).run(status, exhausted ? "DELETION_RETRY_EXHAUSTED" : "DELETION_FAILED", status, `+${retrySeconds} seconds`, status, runId, workerId);
   }
 
-  finalizeAccounts() {
+  async finalizeAccounts() {
     const candidates = productSqlite.prepare(`SELECT id, owner_user_id AS ownerUserId
       FROM account_deletion_runs
       WHERE status = 'pending'
@@ -72,5 +72,10 @@ export class SqliteDeletionRepository implements DeletionRepository {
       })();
     }
     return candidates.length;
+  }
+
+  private assertLeaseSync(runId: string, workerId: string) {
+    const owned = productSqlite.prepare("SELECT 1 FROM solution_deletion_runs WHERE id = ? AND status = 'running' AND lease_owner = ? AND lease_until >= CURRENT_TIMESTAMP").get(runId, workerId);
+    if (!owned) throw new Error("DELETION_LEASE_LOST");
   }
 }

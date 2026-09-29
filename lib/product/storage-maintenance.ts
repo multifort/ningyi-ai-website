@@ -5,9 +5,9 @@ import { deletePrivateFile, listAllPrivateFiles } from "./private-storage";
 export async function maintainPrivateStorage(mode: "audit" | "cleanup") {
   const runId = randomUUID();
   const repository = storageMaintenanceRepository();
-  repository.start(runId, mode);
+  await repository.start(runId, mode);
   try {
-    const references = repository.referencedObjectKeys();
+    const references = await repository.referencedObjectKeys();
     const files = await listAllPrivateFiles();
     const graceMs = Math.max(60, Number(process.env.PRODUCT_ORPHAN_GRACE_SECONDS || 86400)) * 1000;
     const cutoff = Date.now() - graceMs;
@@ -18,10 +18,10 @@ export async function maintainPrivateStorage(mode: "audit" | "cleanup") {
       removedFiles += 1; removedBytes += orphan.size;
     }
     const result = { scannedFiles: files.length, referencedFiles: files.filter((file) => references.has(file.key)).length, orphanFiles: orphans.length, removedFiles, removedBytes };
-    repository.complete(runId, result);
+    await repository.complete(runId, result);
     return { runId, mode, ...result, graceSeconds: graceMs / 1000 };
   } catch (error) {
-    repository.fail(runId);
+    await repository.fail(runId);
     throw error;
   }
 }

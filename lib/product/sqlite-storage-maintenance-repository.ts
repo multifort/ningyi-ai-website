@@ -2,11 +2,11 @@ import { productSqlite } from "./db";
 import type { StorageMaintenanceMode, StorageMaintenanceRepository, StorageMaintenanceResult } from "./storage-maintenance-repository";
 
 export class SqliteStorageMaintenanceRepository implements StorageMaintenanceRepository {
-  start(runId: string, mode: StorageMaintenanceMode) {
+  async start(runId: string, mode: StorageMaintenanceMode) {
     productSqlite.prepare("INSERT INTO storage_maintenance_runs (id, mode, status) VALUES (?, ?, 'running')").run(runId, mode);
   }
 
-  referencedObjectKeys() {
+  async referencedObjectKeys() {
     const refs = new Set<string>();
     const rows = [
       ...productSqlite.prepare("SELECT user_id AS userId, solution_id AS solutionId, id AS fileId FROM source_files WHERE storage_key IS NOT NULL").all(),
@@ -17,7 +17,7 @@ export class SqliteStorageMaintenanceRepository implements StorageMaintenanceRep
     return refs;
   }
 
-  complete(runId: string, result: StorageMaintenanceResult) {
+  async complete(runId: string, result: StorageMaintenanceResult) {
     productSqlite.prepare(`UPDATE storage_maintenance_runs SET status = 'completed', scanned_files = ?, referenced_files = ?, orphan_files = ?, removed_files = ?, removed_bytes = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?`).run(
       result.scannedFiles,
       result.referencedFiles,
@@ -28,7 +28,7 @@ export class SqliteStorageMaintenanceRepository implements StorageMaintenanceRep
     );
   }
 
-  fail(runId: string) {
+  async fail(runId: string) {
     productSqlite.prepare("UPDATE storage_maintenance_runs SET status = 'failed', error_code = 'STORAGE_MAINTENANCE_FAILED', completed_at = CURRENT_TIMESTAMP WHERE id = ?").run(runId);
   }
 }

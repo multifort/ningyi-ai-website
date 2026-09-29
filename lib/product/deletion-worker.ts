@@ -8,17 +8,17 @@ export async function processDeletionBatch(requestedLimit = 2) {
   const workerId = randomUUID();
   const repository = deletionRepository();
   const repairSeconds = Math.min(604800, Math.max(3600, Number(process.env.PRODUCT_DELETION_AUTO_REPAIR_SECONDS || 21600)));
-  const repaired = repository.repairFailed(repairSeconds);
-  const recovered = repository.recoverExpiredLeases();
+  const repaired = await repository.repairFailed(repairSeconds);
+  const recovered = await repository.recoverExpiredLeases();
   const leaseSeconds = Math.min(3600, Math.max(60, Number(process.env.PRODUCT_DELETION_LEASE_SECONDS || 600)));
   const claimed: DeletionRun[] = [];
   for (let index = 0; index < limit; index += 1) {
-    const run = repository.claimNext(workerId, leaseSeconds);
+    const run = await repository.claimNext(workerId, leaseSeconds);
     if (!run) break;
     claimed.push(run);
   }
   const results = await Promise.all(claimed.map((run) => executeDeletion(run, workerId, repository)));
-  const finalizedAccounts = repository.finalizeAccounts();
+  const finalizedAccounts = await repository.finalizeAccounts();
   return {
     workerId,
     claimed: claimed.length,
@@ -34,16 +34,16 @@ export async function processDeletionBatch(requestedLimit = 2) {
 
 async function executeDeletion(run: DeletionRun, workerId: string, repository: ReturnType<typeof deletionRepository>): Promise<"completed" | "retry_wait" | "failed"> {
   try {
-    repository.assertLease(run.id, workerId);
+    await repository.assertLease(run.id, workerId);
     await deletePrivateSolution(run.ownerUserId, run.solutionId);
-    repository.assertLease(run.id, workerId);
-    repository.completeSolution(run, workerId);
+    await repository.assertLease(run.id, workerId);
+    await repository.completeSolution(run, workerId);
     return "completed";
   } catch {
     const exhausted = run.attemptCount + 1 >= 5;
     const retryDelays = [5, 30, 120, 600];
     const retrySeconds = retryDelays[Math.min(run.attemptCount, retryDelays.length - 1)];
-    repository.recordFailure(run.id, workerId, exhausted, retrySeconds);
+    await repository.recordFailure(run.id, workerId, exhausted, retrySeconds);
     return exhausted ? "failed" : "retry_wait";
   }
 }

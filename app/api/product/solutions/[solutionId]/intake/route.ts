@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ s
       invalidateForMaterialRevision(solutionId, auth.session.userId);
       recordProjectEvent({ solutionId, userId: auth.session.userId, type: "description_updated", summary: needDescription ? "修改了项目说明" : "清空了项目说明", metadata: { hasDescription: Boolean(needDescription) } });
     })();
-    const queue = enqueueSourceProcessing(solutionId, auth.session.userId);
+    const queue = await enqueueSourceProcessing(solutionId, auth.session.userId);
     return NextResponse.json({ success: true, data: { solutionId, needDescription, queue } });
   } catch {
     return failure("DESCRIPTION_UPDATE_FAILED", "暂时无法更新项目说明，请稍后重试。", 500, true);

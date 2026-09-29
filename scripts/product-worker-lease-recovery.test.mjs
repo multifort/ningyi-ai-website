@@ -33,7 +33,7 @@ test.after(async () => {
   await fs.rm(tempDir, { recursive: true, force: true });
 });
 
-test("解析、媒体、正式章节和渲染的过期租约都恢复为可接管状态", () => {
+test("解析、媒体、正式章节和渲染的过期租约都恢复为可接管状态", async () => {
   productSqlite.prepare("INSERT INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'lease-recovery', 'lease-recovery', 'test')").run(userId);
   productSqlite.prepare(`INSERT INTO product_solutions
     (id, owner_user_id, title, status, stage, render_lease_owner, render_lease_until)
@@ -58,7 +58,7 @@ test("解析、媒体、正式章节和渲染的过期租约都恢复为可接�
     (id, solution_id, section_id, attempt_no, status)
     VALUES ('74000000-0000-4000-8000-000000000011', ?, ?, 1, 'running')`).run(solutionId, sectionId);
 
-  assert.equal(recoverStaleSourceProcessing(), 1);
+  assert.equal(await recoverStaleSourceProcessing(), 1);
   assert.equal(recoverStaleMediaTasks(), 1);
   assert.equal(recoverStaleFormalWork(solutionId), 1);
   assert.equal(recoverStaleRendering(), 1);

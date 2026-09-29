@@ -10,7 +10,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
   const owned = productSqlite.prepare("SELECT id FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, auth.session.userId);
   if (!owned) return NextResponse.json({ success: false, error: { code: "SOLUTION_NOT_FOUND", message: "方案不存在或无法访问。", retryable: false } }, { status: 404 });
   try {
-    const result = enqueueSourceProcessing(solutionId, auth.session.userId);
+    const result = await enqueueSourceProcessing(solutionId, auth.session.userId);
     return NextResponse.json({ success: true, data: result }, { status: result.status === "succeeded" ? 200 : 202 });
   } catch (error) {
     const pending = error instanceof Error && error.message === "MATERIAL_UPLOAD_PENDING";

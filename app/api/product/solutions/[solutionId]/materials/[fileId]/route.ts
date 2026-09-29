@@ -30,7 +30,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       // the existing orphan-file maintenance job safely clears the leftover.
       if (file.storageKey === target) await deletePrivateFile(target).catch(() => undefined);
     }
-    const queue = enqueueSourceProcessing(solutionId, auth.session.userId);
+    const queue = await enqueueSourceProcessing(solutionId, auth.session.userId);
     return NextResponse.json({ success: true, data: { fileId, status: "removed", queue } });
   } catch {
     return failure("MATERIAL_REMOVE_FAILED", "暂时无法移除这份材料，原有项目内容未被替换。", 500, true);
