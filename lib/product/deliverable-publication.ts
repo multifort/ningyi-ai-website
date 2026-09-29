@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "crypto";
 import { validateDeliverablePackage } from "./deliverable-package";
+import { validateDeliverableLayout } from "./deliverable-layout-quality";
 import { productSqlite } from "./db";
 import { detectFormat, writePrivateFile } from "./private-storage";
 import { quoteParameterFingerprint } from "./quote-parameters";
@@ -20,7 +21,8 @@ export async function publishDeliverable(input: PublishDeliverableInput, workerI
   const format = detectFormat(input.bytes);
   if (format !== input.expectedFormat) throw new Error("DELIVERABLE_FORMAT_INVALID");
   const packageCheck = await validateDeliverablePackage(input.bytes, format);
-  const checks = [{ code: "NON_EMPTY", passed: input.bytes.length > 1000 }, { code: "PACKAGE_INTEGRITY", passed: packageCheck.passed, reason: packageCheck.passed ? null : packageCheck.code }, ...input.qualityChecks];
+  const layoutChecks = packageCheck.passed ? await validateDeliverableLayout(input.bytes, format) : [];
+  const checks = [{ code: "NON_EMPTY", passed: input.bytes.length > 1000 }, { code: "PACKAGE_INTEGRITY", passed: packageCheck.passed, reason: packageCheck.passed ? null : packageCheck.code }, ...layoutChecks, ...input.qualityChecks];
   const quality = { status: checks.every((check) => check.passed === true) ? "pass" : "fail", checks };
   if (quality.status !== "pass") {
     const failedCodes = checks.filter((check) => check.passed !== true).map((check) => String(check.code || "UNKNOWN_CHECK"));
@@ -147,7 +149,7 @@ function artifactRenderFingerprint(solutionId: string, expectedFormat: string) {
     FROM template_profiles tp JOIN source_files sf ON sf.id = tp.source_file_id
     WHERE tp.solution_id = ? AND tp.detected_format = ? AND sf.status = 'uploaded'
     ORDER BY sf.created_at DESC, sf.id DESC LIMIT 1`).get(solutionId, expectedFormat) || { detectedFormat: expectedFormat, profileJson: null, renderPolicyJson: null };
-  return createHash("sha256").update(JSON.stringify({ rendererVersion: "renderer-v5-cjk-font-v1", expectedFormat, profile })).digest("hex");
+  return createHash("sha256").update(JSON.stringify({ rendererVersion: "renderer-v6-layout-quality-v1", expectedFormat, profile })).digest("hex");
 }
 
 function artifactDependencyTitles(artifactType: string): string[] {

@@ -4,6 +4,12 @@ import { productSqlite } from "./db";
 type TemplateFormat = "docx" | "xlsx" | "pptx";
 
 export async function profileTemplateFile(input: { fileId: string; solutionId: string; userId: string; detectedFormat: string; bytes: Buffer }) {
+  const result = await analyzeTemplateBytes(input);
+  saveProfile({ ...input, ...result });
+  return result;
+}
+
+export async function analyzeTemplateBytes(input: { detectedFormat: string; bytes: Buffer }) {
   const format = input.detectedFormat as TemplateFormat;
   try {
     const zip = await JSZip.loadAsync(input.bytes, { checkCRC32: true });
@@ -13,15 +19,15 @@ export async function profileTemplateFile(input: { fileId: string; solutionId: s
     const renderPolicy = buildRenderPolicy(format, profile);
     const structurallyCompatible = profile.structurallyCompatible === true;
     const status = structurallyCompatible ? "profiled_default_renderer" : "fallback";
-    const fallbackReason = structurallyCompatible ? "模板结构已识别；企业模板渲染器尚未接入，当前成果自动使用平台默认版式。" : "模板缺少必要的 Office 结构，当前成果自动使用平台默认版式。";
-    saveProfile({ ...input, status, profile, renderPolicy, warnings, fallbackReason });
+    const fallbackReason = structurallyCompatible
+      ? "模板结构已识别；成果将应用可安全提取的主题颜色和兼容页面尺寸，示例正文、宏、外部链接及嵌入对象不会复制。"
+      : "模板缺少必要的 Office 结构，当前成果自动使用平台默认版式。";
     return { status, profile, renderPolicy, warnings, fallbackReason };
   } catch {
     const profile = { structurallyCompatible: false, format };
     const warnings = ["模板包无法完整解析，已自动回退平台默认版式。"];
     const fallbackReason = warnings[0];
     const renderPolicy = buildRenderPolicy(format, profile);
-    saveProfile({ ...input, status: "fallback", profile, renderPolicy, warnings, fallbackReason });
     return { status: "fallback", profile, renderPolicy, warnings, fallbackReason };
   }
 }

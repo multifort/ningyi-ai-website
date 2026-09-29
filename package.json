@@ -16,7 +16,7 @@
     "provider:check": "node scripts/product-provider-check.mjs",
     "config:check": "node scripts/product-production-check.mjs",
     "contracts:check": "uv --cache-dir .uv-cache run --group dev python scripts/validate-product-contracts.py",
-    "quality:check": "pnpm lint && pnpm typecheck && pnpm test && pnpm api:check && pnpm contracts:check && pnpm benchmark:verify",
+    "quality:check": "pnpm lint && pnpm typecheck && pnpm test && pnpm api:check && pnpm contracts:check && pnpm benchmark:verify && pnpm templates:check",
     "test:change-impact": "node --test scripts/product-change-impact.test.mjs",
     "test:project-model-state": "node --test scripts/product-project-model-state.test.mjs",
     "test:project-model-draft": "node --test scripts/product-project-model-draft.test.mjs",
@@ -27,6 +27,7 @@
     "test:deletion-worker": "node --test scripts/product-deletion-worker.test.mjs",
     "test:recovery-status": "node --test scripts/product-recovery-status.test.mjs",
     "templates:preview": "node scripts/product-template-preview.mjs",
+    "templates:check": "node scripts/product-template-quality-check.mjs",
     "acceptance:campaign": "node scripts/product-acceptance-campaign.mjs",
     "lint": "eslint . --max-warnings=0",
     "content:refresh": "sqlite3 data/cms.db < scripts/refresh-content.sql"

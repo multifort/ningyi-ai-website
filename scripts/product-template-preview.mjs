@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Generates disposable, deterministic samples from the production renderers.
-// This checks default layout only; the sample wording is not a style reference.
+// The samples feed structural and render-back checks; their wording is not a style reference.
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -24,6 +24,7 @@ process.env.PRODUCT_DB_PATH = path.join(outputDir, "preview-only.db");
 process.env.PRODUCT_PRIVATE_STORAGE_PATH = path.join(outputDir, "private-preview-only");
 
 const { buildFormalSolutionDocx, buildOutcomeWorkbook, buildSolutionPresentation } = require("../lib/product/deliverables.ts");
+const { buildFormalSolutionPdf } = require("../lib/product/deliverable-pdf-renderer.ts");
 const title = "销售运营管理系统建设方案";
 const structuredItems = [
   { kind: "feature", code: "FUN-001", title: "客户与商机管理", description: "统一记录客户信息、商机阶段和跟进过程。", sourceBlockIds: ["source-001"], attributes: [] },
@@ -56,8 +57,9 @@ const sections = sectionSpecs.map(([sectionTitle, summary, content], index) => (
 
 const outputs = [
   ["preview.docx", await buildFormalSolutionDocx(title, sections, null)],
-  ["preview.xlsx", await buildOutcomeWorkbook(title, "项目报价", sections, null)],
+  ["preview.xlsx", await buildOutcomeWorkbook(title, "项目报价", sections, null, "preview-solution")],
   ["preview.pptx", await buildSolutionPresentation(title, sections, null)],
+  ["preview.pdf", await buildFormalSolutionPdf(title, sections, null)],
 ];
 for (const [filename, bytes] of outputs) await fs.writeFile(path.join(outputDir, filename), bytes);
 process.stdout.write(`${JSON.stringify({ outputDir, outputs: outputs.map(([filename, bytes]) => ({ filename, bytes: bytes.length })) })}\n`);

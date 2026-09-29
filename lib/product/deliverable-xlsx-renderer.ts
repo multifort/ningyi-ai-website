@@ -97,6 +97,7 @@ export async function buildTraceabilityWorkbook(title: string, sections: FormalS
   workbook.subject = "项目内容与来源清单";
 
   const overview = workbook.addWorksheet("项目概览", { views: [{ showGridLines: false }] });
+  configureWorkbookPrintLayout(overview, "landscape", 1);
   overview.columns = [{ width: 22 }, { width: 70 }];
   overview.mergeCells("A1:B1");
   overview.getCell("A1").value = "项目内容与来源清单";
@@ -116,6 +117,8 @@ export async function buildTraceabilityWorkbook(title: string, sections: FormalS
   overview.views = [{ state: "frozen", ySplit: 1, showGridLines: false }];
 
   const sectionSheet = workbook.addWorksheet("章节索引", { views: [{ state: "frozen", ySplit: 2, showGridLines: false }] });
+  configureWorkbookPrintLayout(sectionSheet, "landscape", 0);
+  sectionSheet.pageSetup.printTitlesRow = "1:2";
   sectionSheet.columns = [{ width: 9 }, { width: 26 }, { width: 74 }, { width: 13 }];
   sectionSheet.mergeCells("A1:D1");
   sectionSheet.getCell("A1").value = "正式方案章节索引";
@@ -127,6 +130,8 @@ export async function buildTraceabilityWorkbook(title: string, sections: FormalS
   sectionSheet.autoFilter = `A2:D${Math.max(2, sections.length + 2)}`;
 
   const sourceSheet = workbook.addWorksheet("来源材料", { views: [{ state: "frozen", ySplit: 2, showGridLines: false }] });
+  configureWorkbookPrintLayout(sourceSheet, "landscape", 0);
+  sourceSheet.pageSetup.printTitlesRow = "1:2";
   sourceSheet.columns = [{ width: 18 }, { width: 18 }, { width: 30 }, { width: 76 }, { width: 28 }];
   sourceSheet.mergeCells("A1:E1");
   sourceSheet.getCell("A1").value = "来源材料追溯清单";
