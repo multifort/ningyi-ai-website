@@ -11,7 +11,10 @@
     "lib/product/storage-maintenance-repository.ts",
     "lib/product/sqlite-storage-maintenance-repository.ts",
     "lib/product/product-data-ports.ts",
-    "lib/product/storage-maintenance.ts"
+    "lib/product/storage-maintenance.ts",
+    "lib/product/deletion-repository.ts",
+    "lib/product/sqlite-deletion-repository.ts",
+    "lib/product/deletion-worker.ts"
   ],
   "exclude": ["node_modules"]
 }

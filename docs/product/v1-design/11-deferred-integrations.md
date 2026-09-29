@@ -18,7 +18,7 @@
 
 - 当前决定：为尽快跑通本地完整链路，产品身份暂存独立 SQLite `product.db`，不与 CMS 数据库共表。
 - 正式要求：进入外部灰度前迁移至 PostgreSQL，补齐数据库级租户约束、迁移脚本、连接池、备份和高可用策略。
-- 已完成边界：存储维护领域已通过 `StorageMaintenanceRepository` 与 SQLite 适配器分离，领域编排不再直接执行 SQLite 查询；适配器的运行记录和对象引用结果由现有集成回归验证。
+- 已完成边界：存储维护与删除领域已分别通过 `StorageMaintenanceRepository`、`DeletionRepository` 及 SQLite 适配器分离，领域编排不再直接执行 SQLite 查询；运行记录、对象引用、租约接管、数据清理和账号墓碑均由现有集成回归验证。
 - 迁移边界：产品用户 UUID、规范化用户名和密码哈希保持稳定；不得通过导出明文密码迁移。
 
 ## STORAGE-DEBT-001 私有 MinIO 对象存储

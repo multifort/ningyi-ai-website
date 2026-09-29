@@ -104,12 +104,12 @@ G2 验证：
 
 | ID | 状态 | 任务 | 追踪目标 | 交付物与退出条件 |
 |---|---|---|---|---|
-| G3-01 | IN_PROGRESS | 提取数据与文件端口 | NFR-001—006、SEC-002—003 | 文件端口已完成第一批：生产业务不再直接读取本地路径，读写、删除、前缀清理、列举和健康检查统一经 `ObjectStoragePort`，本地适配器通过 3 项行为契约及存储维护/删除/Worker 回归；数据侧已提取首个 `StorageMaintenanceRepository` 与 SQLite 适配器并由集成回归核对持久化结果；尚需按领域继续移除业务模块对 SQLite 的直接依赖 |
+| G3-01 | IN_PROGRESS | 提取数据与文件端口 | NFR-001—006、SEC-002—003 | 文件端口已完成第一批：生产业务不再直接读取本地路径，读写、删除、前缀清理、列举和健康检查统一经 `ObjectStoragePort`，本地适配器通过 3 项行为契约及存储维护/删除/Worker 回归；数据侧已提取 `StorageMaintenanceRepository`、`DeletionRepository` 与 SQLite 适配器，存储维护和删除 Worker 的领域编排不再直接查询 SQLite，并由持久化结果、清理、墓碑与租约接管回归验证；尚需按领域继续移除其余业务模块的直接依赖 |
 | G3-02 | BLOCKED | 迁移 PostgreSQL | NFR-001—004、SEC-002、OPS-004 | 依赖 G3-01；完成 Schema、迁移、连接池、数据库级租户约束、备份恢复和双轨验证；提供可回退步骤 |
 | G3-03 | BLOCKED | 迁移私有 MinIO 对象存储 | SEC-003—004、SEC-007—008 | 依赖 G3-01；通过 S3 兼容 API 接入私有 MinIO（不使用 AWS S3），完成私有 Bucket 与最小权限、短期上传/下载凭证、服务端加密、版本与生命周期、恶意文件隔离扫描、压缩炸弹限制、删除审计、备份复制和恢复演练 |
 | G3-04 | BLOCKED | 建立多 Worker 队列与公平调度 | NFR-001—003、NFR-011、OPS-001—006 | 依赖 G3-02；完成原子领取、续租、重复消费、死信、用户级公平、供应商限流和水平扩缩容 |
 | G3-05 | BLOCKED | 完成身份与外部开放安全门 | SEC-001—008 | 依赖 G3-02、G3-03；完成密码找回、共享登录限流、Session/密钥轮换、日志脱敏复核和安全配置检查 |
-| G3-06 | IN_PROGRESS | 渐进启用 TypeScript strict | NFR-001、NFR-002 | 已增加 `tsconfig.product-strict.json` 与 `typecheck:product-strict` 质量门，首批覆盖对象存储端口、本地适配器、存储维护数据端口、SQLite 适配器和领域编排；后续随数据端口提取扩大覆盖并消除数据库结果的 `any`/空值风险 |
+| G3-06 | IN_PROGRESS | 渐进启用 TypeScript strict | NFR-001、NFR-002 | 已增加 `tsconfig.product-strict.json` 与 `typecheck:product-strict` 质量门，当前覆盖对象存储端口、本地适配器、存储维护/删除数据端口、SQLite 适配器和两个领域编排；后续随数据端口提取扩大覆盖并消除数据库结果的 `any`/空值风险 |
 
 G3 验证：
 
