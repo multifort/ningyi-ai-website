@@ -1,8 +1,10 @@
 import type { DeletionRepository } from "./deletion-repository";
+import type { FormalWorkRepository } from "./formal-work-repository";
 import type { MediaTaskRepository } from "./media-task-repository";
 import type { ModelCallRepository } from "./model-call-repository";
 import type { StorageMaintenanceRepository } from "./storage-maintenance-repository";
 import { SqliteDeletionRepository } from "./sqlite-deletion-repository";
+import { SqliteFormalWorkRepository } from "./sqlite-formal-work-repository";
 import { SqliteMediaTaskRepository } from "./sqlite-media-task-repository";
 import { SqliteModelCallRepository } from "./sqlite-model-call-repository";
 import { SqliteSourceProcessingRepository } from "./sqlite-source-processing-repository";
@@ -11,6 +13,7 @@ import type { SourceProcessingRepository } from "./source-processing-repository"
 
 const sqliteStorageMaintenance = new SqliteStorageMaintenanceRepository();
 const sqliteDeletion = new SqliteDeletionRepository();
+const sqliteFormalWork = new SqliteFormalWorkRepository();
 const sqliteSourceProcessing = new SqliteSourceProcessingRepository();
 const sqliteMediaTask = new SqliteMediaTaskRepository();
 const sqliteModelCall = new SqliteModelCallRepository();
@@ -43,4 +46,9 @@ export function mediaTaskRepository(): MediaTaskRepository {
 export function modelCallRepository(): ModelCallRepository {
   assertSqliteDriver();
   return sqliteModelCall;
+}
+
+export function formalWorkRepository(): FormalWorkRepository {
+  assertSqliteDriver();
+  return sqliteFormalWork;
 }

@@ -22,7 +22,10 @@
     "lib/product/sqlite-model-call-repository.ts",
     "lib/product/media-task-repository.ts",
     "lib/product/sqlite-media-task-repository.ts",
-    "lib/product/media-analysis.ts"
+    "lib/product/media-analysis.ts",
+    "lib/product/formal-work-repository.ts",
+    "lib/product/sqlite-formal-work-repository.ts",
+    "lib/product/formal-worker.ts"
   ],
   "exclude": ["node_modules"]
 }
