@@ -80,6 +80,8 @@ pnpm benchmark:product -- --benchmark BM-01 --execute
 
 账号密码只从环境变量读取，不写入报告。脚本输出单行 JSON，包含匿名运行状态、solutionId、耗时和验收报告；任一 manifest 摘要、上传、终态或质量门失败都会以非零状态退出。
 
+运行器会加载项目的 `.env.local`（或 `PRODUCT_ENV_FILE` 指定的配置），并在显式执行前复核模型执行窗口。窗口关闭或时区无效时，它会立即以 `MODEL_EXECUTION_WINDOW_CLOSED` 退出，不会提交材料、创建项目或发起模型请求；仅做 manifest 校验和创建空的验收活动不受该时段限制。
+
 当前可先创建仅覆盖已具备完整材料的先导验收活动；这一步不调用模型：
 
 ```bash

@@ -5,6 +5,7 @@ import test from "node:test";
 
 const source = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverables.ts"), "utf8");
 const publicationSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-publication.ts"), "utf8");
+const publicationRepositorySource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "sqlite-deliverable-publication-repository.ts"), "utf8");
 const docxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-docx-renderer.ts"), "utf8");
 const pdfRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pdf-renderer.ts"), "utf8");
 const pptxRendererSource = fs.readFileSync(path.join(process.cwd(), "lib", "product", "deliverable-pptx-renderer.ts"), "utf8");
@@ -33,9 +34,12 @@ test("渐进成果与最终渲染复用同一成果定义和生成入口", () =>
 test("成果发布、版本和失效处理与格式渲染边界分离", () => {
   assert.match(source, /publishDeliverable\(input, renderWorkerContext\.getStore\(\)\)/u);
   assert.doesNotMatch(source, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
-  assert.match(publicationSource, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
+  assert.match(publicationSource, /repository\.publish/u);
+  assert.doesNotMatch(publicationSource, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
+  assert.match(publicationRepositorySource, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
+  assert.match(publicationRepositorySource, /\.immediate\(\)/u);
   assert.match(publicationSource, /export function invalidateDeliverablesForTemplate/u);
-  assert.match(publicationSource, /export function supersedeStaleRenderedArtifacts/u);
+  assert.match(publicationSource, /export async function supersedeStaleRenderedArtifacts/u);
 });
 
 test("PDF 渲染与共享内容解析脱离成果编排模块", () => {

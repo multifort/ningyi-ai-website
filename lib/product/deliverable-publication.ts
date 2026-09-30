@@ -3,6 +3,7 @@ import { validateDeliverablePackage } from "./deliverable-package";
 import { validateDeliverableLayout } from "./deliverable-layout-quality";
 import { productSqlite } from "./db";
 import { detectFormat, writePrivateFile } from "./private-storage";
+import { deliverablePublicationRepository } from "./product-data-ports";
 import { quoteParameterFingerprint } from "./quote-parameters";
 
 export type PublishDeliverableInput = {
@@ -17,7 +18,8 @@ export type PublishDeliverableInput = {
 };
 
 export async function publishDeliverable(input: PublishDeliverableInput, workerId?: string) {
-  assertRenderLease(input.solutionId, workerId);
+  const repository = deliverablePublicationRepository();
+  await repository.assertRenderLease(input.solutionId, workerId);
   const format = detectFormat(input.bytes);
   if (format !== input.expectedFormat) throw new Error("DELIVERABLE_FORMAT_INVALID");
   const packageCheck = await validateDeliverablePackage(input.bytes, format);
@@ -28,45 +30,34 @@ export async function publishDeliverable(input: PublishDeliverableInput, workerI
     const failedCodes = checks.filter((check) => check.passed !== true).map((check) => String(check.code || "UNKNOWN_CHECK"));
     throw new Error(`DELIVERABLE_QUALITY_FAILED:${failedCodes.join(",")}`);
   }
-  const contentFingerprint = artifactContentFingerprint(input.solutionId, input.artifactType);
-  const renderFingerprint = artifactRenderFingerprint(input.solutionId, input.expectedFormat);
-  const existing = productSqlite.prepare(`SELECT id, solution_id AS solutionId, user_id AS userId, artifact_type AS artifactType,
-    display_name AS displayName, mime_type AS mimeType, storage_key AS storageKey, size_bytes AS sizeBytes, sha256,
-    quality_json AS qualityJson, content_fingerprint AS contentFingerprint, render_fingerprint AS renderFingerprint,
-    content_version AS contentVersion, render_version AS renderVersion
-    FROM deliverable_artifacts WHERE solution_id = ? AND artifact_type = ?`).get(input.solutionId, input.artifactType) as any;
+  const contentFingerprint = await artifactContentFingerprint(input.solutionId, input.artifactType);
+  const renderFingerprint = await artifactRenderFingerprint(input.solutionId, input.expectedFormat);
+  const existing = await repository.findExisting(input.solutionId, input.artifactType);
   if (existing && existing.contentFingerprint === contentFingerprint && existing.renderFingerprint === renderFingerprint) {
-    assertRenderLease(input.solutionId, workerId);
-    productSqlite.prepare("UPDATE deliverable_artifacts SET status = 'available', published_at = COALESCE(published_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?").run(existing.id, input.userId);
+    await repository.restoreAvailable(existing.id, input.userId, input.solutionId, workerId);
     return;
   }
   const artifactId = randomUUID();
   const contentVersion = existing ? (existing.contentFingerprint === contentFingerprint ? existing.contentVersion : existing.contentVersion + 1) : 1;
   const renderVersion = existing ? (existing.contentFingerprint === contentFingerprint ? existing.renderVersion + 1 : 1) : 1;
   const stored = await writePrivateFile(input.userId, input.solutionId, artifactId, input.bytes);
-  productSqlite.transaction(() => {
-    assertRenderLease(input.solutionId, workerId);
-    if (existing) productSqlite.prepare(`INSERT OR IGNORE INTO deliverable_artifact_versions
-      (id, artifact_id, solution_id, user_id, artifact_type, display_name, mime_type, storage_key, size_bytes, sha256, quality_json,
-       content_fingerprint, render_fingerprint, content_version, render_version)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      randomUUID(), existing.id, existing.solutionId, existing.userId, existing.artifactType, existing.displayName, existing.mimeType,
-      existing.storageKey, existing.sizeBytes, existing.sha256, existing.qualityJson, existing.contentFingerprint, existing.renderFingerprint,
-      existing.contentVersion, existing.renderVersion,
-    );
-    productSqlite.prepare(`INSERT INTO deliverable_artifacts
-      (id, solution_id, user_id, artifact_type, display_name, mime_type, storage_key, size_bytes, sha256, status, quality_json,
-       content_fingerprint, render_fingerprint, content_version, render_version, published_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'available', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(solution_id, artifact_type) DO UPDATE SET id = excluded.id, user_id = excluded.user_id, display_name = excluded.display_name,
-      mime_type = excluded.mime_type, storage_key = excluded.storage_key, size_bytes = excluded.size_bytes, sha256 = excluded.sha256,
-      status = 'available', quality_json = excluded.quality_json, content_fingerprint = excluded.content_fingerprint,
-      render_fingerprint = excluded.render_fingerprint, content_version = excluded.content_version, render_version = excluded.render_version,
-      published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP`).run(
-      artifactId, input.solutionId, input.userId, input.artifactType, input.displayName, input.mimeType, stored.storageKey, input.bytes.length,
-      stored.sha256, JSON.stringify(quality), contentFingerprint, renderFingerprint, contentVersion, renderVersion,
-    );
-  })();
+  await repository.publish({
+    artifactId,
+    solutionId: input.solutionId,
+    userId: input.userId,
+    artifactType: input.artifactType,
+    displayName: input.displayName,
+    mimeType: input.mimeType,
+    storageKey: stored.storageKey,
+    sizeBytes: input.bytes.length,
+    sha256: stored.sha256,
+    qualityJson: JSON.stringify(quality),
+    contentFingerprint,
+    renderFingerprint,
+    contentVersion,
+    renderVersion,
+    existing,
+  }, workerId);
 }
 
 export function listDeliverables(solutionId: string, userId: string) {
@@ -113,13 +104,12 @@ export function hasCompleteFormalDocument(solutionId: string) {
   return result.sectionCount === 7;
 }
 
-export function supersedeStaleRenderedArtifacts(solutionId: string, userId: string) {
-  const rows = productSqlite.prepare("SELECT id, artifact_type AS artifactType, render_fingerprint AS renderFingerprint FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ id: string; artifactType: string; renderFingerprint: string | null }>;
+export async function supersedeStaleRenderedArtifacts(solutionId: string, userId: string) {
+  const repository = deliverablePublicationRepository();
+  const rows = await repository.availableRenderFingerprints(solutionId, userId);
   for (const row of rows) {
     const expectedFormat = row.artifactType.endsWith("_xlsx") ? "xlsx" : row.artifactType.endsWith("_pptx") ? "pptx" : row.artifactType.endsWith("_pdf") ? "pdf" : "docx";
-    if (row.renderFingerprint !== artifactRenderFingerprint(solutionId, expectedFormat)) {
-      productSqlite.prepare("UPDATE deliverable_artifacts SET status = 'superseded', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'available'").run(row.id);
-    }
+    if (row.renderFingerprint !== await artifactRenderFingerprint(solutionId, expectedFormat)) await repository.supersedeArtifact(row.id);
   }
 }
 
@@ -127,28 +117,17 @@ function queueRender(solutionId: string, userId: string) {
   productSqlite.prepare("UPDATE product_solutions SET status = 'processing', stage = 'rendering', render_attempt_count = 0, render_next_attempt_at = NULL, render_error_code = NULL, render_failed_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_user_id = ?").run(solutionId, userId);
 }
 
-function assertRenderLease(solutionId: string, workerId?: string) {
-  if (!workerId) return;
-  const owned = productSqlite.prepare("SELECT 1 FROM product_solutions WHERE id = ? AND stage = 'rendering' AND status = 'rendering' AND render_lease_owner = ? AND render_lease_until > CURRENT_TIMESTAMP").get(solutionId, workerId);
-  if (!owned) throw new Error("RENDER_LEASE_LOST");
-}
-
-function artifactContentFingerprint(solutionId: string, artifactType: string) {
+async function artifactContentFingerprint(solutionId: string, artifactType: string) {
   const titles = artifactDependencyTitles(artifactType);
-  const placeholders = titles.map(() => "?").join(", ");
-  const sections = titles.length ? productSqlite.prepare(`SELECT section_key AS sectionKey, title, content, summary, structured_items_json AS structuredItemsJson
-    FROM formal_sections WHERE solution_id = ? AND status = 'validated' AND title IN (${placeholders}) ORDER BY section_index`).all(solutionId, ...titles) : [];
+  const sections = await deliverablePublicationRepository().contentSections(solutionId, titles);
   const deterministicParameters = ["project_quote_xlsx", "project_quote_pdf"].includes(artifactType)
     ? quoteParameterFingerprint(solutionId, true)
     : artifactType === "workload_estimate_xlsx" ? quoteParameterFingerprint(solutionId, true, true) : null;
   return createHash("sha256").update(JSON.stringify({ sections, deterministicParameters })).digest("hex");
 }
 
-function artifactRenderFingerprint(solutionId: string, expectedFormat: string) {
-  const profile = productSqlite.prepare(`SELECT tp.detected_format AS detectedFormat, tp.profile_json AS profileJson, tp.render_policy_json AS renderPolicyJson
-    FROM template_profiles tp JOIN source_files sf ON sf.id = tp.source_file_id
-    WHERE tp.solution_id = ? AND tp.detected_format = ? AND sf.status = 'uploaded'
-    ORDER BY sf.created_at DESC, sf.id DESC LIMIT 1`).get(solutionId, expectedFormat) || { detectedFormat: expectedFormat, profileJson: null, renderPolicyJson: null };
+async function artifactRenderFingerprint(solutionId: string, expectedFormat: string) {
+  const profile = await deliverablePublicationRepository().templateProfile(solutionId, expectedFormat);
   return createHash("sha256").update(JSON.stringify({ rendererVersion: "renderer-v6-layout-quality-v1", expectedFormat, profile })).digest("hex");
 }
 

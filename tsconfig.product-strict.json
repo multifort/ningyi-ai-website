@@ -25,7 +25,10 @@
     "lib/product/media-analysis.ts",
     "lib/product/formal-work-repository.ts",
     "lib/product/sqlite-formal-work-repository.ts",
-    "lib/product/formal-worker.ts"
+    "lib/product/formal-worker.ts",
+    "lib/product/deliverable-publication-repository.ts",
+    "lib/product/sqlite-deliverable-publication-repository.ts",
+    "lib/product/deliverable-publication.ts"
   ],
   "exclude": ["node_modules"]
 }

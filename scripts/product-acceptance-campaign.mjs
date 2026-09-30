@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "./product-env.mjs";
 import { spawn } from "node:child_process";
 import path from "node:path";
 

@@ -40,7 +40,7 @@ export async function ensurePrimaryDeliverables(solutionId: string, userId: stri
   const sections = productSqlite.prepare("SELECT title, content, summary, structured_items_json AS structuredItemsJson FROM formal_sections WHERE solution_id = ? AND status = 'validated' ORDER BY section_index").all(solutionId) as FormalSection[];
   if (!sections.length || sections.some((section) => !section.content?.trim())) throw new Error("FORMAL_DOCUMENT_INCOMPLETE");
 
-  supersedeStaleRenderedArtifacts(solutionId, userId);
+  await supersedeStaleRenderedArtifacts(solutionId, userId);
   await ensureDeclaredProgressiveDeliverables({ solutionId, userId, solutionTitle: solution.title, sections, bestEffort: false });
 
   const existingTypes = new Set((productSqlite.prepare("SELECT artifact_type AS artifactType FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ artifactType: string }>).map((item) => item.artifactType));

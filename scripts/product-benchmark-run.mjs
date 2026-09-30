@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "./product-env.mjs";
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -36,6 +37,8 @@ if (!execute) {
 }
 if (process.env.PRODUCT_BENCHMARK_EXECUTE !== "1") fail("BENCHMARK_EXECUTION_GUARD_REQUIRED");
 if (!username || password.length < 8 || !workerSecret) fail("BENCHMARK_CREDENTIALS_REQUIRED");
+const executionWindow = modelExecutionWindow();
+if (!executionWindow.allowed) fail("MODEL_EXECUTION_WINDOW_CLOSED", executionWindow);
 
 let cookie = "";
 const registered = await api("/api/product/auth/register", { method: "POST", json: { username, password }, allow: [201, 409] });
@@ -141,6 +144,28 @@ function mimeFor(format) {
   return ({ docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation", pdf: "application/pdf", png: "image/png", jpeg: "image/jpeg", txt: "text/plain", csv: "text/csv", json: "application/json" })[format] || "application/octet-stream";
 }
 function valueAfter(flag) { const index = process.argv.indexOf(flag); return index >= 0 ? process.argv[index + 1] : ""; }
+function modelExecutionWindow(now = new Date()) {
+  const timezone = String(process.env.PRODUCT_MODEL_EXECUTION_TIMEZONE || "Asia/Shanghai").trim() || "Asia/Shanghai";
+  const startHour = configuredHour("PRODUCT_MODEL_EXECUTION_START_HOUR", 0);
+  const endHour = configuredHour("PRODUCT_MODEL_EXECUTION_END_HOUR", 6);
+  if (String(process.env.PRODUCT_MODEL_EXECUTION_WINDOW_ENABLED || "true").toLowerCase() === "false") {
+    return { allowed: true, timezone, localHour: null, startHour, endHour, reason: "disabled" };
+  }
+  try {
+    const localHour = Number(new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "2-digit", hourCycle: "h23" })
+      .formatToParts(now).find((part) => part.type === "hour")?.value);
+    const allowed = startHour === endHour ? false : startHour < endHour
+      ? localHour >= startHour && localHour < endHour
+      : localHour >= startHour || localHour < endHour;
+    return { allowed, timezone, localHour, startHour, endHour, reason: allowed ? "within_window" : "outside_window" };
+  } catch {
+    return { allowed: false, timezone, localHour: null, startHour, endHour, reason: "invalid_timezone" };
+  }
+}
+function configuredHour(name, fallback) {
+  const value = Number(process.env[name]);
+  return Number.isInteger(value) && value >= 0 && value <= 23 ? value : fallback;
+}
 async function readJson(filename) { return JSON.parse(await fs.readFile(filename, "utf8")); }
 async function persistRunResult(result) {
   await fs.mkdir(reportDirectory, { recursive: true });
