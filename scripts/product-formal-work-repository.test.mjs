@@ -94,6 +94,25 @@ test("章节上下文快照只返回当前方案的有效材料、前序章节�
   assert.deepEqual(data.retry, { attemptNo: 1, errorCode: "UNKNOWN_CITATION", qualityJson: "{}" });
 });
 
+test("正式章节领取原子记录租约、模型调用与尝试，且阻止重复领取", async () => {
+  const solutionId = `10000000-0000-4000-8000-${"5".padStart(12, "0")}`;
+  const sectionId = "73000000-0000-4000-8000-000000000066";
+  productSqlite.prepare("INSERT OR IGNORE INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'formal-work-owner', 'formal-work-owner', 'test')").run(userId);
+  productSqlite.prepare("INSERT INTO product_solutions (id, owner_user_id, title, status, stage) VALUES (?, ?, '正式章节领取测试', 'processing', 'formal_analysis')").run(solutionId, userId);
+  await repository.initializeDocument({ solutionId, provider: "openai", model: "test-model", configured: true, outline: [{ id: sectionId, sectionIndex: 0, sectionKey: "project_overview", title: "项目背景与目标" }] });
+  const input = { solutionId, sectionId, workerId: "claim-worker", leaseSeconds: 600, contextHash: "context-hash", contextManifestJson: "{}", callId: "75000000-0000-4000-8000-000000000066", attemptId: "74000000-0000-4000-8000-000000000066", provider: "openai", model: "test-model", modelVersion: "v1", promptVersion: "p1", parserVersion: "s1", configurationHash: "config-hash", maxAttempts: 3 };
+  const claim = await repository.claimFormalSection(input);
+  assert.equal(claim.status, "claimed");
+  if (claim.status !== "claimed") return;
+  assert.equal(claim.attemptNo, 1);
+  assert.equal(claim.cycleAttemptNo, 1);
+  assert.deepEqual(productSqlite.prepare("SELECT status, current_section AS currentSection FROM formal_documents WHERE solution_id = ?").get(solutionId), { status: "generating", currentSection: 0 });
+  assert.deepEqual(productSqlite.prepare("SELECT status, lease_owner AS leaseOwner, context_hash AS contextHash FROM formal_sections WHERE id = ?").get(sectionId), { status: "generating", leaseOwner: "claim-worker", contextHash: "context-hash" });
+  assert.deepEqual(productSqlite.prepare("SELECT status, purpose, configuration_hash AS configurationHash FROM model_calls WHERE id = ?").get(input.callId), { status: "running", purpose: "formal_section:project_overview", configurationHash: "config-hash" });
+  assert.deepEqual(productSqlite.prepare("SELECT status, attempt_no AS attemptNo FROM formal_section_attempts WHERE id = ?").get(input.attemptId), { status: "running", attemptNo: 1 });
+  assert.deepEqual(await repository.claimFormalSection({ ...input, callId: "75000000-0000-4000-8000-000000000067", attemptId: "74000000-0000-4000-8000-000000000067" }), { status: "idle" });
+});
+
 function seedSolution(suffix, status, stage) {
   const solutionId = `10000000-0000-4000-8000-${suffix.padStart(12, "0")}`;
   productSqlite.prepare("INSERT OR IGNORE INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'formal-work-owner', 'formal-work-owner', 'test')").run(userId);

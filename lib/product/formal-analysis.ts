@@ -45,20 +45,9 @@ export async function continueFormalDocument(solutionId: string, userId: string,
     await repository.markAwaitingConfiguration(solutionId);
     return formalStatus(solutionId);
   }
-  const next = productSqlite.prepare("SELECT id, section_index AS sectionIndex, section_key AS sectionKey, title, retry_cycle AS retryCycle FROM formal_sections WHERE solution_id = ? AND status = 'pending' AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP) ORDER BY section_index LIMIT 1").get(solutionId) as any;
+  const next = await repository.nextPendingSection(solutionId);
   if (!next) return formalStatus(solutionId);
-  const attemptRow = productSqlite.prepare("SELECT COUNT(*) AS count FROM formal_section_attempts WHERE section_id = ? AND retry_cycle = ? AND COALESCE(error_code, '') != 'MATERIAL_CHANGED_DURING_GENERATION' AND COALESCE(error_code, '') NOT LIKE 'PROVIDER_CONFIGURATION_%'").get(next.id, next.retryCycle) as { count: number };
-  const totalAttempts = productSqlite.prepare("SELECT COUNT(*) AS count FROM formal_section_attempts WHERE section_id = ?").get(next.id) as { count: number };
   const maxAttempts = Math.min(6, Math.max(2, Number(process.env.PRODUCT_FORMAL_SECTION_MAX_ATTEMPTS || 3)));
-  if (attemptRow.count >= maxAttempts) {
-    productSqlite.prepare("UPDATE formal_sections SET status = 'failed', failed_at = CURRENT_TIMESTAMP, next_attempt_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(next.id);
-    productSqlite.prepare("UPDATE formal_documents SET status = 'blocked', last_error_code = 'SECTION_RETRY_EXHAUSTED', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(solutionId);
-    productSqlite.prepare("UPDATE product_solutions SET status = 'blocked', stage = 'formal_analysis', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(solutionId);
-    productSqlite.prepare("UPDATE change_impact_plans SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'accepted' AND execution_started_at IS NOT NULL").run(solutionId);
-    return formalStatus(solutionId);
-  }
-  const cycleAttemptNo = attemptRow.count + 1;
-  const attemptNo = totalAttempts.count + 1;
   const attemptId = randomUUID();
   ensureUnifiedKnowledge(solutionId);
   const context = await buildSectionContext(solutionId, next.sectionKey, next.title);
@@ -66,23 +55,13 @@ export async function continueFormalDocument(solutionId: string, userId: string,
   const callId = randomUUID();
   const candidate = formalCandidateMetadata(state.model);
   const leaseSeconds = Math.max(180, Number(process.env.PRODUCT_FORMAL_LEASE_SECONDS || 900));
-  const claimed = productSqlite.transaction(() => {
-    const documentClaim = productSqlite.prepare("UPDATE formal_documents SET status = 'generating', current_section = ?, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'pending'").run(next.sectionIndex, solutionId);
-    if (!documentClaim.changes) return false;
-    const claim = options.workerId
-      ? productSqlite.prepare("UPDATE formal_sections SET status = 'generating', context_hash = ?, lease_owner = ?, lease_until = datetime('now', ?), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'").run(contextHash, options.workerId, `+${leaseSeconds} seconds`, next.id)
-      : productSqlite.prepare("UPDATE formal_sections SET status = 'generating', context_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'").run(contextHash, next.id);
-    if (!claim.changes) {
-      productSqlite.prepare("UPDATE formal_documents SET status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(solutionId);
-      return false;
-    }
-    productSqlite.prepare(`INSERT INTO model_calls
-      (id, solution_id, purpose, provider, model, model_version, prompt_version, parser_version, configuration_hash, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'running')`).run(callId, solutionId, `formal_section:${next.sectionKey}`, state.provider, state.model, candidate.modelVersion, candidate.promptVersion, candidate.parserVersion, candidate.configurationHash);
-    productSqlite.prepare("INSERT INTO formal_section_attempts (id, solution_id, section_id, attempt_no, status, context_manifest_json, retry_cycle) VALUES (?, ?, ?, ?, 'running', ?, ?)").run(attemptId, solutionId, next.id, attemptNo, JSON.stringify(context.manifest), next.retryCycle);
-    return true;
-  })();
-  if (!claimed) return formalStatus(solutionId);
+  const claim = await repository.claimFormalSection({
+    solutionId, sectionId: next.id, workerId: options.workerId, leaseSeconds, contextHash, contextManifestJson: JSON.stringify(context.manifest),
+    callId, attemptId, provider: state.provider, model: state.model, modelVersion: candidate.modelVersion,
+    promptVersion: candidate.promptVersion, parserVersion: candidate.parserVersion, configurationHash: candidate.configurationHash, maxAttempts,
+  });
+  if (claim.status !== "claimed") return formalStatus(solutionId);
+  const { cycleAttemptNo } = claim;
   try {
     const generated = await callFormalModel(state.model, userId, next.title, context.text);
     if (!await repository.processingAllowed(solutionId, userId)) throw new Error("SOLUTION_ACCESS_REVOKED");

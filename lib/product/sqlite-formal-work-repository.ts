@@ -1,7 +1,44 @@
 import { productSqlite } from "./db";
-import type { FormalDocumentState, FormalSectionContextData, FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
+import type { FormalDocumentState, FormalSectionClaim, FormalSectionContextData, FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
 
 export class SqliteFormalWorkRepository implements FormalWorkRepository {
+  async nextPendingSection(solutionId: string) {
+    return productSqlite.prepare("SELECT id, section_index AS sectionIndex, section_key AS sectionKey, title, retry_cycle AS retryCycle FROM formal_sections WHERE solution_id = ? AND status = 'pending' AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP) ORDER BY section_index LIMIT 1").get(solutionId) as { id: string; sectionIndex: number; sectionKey: string; title: string; retryCycle: number } | undefined;
+  }
+
+  async claimFormalSection(input: Parameters<FormalWorkRepository["claimFormalSection"]>[0]): Promise<FormalSectionClaim> {
+    return productSqlite.transaction((): FormalSectionClaim => {
+      const section = productSqlite.prepare(`SELECT id, section_index AS sectionIndex, section_key AS sectionKey, title, retry_cycle AS retryCycle
+        FROM formal_sections WHERE id = ? AND solution_id = ? AND status = 'pending' AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP)`)
+        .get(input.sectionId, input.solutionId) as { id: string; sectionIndex: number; sectionKey: string; title: string; retryCycle: number } | undefined;
+      if (!section) return { status: "idle" };
+      const cycleAttempts = productSqlite.prepare(`SELECT COUNT(*) AS count FROM formal_section_attempts WHERE section_id = ? AND retry_cycle = ?
+        AND COALESCE(error_code, '') != 'MATERIAL_CHANGED_DURING_GENERATION' AND COALESCE(error_code, '') NOT LIKE 'PROVIDER_CONFIGURATION_%'`).get(section.id, section.retryCycle) as { count: number };
+      if (cycleAttempts.count >= input.maxAttempts) {
+        productSqlite.prepare("UPDATE formal_sections SET status = 'failed', failed_at = CURRENT_TIMESTAMP, next_attempt_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'").run(section.id);
+        productSqlite.prepare("UPDATE formal_documents SET status = 'blocked', last_error_code = 'SECTION_RETRY_EXHAUSTED', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(input.solutionId);
+        productSqlite.prepare("UPDATE product_solutions SET status = 'blocked', stage = 'formal_analysis', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(input.solutionId);
+        productSqlite.prepare("UPDATE change_impact_plans SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'accepted' AND execution_started_at IS NOT NULL").run(input.solutionId);
+        return { status: "retry_exhausted" };
+      }
+      const documentClaim = productSqlite.prepare("UPDATE formal_documents SET status = 'generating', current_section = ?, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'pending'").run(section.sectionIndex, input.solutionId);
+      if (!documentClaim.changes) return { status: "contended" };
+      const claimed = input.workerId
+        ? productSqlite.prepare("UPDATE formal_sections SET status = 'generating', context_hash = ?, lease_owner = ?, lease_until = datetime('now', ?), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'").run(input.contextHash, input.workerId, `+${input.leaseSeconds} seconds`, section.id)
+        : productSqlite.prepare("UPDATE formal_sections SET status = 'generating', context_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'pending'").run(input.contextHash, section.id);
+      if (!claimed.changes) {
+        productSqlite.prepare("UPDATE formal_documents SET status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(input.solutionId);
+        return { status: "contended" };
+      }
+      const attemptNo = (productSqlite.prepare("SELECT COUNT(*) AS count FROM formal_section_attempts WHERE section_id = ?").get(section.id) as { count: number }).count + 1;
+      productSqlite.prepare(`INSERT INTO model_calls
+        (id, solution_id, purpose, provider, model, model_version, prompt_version, parser_version, configuration_hash, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'running')`).run(input.callId, input.solutionId, `formal_section:${section.sectionKey}`, input.provider, input.model, input.modelVersion, input.promptVersion, input.parserVersion, input.configurationHash);
+      productSqlite.prepare("INSERT INTO formal_section_attempts (id, solution_id, section_id, attempt_no, status, context_manifest_json, retry_cycle) VALUES (?, ?, ?, ?, 'running', ?, ?)").run(input.attemptId, input.solutionId, section.id, attemptNo, input.contextManifestJson, section.retryCycle);
+      return { status: "claimed", section, attemptNo, cycleAttemptNo: cycleAttempts.count + 1 };
+    }).immediate();
+  }
+
   async sectionContextData(solutionId: string, sectionKey: string): Promise<FormalSectionContextData> {
     return productSqlite.transaction(() => {
       const blocks = productSqlite.prepare(`SELECT id, blockType, text FROM (

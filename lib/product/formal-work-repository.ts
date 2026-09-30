@@ -6,6 +6,11 @@ export type FormalSectionContextData = {
   prior: Array<{ title: string; summary: string | null; structuredItemsJson: string | null }>;
   retry?: { attemptNo: number; errorCode: string | null; qualityJson: string | null };
 };
+export type FormalSectionClaim =
+  | { status: "idle" }
+  | { status: "contended" }
+  | { status: "retry_exhausted" }
+  | { status: "claimed"; section: { id: string; sectionIndex: number; sectionKey: string; title: string; retryCycle: number }; attemptNo: number; cycleAttemptNo: number };
 export type FormalDocumentState = {
   status: string;
   provider: string;
@@ -27,6 +32,8 @@ export type FormalDocumentState = {
 };
 
 export interface FormalWorkRepository {
+  nextPendingSection(solutionId: string): Promise<{ id: string; sectionIndex: number; sectionKey: string; title: string; retryCycle: number } | undefined>;
+  claimFormalSection(input: { solutionId: string; sectionId: string; workerId?: string; leaseSeconds: number; contextHash: string; contextManifestJson: string; callId: string; attemptId: string; provider: string; model: string; modelVersion: string; promptVersion: string; parserVersion: string; configurationHash: string; maxAttempts: number }): Promise<FormalSectionClaim>;
   sectionContextData(solutionId: string, sectionKey: string): Promise<FormalSectionContextData>;
   initializeDocument(input: { solutionId: string; provider: string; model: string; configured: boolean; outline: FormalOutlineSection[] }): Promise<void>;
   documentState(solutionId: string): Promise<FormalDocumentState | undefined>;
