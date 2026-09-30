@@ -35,10 +35,11 @@ test("成果发布、版本和失效处理与格式渲染边界分离", () => {
   assert.match(source, /publishDeliverable\(input, renderWorkerContext\.getStore\(\)\)/u);
   assert.doesNotMatch(source, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
   assert.match(publicationSource, /repository\.publish/u);
+  assert.doesNotMatch(publicationSource, /productSqlite/u);
   assert.doesNotMatch(publicationSource, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
   assert.match(publicationRepositorySource, /INSERT OR IGNORE INTO deliverable_artifact_versions/u);
   assert.match(publicationRepositorySource, /\.immediate\(\)/u);
-  assert.match(publicationSource, /export function invalidateDeliverablesForTemplate/u);
+  assert.match(publicationSource, /export async function invalidateDeliverablesForTemplate/u);
   assert.match(publicationSource, /export async function supersedeStaleRenderedArtifacts/u);
 });
 

@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from "crypto";
 import { validateDeliverablePackage } from "./deliverable-package";
 import { validateDeliverableLayout } from "./deliverable-layout-quality";
-import { productSqlite } from "./db";
 import { detectFormat, writePrivateFile } from "./private-storage";
 import { deliverablePublicationRepository } from "./product-data-ports";
 import { quoteParameterFingerprint } from "./quote-parameters";
@@ -60,48 +59,45 @@ export async function publishDeliverable(input: PublishDeliverableInput, workerI
   }, workerId);
 }
 
-export function listDeliverables(solutionId: string, userId: string) {
-  return productSqlite.prepare(`SELECT id, artifact_type AS artifactType, display_name AS displayName, mime_type AS mimeType,
-    size_bytes AS sizeBytes, sha256, status, content_version AS contentVersion, render_version AS renderVersion,
-    published_at AS publishedAt, created_at AS createdAt, updated_at AS updatedAt,
-    (SELECT COUNT(*) FROM deliverable_artifact_versions v WHERE v.solution_id = deliverable_artifacts.solution_id
-      AND v.artifact_type = deliverable_artifacts.artifact_type) AS historyCount
-    FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available' ORDER BY created_at, id`).all(solutionId, userId);
+export async function listDeliverables(solutionId: string, userId: string) {
+  return deliverablePublicationRepository().listAvailable(solutionId, userId);
 }
 
-export function invalidateDeliverablesForTemplate(solutionId: string, userId: string, format: "docx" | "xlsx" | "pptx") {
-  const artifactTypes = format === "docx"
-    ? [
-        "requirement_analysis_docx",
-        "requirement_analysis_pdf",
-        "function_catalog_docx",
-        "workload_estimate_pdf",
-        "implementation_plan_pdf",
-        "project_quote_pdf",
-        "formal_solution_docx",
-        "formal_solution_pdf",
-      ]
-    : format === "xlsx"
-      ? ["function_catalog_xlsx", "workload_estimate_xlsx", "implementation_plan_xlsx", "project_quote_xlsx", "project_traceability_xlsx"]
-      : ["solution_briefing_pptx", "solution_briefing_pdf"];
-  const placeholders = artifactTypes.map(() => "?").join(", ");
-  const result = productSqlite.prepare(`UPDATE deliverable_artifacts SET status = 'superseded', updated_at = CURRENT_TIMESTAMP
-    WHERE solution_id = ? AND user_id = ? AND status = 'available' AND artifact_type IN (${placeholders})`).run(solutionId, userId, ...artifactTypes);
-  if (result.changes > 0) queueRender(solutionId, userId);
-  return { invalidated: result.changes, artifactTypes };
+export async function invalidateDeliverablesForTemplate(solutionId: string, userId: string, format: "docx" | "xlsx" | "pptx") {
+  const artifactTypes = templateArtifactTypes(format);
+  const invalidated = await deliverablePublicationRepository().invalidateAvailable(solutionId, userId, artifactTypes);
+  return { invalidated, artifactTypes };
 }
 
 /** A brand change affects presentation only; the validated content remains intact. */
-export function invalidateDeliverablesForBrand(solutionId: string, userId: string) {
-  const result = productSqlite.prepare(`UPDATE deliverable_artifacts SET status = 'superseded', updated_at = CURRENT_TIMESTAMP
-    WHERE solution_id = ? AND user_id = ? AND status = 'available'`).run(solutionId, userId);
-  if (result.changes > 0) queueRender(solutionId, userId);
-  return { invalidated: result.changes };
+export async function invalidateDeliverablesForBrand(solutionId: string, userId: string) {
+  const invalidated = await deliverablePublicationRepository().invalidateAvailable(solutionId, userId);
+  return { invalidated };
 }
 
-export function hasCompleteFormalDocument(solutionId: string) {
-  const result = productSqlite.prepare("SELECT COUNT(*) AS sectionCount FROM formal_sections WHERE solution_id = ? AND status = 'validated' AND TRIM(COALESCE(content, '')) <> ''").get(solutionId) as { sectionCount: number };
-  return result.sectionCount === 7;
+export async function hasCompleteFormalDocument(solutionId: string) {
+  return deliverablePublicationRepository().hasCompleteFormalDocument(solutionId);
+}
+
+export async function removeTemplateAndInvalidate(solutionId: string, userId: string, sourceFileId: string, format: "docx" | "xlsx" | "pptx") {
+  return deliverablePublicationRepository().removePresentationSource({
+    sourceFileId,
+    solutionId,
+    userId,
+    artifactTypes: templateArtifactTypes(format),
+    eventType: "template_removed",
+    eventSummary: "移除了一份企业模板",
+  });
+}
+
+export async function removeBrandAndInvalidate(solutionId: string, userId: string, sourceFileId: string) {
+  return deliverablePublicationRepository().removePresentationSource({
+    sourceFileId,
+    solutionId,
+    userId,
+    eventType: "brand_removed",
+    eventSummary: "移除了一份品牌素材",
+  });
 }
 
 export async function supersedeStaleRenderedArtifacts(solutionId: string, userId: string) {
@@ -111,10 +107,6 @@ export async function supersedeStaleRenderedArtifacts(solutionId: string, userId
     const expectedFormat = row.artifactType.endsWith("_xlsx") ? "xlsx" : row.artifactType.endsWith("_pptx") ? "pptx" : row.artifactType.endsWith("_pdf") ? "pdf" : "docx";
     if (row.renderFingerprint !== await artifactRenderFingerprint(solutionId, expectedFormat)) await repository.supersedeArtifact(row.id);
   }
-}
-
-function queueRender(solutionId: string, userId: string) {
-  productSqlite.prepare("UPDATE product_solutions SET status = 'processing', stage = 'rendering', render_attempt_count = 0, render_next_attempt_at = NULL, render_error_code = NULL, render_failed_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_user_id = ?").run(solutionId, userId);
 }
 
 async function artifactContentFingerprint(solutionId: string, artifactType: string) {
@@ -151,4 +143,21 @@ function artifactDependencyTitles(artifactType: string): string[] {
     project_traceability_xlsx: all,
   };
   return dependencies[artifactType] || all;
+}
+
+function templateArtifactTypes(format: "docx" | "xlsx" | "pptx") {
+  return format === "docx"
+    ? [
+        "requirement_analysis_docx",
+        "requirement_analysis_pdf",
+        "function_catalog_docx",
+        "workload_estimate_pdf",
+        "implementation_plan_pdf",
+        "project_quote_pdf",
+        "formal_solution_docx",
+        "formal_solution_pdf",
+      ]
+    : format === "xlsx"
+      ? ["function_catalog_xlsx", "workload_estimate_xlsx", "implementation_plan_xlsx", "project_quote_xlsx", "project_traceability_xlsx"]
+      : ["solution_briefing_pptx", "solution_briefing_pdf"];
 }

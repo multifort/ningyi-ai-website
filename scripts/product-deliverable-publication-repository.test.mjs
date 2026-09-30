@@ -21,10 +21,12 @@ const userId = "90000000-0000-4000-8000-000000000071";
 const solutionId = "10000000-0000-4000-8000-000000000071";
 const oldArtifactId = "70000000-0000-4000-8000-000000000071";
 const newArtifactId = "70000000-0000-4000-8000-000000000072";
+const templateFileId = "60000000-0000-4000-8000-000000000071";
 
 test.before(() => {
   productSqlite.prepare("INSERT INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'publication-owner', 'publication-owner', 'test')").run(userId);
   productSqlite.prepare("INSERT INTO product_solutions (id, owner_user_id, title, status, stage, render_lease_owner, render_lease_until) VALUES (?, ?, '发布仓储测试', 'rendering', 'rendering', 'render-worker', datetime('now', '+10 minutes'))").run(solutionId, userId);
+  productSqlite.prepare("INSERT INTO source_files (id, solution_id, user_id, client_key, category, original_name, detected_format, size_bytes, storage_key, status) VALUES (?, ?, ?, 'template-docx', 'template', 'template.docx', 'docx', 100, ?, 'uploaded')").run(templateFileId, solutionId, userId, `private/${userId}/${solutionId}/${templateFileId}`);
   productSqlite.prepare("INSERT INTO deliverable_artifacts (id, solution_id, user_id, artifact_type, display_name, mime_type, storage_key, size_bytes, sha256, quality_json, content_fingerprint, render_fingerprint, content_version, render_version, status) VALUES (?, ?, ?, 'formal_solution_docx', '旧版.docx', 'application/docx', ?, 100, 'old-sha', '{}', 'content-v1', 'render-v1', 1, 1, 'available')").run(oldArtifactId, solutionId, userId, `private/${userId}/${solutionId}/${oldArtifactId}`);
 });
 
@@ -58,4 +60,28 @@ test("成果发布在同一事务中归档旧版本并替换当前版本", async
 
 test("失去渲染租约后不能重新发布成果", async () => {
   await assert.rejects(repository.restoreAvailable(newArtifactId, userId, solutionId, "stale-worker"), /RENDER_LEASE_LOST/);
+});
+
+test("移除模板时原子更新源文件、成果状态、渲染队列和项目事件", async () => {
+  assert.equal(await repository.removePresentationSource({
+    sourceFileId: templateFileId,
+    solutionId,
+    userId,
+    artifactTypes: ["formal_solution_docx"],
+    eventType: "template_removed",
+    eventSummary: "移除了一份企业模板",
+  }), true);
+  assert.deepEqual(productSqlite.prepare("SELECT status, storage_key AS storageKey FROM source_files WHERE id = ?").get(templateFileId), { status: "removed", storageKey: null });
+  assert.deepEqual(productSqlite.prepare("SELECT status FROM deliverable_artifacts WHERE id = ?").get(newArtifactId), { status: "superseded" });
+  assert.deepEqual(productSqlite.prepare("SELECT status, stage FROM product_solutions WHERE id = ?").get(solutionId), { status: "processing", stage: "rendering" });
+  assert.deepEqual(productSqlite.prepare("SELECT event_type AS eventType, summary FROM product_project_events WHERE solution_id = ?").get(solutionId), { eventType: "template_removed", summary: "移除了一份企业模板" });
+  assert.equal(await repository.removePresentationSource({
+    sourceFileId: templateFileId,
+    solutionId,
+    userId,
+    artifactTypes: ["formal_solution_docx"],
+    eventType: "template_removed",
+    eventSummary: "移除了一份企业模板",
+  }), false);
+  assert.deepEqual(productSqlite.prepare("SELECT COUNT(*) AS eventCount FROM product_project_events WHERE solution_id = ?").get(solutionId), { eventCount: 1 });
 });

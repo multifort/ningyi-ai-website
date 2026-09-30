@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { productSqlite } from "./db";
-import type { ArtifactPublication, DeliverablePublicationRepository, ExistingArtifact } from "./deliverable-publication-repository";
+import type { ArtifactPublication, DeliverablePublicationRepository, DeliverableSummary, ExistingArtifact, PresentationSourceRemoval } from "./deliverable-publication-repository";
 
 export class SqliteDeliverablePublicationRepository implements DeliverablePublicationRepository {
   async assertRenderLease(solutionId: string, workerId?: string) {
@@ -64,6 +64,36 @@ export class SqliteDeliverablePublicationRepository implements DeliverablePublic
       ORDER BY sf.created_at DESC, sf.id DESC LIMIT 1`).get(solutionId, expectedFormat) || { detectedFormat: expectedFormat, profileJson: null, renderPolicyJson: null };
   }
 
+  async listAvailable(solutionId: string, userId: string) {
+    return productSqlite.prepare(`SELECT id, artifact_type AS artifactType, display_name AS displayName, mime_type AS mimeType,
+      size_bytes AS sizeBytes, sha256, status, content_version AS contentVersion, render_version AS renderVersion,
+      published_at AS publishedAt, created_at AS createdAt, updated_at AS updatedAt,
+      (SELECT COUNT(*) FROM deliverable_artifact_versions v WHERE v.solution_id = deliverable_artifacts.solution_id
+        AND v.artifact_type = deliverable_artifacts.artifact_type) AS historyCount
+      FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available' ORDER BY created_at, id`).all(solutionId, userId) as DeliverableSummary[];
+  }
+
+  async hasCompleteFormalDocument(solutionId: string) {
+    const result = productSqlite.prepare("SELECT COUNT(*) AS sectionCount FROM formal_sections WHERE solution_id = ? AND status = 'validated' AND TRIM(COALESCE(content, '')) <> ''").get(solutionId) as { sectionCount: number };
+    return result.sectionCount === 7;
+  }
+
+  async invalidateAvailable(solutionId: string, userId: string, artifactTypes?: string[]) {
+    return productSqlite.transaction(() => this.invalidateAvailableSync(solutionId, userId, artifactTypes)).immediate();
+  }
+
+  async removePresentationSource(input: PresentationSourceRemoval) {
+    return productSqlite.transaction(() => {
+      const removed = productSqlite.prepare("UPDATE source_files SET status = 'removed', storage_key = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND solution_id = ? AND user_id = ? AND status != 'removed'").run(input.sourceFileId, input.solutionId, input.userId);
+      if (!removed.changes) return false;
+      this.invalidateAvailableSync(input.solutionId, input.userId, input.artifactTypes);
+      productSqlite.prepare("INSERT INTO product_project_events (id, solution_id, user_id, event_type, summary, metadata_json, created_at) VALUES (?, ?, ?, ?, ?, '{}', ?)").run(
+        randomUUID(), input.solutionId, input.userId, input.eventType, input.eventSummary.slice(0, 240), new Date().toISOString(),
+      );
+      return true;
+    }).immediate();
+  }
+
   async availableRenderFingerprints(solutionId: string, userId: string) {
     return productSqlite.prepare("SELECT id, artifact_type AS artifactType, render_fingerprint AS renderFingerprint FROM deliverable_artifacts WHERE solution_id = ? AND user_id = ? AND status = 'available'").all(solutionId, userId) as Array<{ id: string; artifactType: string; renderFingerprint: string | null }>;
   }
@@ -76,5 +106,14 @@ export class SqliteDeliverablePublicationRepository implements DeliverablePublic
     if (!workerId) return;
     const owned = productSqlite.prepare("SELECT 1 FROM product_solutions WHERE id = ? AND stage = 'rendering' AND status = 'rendering' AND render_lease_owner = ? AND render_lease_until > CURRENT_TIMESTAMP").get(solutionId, workerId);
     if (!owned) throw new Error("RENDER_LEASE_LOST");
+  }
+
+  private invalidateAvailableSync(solutionId: string, userId: string, artifactTypes?: string[]) {
+    if (artifactTypes && !artifactTypes.length) return 0;
+    const filter = artifactTypes ? ` AND artifact_type IN (${artifactTypes.map(() => "?").join(", ")})` : "";
+    const result = productSqlite.prepare(`UPDATE deliverable_artifacts SET status = 'superseded', updated_at = CURRENT_TIMESTAMP
+      WHERE solution_id = ? AND user_id = ? AND status = 'available'${filter}`).run(solutionId, userId, ...(artifactTypes || []));
+    if (result.changes > 0) productSqlite.prepare("UPDATE product_solutions SET status = 'processing', stage = 'rendering', render_attempt_count = 0, render_next_attempt_at = NULL, render_error_code = NULL, render_failed_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_user_id = ?").run(solutionId, userId);
+    return result.changes;
   }
 }

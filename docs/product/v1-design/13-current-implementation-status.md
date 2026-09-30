@@ -17,7 +17,7 @@
 | Intake 与上传 | `app/components/ProductIntake.tsx`、`app/api/product/intake/`、`app/api/product/solutions/*/uploads/` | 已实现登录前草稿、登录后绑定、分类上传位、私有上传和输入重处理；上传、读取、下载、清理与健康探针已统一通过对象存储端口 | MinIO 适配器、短期凭证上传、恶意文件扫描与生产资源隔离 |
 | 材料理解 | `lib/product/process-solution.ts`、`source-processing-repository.ts`、`media-analysis.ts`、`media-task-repository.ts`、`unified-knowledge.ts` | 已实现 DOCX/PDF/PPTX/XLSX/CSV/TXT/图片处理骨架、来源块、媒体路由、知识归并与冲突识别；材料解析与媒体分析的任务领取、租约、结果提交、回退、失败恢复、模型调用记录和排队已通过异步仓储端口脱离 SQLite；BM-14 私有部署与 BM-15 全格式/模板综合实体样本已补齐 | 用 BM-13、BM-16—18 补足旧格式和 Agent 项目覆盖 |
 | 项目模型与修改 | `project-model-*`、`change-impact.*`、`change-sets/`、对应 API | 已实现候选快照、激活/拒绝、锁定、修订、影响计划和版本回退；BM-15 固定修改集覆盖 R/C/S/P、80 个稳定对象、锁冲突、局部重生成、越界拒绝和回退，并量化受影响召回与无关变化率 | 在真实模型候选恢复后补充跨模型版本的内容级重复运行证据 |
-| 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`formal-work-repository.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-*-renderer.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式/渲染调度及成果发布核心已通过异步仓储端口脱离 SQLite，覆盖查找、原子领取、租约校验、指纹读取、历史版本归档和当前版本替换；渐进/最终成果复用同一定义和渲染入口，模板安全样式、四格式发布结构门和真实回渲染门已接入 | 继续提取正式章节内部状态、成果列表/失效事务与 API 查询边界；在隔离后重跑 BM-01—12，并补齐 BM-13、BM-16—18 |
+| 正式分析与成果 | `formal-analysis.ts`、`formal-worker.ts`、`formal-work-repository.ts`、`deliverables.ts`、`deliverable-publication.ts`、`deliverable-*-renderer.ts` | 已实现章节续跑、质量检查、七类成果、Office/PDF、成果包、版本和短期下载令牌；正式/渲染调度及成果发布模块已通过异步仓储端口脱离 SQLite，覆盖租约、指纹、历史归档、当前版本替换、成果列表、完整性判断和失效重排；模板/品牌移除会在同一事务中更新源文件、成果、渲染队列和事件；渐进/最终成果复用同一定义和渲染入口 | 继续提取正式章节内部状态与 API 查询边界；在隔离后重跑 BM-01—12，并补齐 BM-13、BM-16—18 |
 | Worker 与运维 | `scripts/product-worker.mjs`、`operations*.ts`、`worker-health.ts`、`deploy/systemd/` | 已实现长驻 Runner、阶段 tick、租约、提交围栏、退避、自动修复、共享心跳健康判定、故障退出、备份恢复和存储维护；存储维护与删除 Worker 已通过数据仓储端口脱离 SQLite，解析、正式生成与渲染均有租约接管回归 | 继续提取其余数据端口；独立可扩展队列、多主机 Worker、容量压测和告警接入 |
 | 验收体系 | `benchmarks/`、`acceptance*.ts`、`product-acceptance-campaign.mjs` | 注册表与活动框架覆盖 BM-01—18；实体样本已完成 BM-01—12、BM-14—15；manifest 哈希和注册表输入覆盖校验通过。运行器会加载项目本地配置，并在模型窗口关闭或时区无效时失败关闭 | 在隔离运行环境的夜间窗口重跑 BM-01—12；继续补齐 BM-13、BM-16—18、全量活动与故障探针 |
 
@@ -33,8 +33,8 @@
 
 2026-09-30 的仓库基线校验结果：
 
-- `pnpm typecheck`：通过；`pnpm typecheck:product-strict` 同时通过，严格检查覆盖对象存储以及存储维护、删除、材料解析、媒体任务、模型调用、正式/渲染调度、成果发布核心端口、SQLite 适配器与对应领域编排。
-- `pnpm test`：65 项通过，0 项失败；除五类隔离故障探针外，已覆盖对象存储合同、媒体结果租约提交与回退、渲染原子领取/失败所有权、成果缺失重排队、成果版本事务归档和失租发布拒绝、实体基准包、基准运行器的本地配置和窗口失败关闭、企业模板、R/C/S/P 修改集、基准答案隔离、成果定义与四格式版式、项目模型状态、Worker 故障退出、健康边界、删除租约接管、全阶段过期租约恢复、解析接管，以及正式生成/渲染晚到结果提交围栏。
+- `pnpm typecheck`：通过；`pnpm typecheck:product-strict` 同时通过，严格检查覆盖对象存储以及存储维护、删除、材料解析、媒体任务、模型调用、正式/渲染调度、成果发布/查询/失效端口、SQLite 适配器与对应领域编排。
+- `pnpm test`：66 项通过，0 项失败；除五类隔离故障探针外，已覆盖对象存储合同、媒体结果租约提交与回退、渲染原子领取/失败所有权、成果缺失重排队、成果版本事务归档、失租发布拒绝及模板移除原子事务、实体基准包、基准运行器的本地配置和窗口失败关闭、企业模板、R/C/S/P 修改集、基准答案隔离、成果定义与四格式版式、项目模型状态、Worker 故障退出、健康边界、删除租约接管、全阶段过期租约恢复、解析接管，以及正式生成/渲染晚到结果提交围栏。
 - `pnpm api:check`：通过；57 个路由文件、71 个唯一方法/路径均已被 75 项 API 目录记录覆盖，目录没有指向不存在的路由。
 - `pnpm benchmark:verify`：通过；默认聚合校验 BM-01—BM-12、BM-14—15 共 14 个 manifest 与文件摘要。该结果只证明基准包完整，不作为独立内容质量通过证据。
 - `pnpm contracts:check`：通过；uv 按 `uv.lock` 自动准备隔离的 Python 3.12 环境，4 组 Schema/样例通过。
@@ -78,6 +78,6 @@
 详细执行状态见 `14-development-execution-plan.md`。当前可直接开始的是：
 
 1. 在隔离验收环境的模型窗口内重新运行 BM-01—12，形成新的独立可信基线。
-2. BM-14—15 与 G2-04 已完成；G3-01 文件端口第一批以及存储维护、删除、材料解析、媒体、正式/渲染调度和成果发布核心数据边界已完成，当前继续提取正式章节内部状态、成果列表/失效事务与 API 查询端口；G3-06 已将这些端口纳入独立 strict 质量门。
+2. BM-14—15 与 G2-04 已完成；G3-01 文件端口第一批以及存储维护、删除、材料解析、媒体、正式/渲染调度和成果发布模块数据边界已完成，当前继续提取正式章节内部状态与 API 查询端口；G3-06 已将这些端口纳入独立 strict 质量门。
 3. G0-02 恢复后补齐 BM-13、BM-16—18，并重跑完整基准。
 4. 再进入 PostgreSQL、私有 MinIO、多 Worker、安全开放和最终 30 次验收。

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   const { solutionId } = await context.params;
   const auth = await owned(request, solutionId);
   if (!("session" in auth)) return auth.response;
-  return NextResponse.json({ success: true, data: { outcomes: deliverableOutcomeCatalog(solutionId, auth.session.userId), deliverables: listDeliverables(solutionId, auth.session.userId) } });
+  return NextResponse.json({ success: true, data: { outcomes: deliverableOutcomeCatalog(solutionId, auth.session.userId), deliverables: await listDeliverables(solutionId, auth.session.userId) } });
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ solutionId: string }> }) {

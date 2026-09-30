@@ -31,8 +31,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
     productSqlite.prepare("UPDATE source_files SET detected_format = ?, sha256 = ?, storage_key = ?, status = 'uploaded', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(detectedFormat, stored.sha256, stored.storageKey, fileId);
     if (record.category === "template") {
       await profileTemplateFile({ fileId, solutionId, userId: auth.session.userId, detectedFormat, bytes });
-      invalidateDeliverablesForTemplate(solutionId, auth.session.userId, detectedFormat as "docx" | "xlsx" | "pptx");
-      if (hasCompleteFormalDocument(solutionId)) {
+      await invalidateDeliverablesForTemplate(solutionId, auth.session.userId, detectedFormat as "docx" | "xlsx" | "pptx");
+      if (await hasCompleteFormalDocument(solutionId)) {
         try {
           // Template replacement is render-only: reuse validated sections and
           // never invoke either the free-analysis or formal-writing model.
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
     if (record.category === "content") invalidateForMaterialRevision(solutionId, auth.session.userId);
     if (record.category === "brand") {
       await profileBrandFile({ fileId, solutionId, userId: auth.session.userId, detectedFormat, bytes });
-      invalidateDeliverablesForBrand(solutionId, auth.session.userId);
-      if (hasCompleteFormalDocument(solutionId)) {
+      await invalidateDeliverablesForBrand(solutionId, auth.session.userId);
+      if (await hasCompleteFormalDocument(solutionId)) {
         try {
           // A logo or palette only changes rendered surfaces, never validated content.
           await ensurePrimaryDeliverables(solutionId, auth.session.userId);

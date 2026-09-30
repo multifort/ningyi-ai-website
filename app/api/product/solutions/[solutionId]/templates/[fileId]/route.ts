@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireProductSession } from "../../../../../../../lib/product/auth";
-import { ensurePrimaryDeliverables, hasCompleteFormalDocument, invalidateDeliverablesForTemplate } from "../../../../../../../lib/product/deliverables";
+import { ensurePrimaryDeliverables, hasCompleteFormalDocument, removeTemplateAndInvalidate } from "../../../../../../../lib/product/deliverables";
 import { productSqlite } from "../../../../../../../lib/product/db";
 import { deletePrivateFile, privateStorageKey } from "../../../../../../../lib/product/private-storage";
-import { recordProjectEvent } from "../../../../../../../lib/product/project-events";
 
 const templateFormats = new Set(["docx", "xlsx", "pptx"]);
 
@@ -19,12 +18,8 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   const solution = productSqlite.prepare("SELECT id FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, auth.session.userId);
   if (!solution) return failure("SOLUTION_NOT_FOUND", "方案不存在或无法访问。", 404);
   const target = privateStorageKey(auth.session.userId, solutionId, fileId);
-  const complete = hasCompleteFormalDocument(solutionId);
-  productSqlite.transaction(() => {
-    productSqlite.prepare("UPDATE source_files SET status = 'removed', storage_key = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status != 'removed'").run(fileId);
-    invalidateDeliverablesForTemplate(solutionId, auth.session.userId, file.detectedFormat as "docx" | "xlsx" | "pptx");
-    recordProjectEvent({ solutionId, userId: auth.session.userId, type: "template_removed", summary: "移除了一份企业模板" });
-  })();
+  const complete = await hasCompleteFormalDocument(solutionId);
+  await removeTemplateAndInvalidate(solutionId, auth.session.userId, fileId, file.detectedFormat as "docx" | "xlsx" | "pptx");
   if (file.storageKey === target) await deletePrivateFile(target).catch(() => undefined);
   if (complete) {
     try { await ensurePrimaryDeliverables(solutionId, auth.session.userId); } catch { /* Rendering remains safely queued for the render worker. */ }

@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { AsyncLocalStorage } from "async_hooks";
 import { productSqlite } from "./db";
-import { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables, publishDeliverable, supersedeStaleRenderedArtifacts } from "./deliverable-publication";
+import { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables, publishDeliverable, removeBrandAndInvalidate, removeTemplateAndInvalidate, supersedeStaleRenderedArtifacts } from "./deliverable-publication";
 import * as docxRenderer from "./deliverable-docx-renderer";
 import * as pdfRenderer from "./deliverable-pdf-renderer";
 import * as pptxRenderer from "./deliverable-pptx-renderer";
@@ -10,7 +10,7 @@ import * as xlsxRenderer from "./deliverable-xlsx-renderer";
 import type { FormalSection, RenderTheme, StructuredItem } from "./deliverable-rendering-shared";
 import type { SourceBlock } from "./deliverable-xlsx-renderer";
 
-export { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables };
+export { hasCompleteFormalDocument, invalidateDeliverablesForBrand, invalidateDeliverablesForTemplate, listDeliverables, removeBrandAndInvalidate, removeTemplateAndInvalidate };
 
 const renderWorkerContext = new AsyncLocalStorage<string>();
 
