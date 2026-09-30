@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ so
       recordProjectEvent({ solutionId, userId: auth.session.userId, type: "user_fact_added", summary: "新增了一条用户确认", metadata: { length: text.length } });
     })();
     const unified = rebuildUnifiedKnowledge(solutionId);
-    const formal = initializeFormalDocument(solutionId);
+    const formal = await initializeFormalDocument(solutionId);
     return NextResponse.json({ success: true, data: { fact: { ...fact, status: "active", source: "user_confirmed" }, knowledge: { factCount: unified.facts.length, conflictCount: unified.knowledge.stats.conflictCount }, formalStatus: formal?.status || null } }, { status: 201 });
   } catch {
     return failure("USER_FACT_SAVE_FAILED", "暂时无法保存这条项目修正，请稍后重试。", 500, true);

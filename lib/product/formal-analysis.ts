@@ -5,6 +5,7 @@ import { ensureProgressiveDeliverables } from "./deliverables";
 import { evaluateCandidateConsistency, evaluateProjectConsistency, repairDanglingProjectRelations } from "./project-consistency";
 import { openAIResponseError, ProviderConfigurationError, providerErrorCode } from "./openai-errors";
 import { projectModelSectionContext } from "./project-model-section-map";
+import { formalWorkRepository } from "./product-data-ports";
 
 const outline = [
   ["project_overview", "项目背景与目标"],
@@ -16,35 +17,32 @@ const outline = [
   ["risks", "风险、假设与待确认事项"],
 ] as const;
 
-export function initializeFormalDocument(solutionId: string) {
+export async function initializeFormalDocument(solutionId: string) {
   const provider = process.env.PRODUCT_FORMAL_MODEL_PROVIDER || "openai";
   const model = process.env.PRODUCT_FORMAL_MODEL || "gpt-5.4";
-  productSqlite.transaction(() => {
-    productSqlite.prepare("INSERT OR IGNORE INTO formal_documents (solution_id, provider, model, total_sections) VALUES (?, ?, ?, ?)").run(solutionId, provider, model, outline.length);
-    const insert = productSqlite.prepare("INSERT OR IGNORE INTO formal_sections (id, solution_id, section_index, section_key, title) VALUES (?, ?, ?, ?, ?)");
-    outline.forEach(([key, title], index) => insert.run(randomUUID(), solutionId, index, key, title));
-    const configured = formalProviderConfigured(provider);
-    productSqlite.prepare("UPDATE formal_documents SET provider = ?, model = ?, status = CASE WHEN status IN ('awaiting_configuration', 'stale') AND ? = 1 THEN 'pending' WHEN status IN ('pending', 'stale') AND ? = 0 THEN 'awaiting_configuration' ELSE status END, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(provider, model, configured ? 1 : 0, configured ? 1 : 0, solutionId);
-  })();
+  await formalWorkRepository().initializeDocument({
+    solutionId,
+    provider,
+    model,
+    configured: formalProviderConfigured(provider),
+    outline: outline.map(([sectionKey, title], sectionIndex) => ({ id: randomUUID(), sectionIndex, sectionKey, title })),
+  });
   return formalStatus(solutionId);
 }
 
-export function formalStatus(solutionId: string) {
-  const document = productSqlite.prepare("SELECT status, provider, model, current_section AS currentSection, total_sections AS totalSections, last_error_code AS lastErrorCode FROM formal_documents WHERE solution_id = ?").get(solutionId) as any;
+export async function formalStatus(solutionId: string) {
+  const document = await formalWorkRepository().documentState(solutionId);
   if (!document) return null;
-  const sections = productSqlite.prepare(`SELECT section_index AS sectionIndex, section_key AS sectionKey, title, status, summary,
-    retry_cycle AS retryCycle, next_attempt_at AS nextAttemptAt, failed_at AS failedAt,
-    (SELECT COUNT(*) FROM formal_section_attempts a WHERE a.section_id = formal_sections.id AND a.retry_cycle = formal_sections.retry_cycle) AS attemptCount
-    FROM formal_sections WHERE solution_id = ? ORDER BY section_index`).all(solutionId);
-  return { ...document, configured: formalProviderConfigured(document.provider), sections };
+  return { ...document, configured: formalProviderConfigured(document.provider) };
 }
 
 export async function continueFormalDocument(solutionId: string, userId: string, options: { workerId?: string } = {}) {
-  if (!solutionProcessingAllowed(solutionId, userId)) return formalStatus(solutionId);
-  recoverStaleFormalWork(solutionId);
-  const state = initializeFormalDocument(solutionId);
+  const repository = formalWorkRepository();
+  if (!await repository.processingAllowed(solutionId, userId)) return formalStatus(solutionId);
+  await recoverStaleFormalWork(solutionId);
+  const state = await initializeFormalDocument(solutionId);
   if (!state?.configured) {
-    productSqlite.prepare("UPDATE formal_documents SET status = 'awaiting_configuration', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(solutionId);
+    await repository.markAwaitingConfiguration(solutionId);
     return formalStatus(solutionId);
   }
   const next = productSqlite.prepare("SELECT id, section_index AS sectionIndex, section_key AS sectionKey, title, retry_cycle AS retryCycle FROM formal_sections WHERE solution_id = ? AND status = 'pending' AND (next_attempt_at IS NULL OR next_attempt_at <= CURRENT_TIMESTAMP) ORDER BY section_index LIMIT 1").get(solutionId) as any;
@@ -87,7 +85,7 @@ export async function continueFormalDocument(solutionId: string, userId: string,
   if (!claimed) return formalStatus(solutionId);
   try {
     const generated = await callFormalModel(state.model, userId, next.title, context.text);
-    if (!solutionProcessingAllowed(solutionId, userId)) throw new Error("SOLUTION_ACCESS_REVOKED");
+    if (!await repository.processingAllowed(solutionId, userId)) throw new Error("SOLUTION_ACCESS_REVOKED");
     validateClaims(generated.claims, context.sourceIds);
     const quality = evaluateFormalSection(generated, context.sourceIds, context.priorSummaries, next.sectionKey);
     const candidateConsistency = evaluateCandidateConsistency(solutionId, generated.items, context.sourceIds);
@@ -193,53 +191,19 @@ function formalCandidateMetadata(model: string) {
   return { modelVersion, promptVersion, parserVersion, configurationHash: createHash("sha256").update(JSON.stringify(configuration)).digest("hex") };
 }
 
-function solutionProcessingAllowed(solutionId: string, userId: string) {
-  return Boolean(productSqlite.prepare("SELECT 1 FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, userId));
-}
-
-export function recoverStaleFormalWork(solutionId?: string) {
+export async function recoverStaleFormalWork(solutionId?: string) {
   const timeoutSeconds = Math.max(180, Number(process.env.PRODUCT_FORMAL_STALE_AFTER_SECONDS || 900));
-  const cutoff = `-${timeoutSeconds} seconds`;
-  const scope = solutionId ? " AND solution_id = ?" : "";
-  const params = solutionId ? [cutoff, solutionId] : [cutoff];
-  const staleSections = productSqlite.prepare(`SELECT id, solution_id AS solutionId FROM formal_sections WHERE status = 'generating' AND (lease_until < CURRENT_TIMESTAMP OR (lease_until IS NULL AND updated_at < datetime('now', ?)))${scope}`).all(...params) as Array<{ id: string; solutionId: string }>;
-  if (!staleSections.length) return 0;
-  productSqlite.transaction(() => {
-    for (const section of staleSections) {
-      productSqlite.prepare("UPDATE formal_sections SET status = 'pending', lease_owner = NULL, lease_until = NULL, next_attempt_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'generating'").run(section.id);
-      productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = 'STALE_WORK_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'generating'").run(section.solutionId);
-      productSqlite.prepare("UPDATE formal_section_attempts SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE section_id = ? AND status = 'running'").run(section.id);
-    }
-    if (solutionId) {
-      productSqlite.prepare("UPDATE model_calls SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'running' AND purpose LIKE 'formal_section:%' AND created_at < datetime('now', ?)").run(solutionId, cutoff);
-    } else {
-      productSqlite.prepare("UPDATE model_calls SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE status = 'running' AND purpose LIKE 'formal_section:%' AND created_at < datetime('now', ?)").run(cutoff);
-    }
-  })();
-  return staleSections.length;
+  return formalWorkRepository().recoverStaleFormal(solutionId, timeoutSeconds);
 }
 
-export function repairExhaustedFormalWork() {
+export async function repairExhaustedFormalWork() {
   const seconds = Math.min(604800, Math.max(3600, Number(process.env.PRODUCT_FORMAL_AUTO_REPAIR_SECONDS || 21600)));
-  return productSqlite.transaction(() => {
-    const sections = productSqlite.prepare("SELECT id, solution_id AS solutionId FROM formal_sections WHERE status = 'failed' AND failed_at <= datetime('now', ?)").all(`-${seconds} seconds`) as Array<{ id: string; solutionId: string }>;
-    if (!sections.length) return 0;
-    const repairSection = productSqlite.prepare("UPDATE formal_sections SET status = 'pending', retry_cycle = retry_cycle + 1, next_attempt_at = CURRENT_TIMESTAMP, failed_at = NULL, lease_owner = NULL, lease_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'failed'");
-    const repairDocument = productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = 'FORMAL_AUTO_REPAIR', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'blocked'");
-    const repairSolution = productSqlite.prepare("UPDATE product_solutions SET status = 'recovering', stage = 'formal_analysis', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'blocked'");
-    for (const section of sections) {
-      repairSection.run(section.id);
-      const documentRepaired = repairDocument.run(section.solutionId).changes;
-      repairSolution.run(section.solutionId);
-      if (documentRepaired) productSqlite.prepare("UPDATE change_impact_plans SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'failed' AND execution_started_at IS NOT NULL").run(section.solutionId);
-    }
-    return sections.length;
-  })();
+  return formalWorkRepository().repairExhaustedFormal(seconds);
 }
 
-export function reactivateConfiguredFormalDocuments() {
+export async function reactivateConfiguredFormalDocuments() {
   if (!process.env.OPENAI_API_KEY) return 0;
-  return productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = NULL, updated_at = CURRENT_TIMESTAMP WHERE status = 'awaiting_configuration' AND provider = 'openai'").run().changes;
+  return formalWorkRepository().reactivateConfiguredFormal("openai");
 }
 
 function formalProviderConfigured(provider: string) {

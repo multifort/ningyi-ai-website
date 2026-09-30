@@ -16,14 +16,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   const { solutionId } = await context.params;
   const auth = await owned(request, solutionId);
   if ("response" in auth) return auth.response;
-  return NextResponse.json({ success: true, data: formalStatus(solutionId) || initializeFormalDocument(solutionId) });
+  return NextResponse.json({ success: true, data: await formalStatus(solutionId) || await initializeFormalDocument(solutionId) });
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ solutionId: string }> }) {
   const { solutionId } = await context.params;
   const auth = await owned(request, solutionId);
   if ("response" in auth) return auth.response;
-  const state = initializeFormalDocument(solutionId);
+  const state = await initializeFormalDocument(solutionId);
   if (isOperationsControlEnabled("defer_new_formal") && state?.status === "pending") {
     productSqlite.prepare("UPDATE formal_documents SET status = 'deferred_operations', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'pending'").run(solutionId);
     return NextResponse.json({ success: true, data: { ...state, status: "deferred_operations", queued: true, deferred: true, reason: "SYSTEM_CAPACITY_PROTECTION" } }, { status: 202 });

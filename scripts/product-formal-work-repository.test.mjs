@@ -43,6 +43,33 @@ test("已标记完成但成果不齐的方案会重新进入渲染队列", async
   assert.deepEqual(state, { status: "recovering", stage: "rendering", errorCode: "DELIVERABLE_CONTRACT_RECONCILE" });
 });
 
+test("正式文档生命周期通过仓储完成初始化、状态读取和过期租约恢复", async () => {
+  const solutionId = `10000000-0000-4000-8000-${"3".padStart(12, "0")}`;
+  const sectionId = "73000000-0000-4000-8000-000000000063";
+  productSqlite.prepare("INSERT OR IGNORE INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'formal-work-owner', 'formal-work-owner', 'test')").run(userId);
+  productSqlite.prepare("INSERT INTO product_solutions (id, owner_user_id, title, status, stage) VALUES (?, ?, '正式文档生命周期测试', 'processing', 'formal_analysis')").run(solutionId, userId);
+  await repository.initializeDocument({
+    solutionId,
+    provider: "openai",
+    model: "test-model",
+    configured: true,
+    outline: [{ id: sectionId, sectionIndex: 0, sectionKey: "project_overview", title: "项目背景与目标" }],
+  });
+  const initial = await repository.documentState(solutionId);
+  assert.equal(initial.status, "pending");
+  assert.equal(initial.provider, "openai");
+  assert.deepEqual(initial.sections.map(({ sectionIndex, sectionKey, title, status }) => ({ sectionIndex, sectionKey, title, status })), [
+    { sectionIndex: 0, sectionKey: "project_overview", title: "项目背景与目标", status: "pending" },
+  ]);
+  productSqlite.prepare("UPDATE formal_documents SET status = 'generating' WHERE solution_id = ?").run(solutionId);
+  productSqlite.prepare("UPDATE formal_sections SET status = 'generating', lease_owner = 'expired-worker', lease_until = datetime('now', '-10 seconds') WHERE id = ?").run(sectionId);
+  productSqlite.prepare("INSERT INTO formal_section_attempts (id, solution_id, section_id, attempt_no, status) VALUES ('74000000-0000-4000-8000-000000000063', ?, ?, 1, 'running')").run(solutionId, sectionId);
+  assert.equal(await repository.recoverStaleFormal(solutionId, 900), 1);
+  assert.deepEqual(productSqlite.prepare("SELECT status, lease_owner AS leaseOwner, lease_until AS leaseUntil FROM formal_sections WHERE id = ?").get(sectionId), { status: "pending", leaseOwner: null, leaseUntil: null });
+  assert.deepEqual(productSqlite.prepare("SELECT status, last_error_code AS lastErrorCode FROM formal_documents WHERE solution_id = ?").get(solutionId), { status: "pending", lastErrorCode: "STALE_WORK_RECOVERED" });
+  assert.deepEqual(productSqlite.prepare("SELECT status, error_code AS errorCode FROM formal_section_attempts WHERE section_id = ?").get(sectionId), { status: "failed", errorCode: "WORKER_INTERRUPTED" });
+});
+
 function seedSolution(suffix, status, stage) {
   const solutionId = `10000000-0000-4000-8000-${suffix.padStart(12, "0")}`;
   productSqlite.prepare("INSERT OR IGNORE INTO product_users (id, username, username_normalized, password_hash) VALUES (?, 'formal-work-owner', 'formal-work-owner', 'test')").run(userId);

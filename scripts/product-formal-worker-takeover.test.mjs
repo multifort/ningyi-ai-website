@@ -40,7 +40,7 @@ test("旧正式生成 Worker 的晚到模型结果不能覆盖新租约所有者
       (id, solution_id, block_type, canonical_text, locator_json, content_hash, source_format)
       VALUES (?, ?, 'intake_description', '建设可追溯的项目方案生成流程，所有正式结论必须引用原始需求材料，并支持 Worker 故障后的安全接管。', '{}', 'formal-takeover-hash', 'text')`).run(sourceBlockId, solutionId);
     rebuildUnifiedKnowledge(solutionId);
-    initializeFormalDocument(solutionId);
+    await initializeFormalDocument(solutionId);
 
     const generated = {
       content: "项目目标是建立一套稳定、可追溯的方案生成流程。系统以用户提交的需求材料作为唯一事实依据，对材料内容进行结构化归并，并在正式方案中保留来源引用。方案生成过程采用带租约的后台任务，每个章节在提交前都要确认当前 Worker 仍然持有有效租约，避免故障恢复期间出现重复提交。系统需要记录模型调用、章节尝试和质量检查结果，使运维人员能够区分正常失败、租约丢失与材料变化。对于已被新 Worker 接管的章节，旧 Worker 即使收到晚到的模型响应，也只能结束自己的调用记录，不能写入章节正文、摘要或结构化条目。该约束保证恢复过程不会用过期结果覆盖新一轮生成，同时为后续审计提供明确证据。项目实施还应保持生成状态、任务状态与最终交付状态一致，确保用户看到的内容来自最后一个合法持有租约的执行者。".repeat(2),

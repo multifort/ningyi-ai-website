@@ -60,7 +60,7 @@ test("解析、媒体、正式章节和渲染的过期租约都恢复为可接�
 
   assert.equal(await recoverStaleSourceProcessing(), 1);
   assert.equal(await recoverStaleMediaTasks(), 1);
-  assert.equal(recoverStaleFormalWork(solutionId), 1);
+  assert.equal(await recoverStaleFormalWork(solutionId), 1);
   assert.equal(await recoverStaleRendering(), 1);
 
   assert.deepEqual(productSqlite.prepare("SELECT status, lease_owner AS leaseOwner, lease_until AS leaseUntil, error_code AS errorCode FROM processing_runs WHERE solution_id = ?").get(solutionId), {

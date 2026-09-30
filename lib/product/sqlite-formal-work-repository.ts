@@ -1,7 +1,76 @@
 import { productSqlite } from "./db";
-import type { FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
+import type { FormalDocumentState, FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
 
 export class SqliteFormalWorkRepository implements FormalWorkRepository {
+  async initializeDocument(input: Parameters<FormalWorkRepository["initializeDocument"]>[0]) {
+    productSqlite.transaction(() => {
+      productSqlite.prepare("INSERT OR IGNORE INTO formal_documents (solution_id, provider, model, total_sections) VALUES (?, ?, ?, ?)").run(input.solutionId, input.provider, input.model, input.outline.length);
+      const insert = productSqlite.prepare("INSERT OR IGNORE INTO formal_sections (id, solution_id, section_index, section_key, title) VALUES (?, ?, ?, ?, ?)");
+      input.outline.forEach((section) => insert.run(section.id, input.solutionId, section.sectionIndex, section.sectionKey, section.title));
+      productSqlite.prepare("UPDATE formal_documents SET provider = ?, model = ?, status = CASE WHEN status IN ('awaiting_configuration', 'stale') AND ? = 1 THEN 'pending' WHEN status IN ('pending', 'stale') AND ? = 0 THEN 'awaiting_configuration' ELSE status END, updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(input.provider, input.model, input.configured ? 1 : 0, input.configured ? 1 : 0, input.solutionId);
+    }).immediate();
+  }
+
+  async documentState(solutionId: string) {
+    const document = productSqlite.prepare("SELECT status, provider, model, current_section AS currentSection, total_sections AS totalSections, last_error_code AS lastErrorCode FROM formal_documents WHERE solution_id = ?").get(solutionId) as Omit<FormalDocumentState, "sections"> | undefined;
+    if (!document) return undefined;
+    const sections = productSqlite.prepare(`SELECT section_index AS sectionIndex, section_key AS sectionKey, title, status, summary,
+      retry_cycle AS retryCycle, next_attempt_at AS nextAttemptAt, failed_at AS failedAt,
+      (SELECT COUNT(*) FROM formal_section_attempts a WHERE a.section_id = formal_sections.id AND a.retry_cycle = formal_sections.retry_cycle) AS attemptCount
+      FROM formal_sections WHERE solution_id = ? ORDER BY section_index`).all(solutionId) as FormalDocumentState["sections"];
+    return { ...document, sections };
+  }
+
+  async markAwaitingConfiguration(solutionId: string) {
+    productSqlite.prepare("UPDATE formal_documents SET status = 'awaiting_configuration', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ?").run(solutionId);
+  }
+
+  async processingAllowed(solutionId: string, userId: string) {
+    return Boolean(productSqlite.prepare("SELECT 1 FROM product_solutions WHERE id = ? AND owner_user_id = ? AND status NOT IN ('deletion_pending', 'deleted')").get(solutionId, userId));
+  }
+
+  async recoverStaleFormal(solutionId: string | undefined, staleAfterSeconds: number) {
+    const cutoff = `-${staleAfterSeconds} seconds`;
+    const scope = solutionId ? " AND solution_id = ?" : "";
+    const params = solutionId ? [cutoff, solutionId] : [cutoff];
+    const staleSections = productSqlite.prepare(`SELECT id, solution_id AS solutionId FROM formal_sections WHERE status = 'generating' AND (lease_until < CURRENT_TIMESTAMP OR (lease_until IS NULL AND updated_at < datetime('now', ?)))${scope}`).all(...params) as Array<{ id: string; solutionId: string }>;
+    if (!staleSections.length) return 0;
+    return productSqlite.transaction(() => {
+      for (const section of staleSections) {
+        productSqlite.prepare("UPDATE formal_sections SET status = 'pending', lease_owner = NULL, lease_until = NULL, next_attempt_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'generating'").run(section.id);
+        productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = 'STALE_WORK_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'generating'").run(section.solutionId);
+        productSqlite.prepare("UPDATE formal_section_attempts SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE section_id = ? AND status = 'running'").run(section.id);
+      }
+      if (solutionId) {
+        productSqlite.prepare("UPDATE model_calls SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'running' AND purpose LIKE 'formal_section:%' AND created_at < datetime('now', ?)").run(solutionId, cutoff);
+      } else {
+        productSqlite.prepare("UPDATE model_calls SET status = 'failed', error_code = 'WORKER_INTERRUPTED', completed_at = CURRENT_TIMESTAMP WHERE status = 'running' AND purpose LIKE 'formal_section:%' AND created_at < datetime('now', ?)").run(cutoff);
+      }
+      return staleSections.length;
+    }).immediate();
+  }
+
+  async repairExhaustedFormal(olderThanSeconds: number) {
+    return productSqlite.transaction(() => {
+      const sections = productSqlite.prepare("SELECT id, solution_id AS solutionId FROM formal_sections WHERE status = 'failed' AND failed_at <= datetime('now', ?)").all(`-${olderThanSeconds} seconds`) as Array<{ id: string; solutionId: string }>;
+      if (!sections.length) return 0;
+      const repairSection = productSqlite.prepare("UPDATE formal_sections SET status = 'pending', retry_cycle = retry_cycle + 1, next_attempt_at = CURRENT_TIMESTAMP, failed_at = NULL, lease_owner = NULL, lease_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'failed'");
+      const repairDocument = productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = 'FORMAL_AUTO_REPAIR', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'blocked'");
+      const repairSolution = productSqlite.prepare("UPDATE product_solutions SET status = 'recovering', stage = 'formal_analysis', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'blocked'");
+      for (const section of sections) {
+        repairSection.run(section.id);
+        const documentRepaired = repairDocument.run(section.solutionId).changes;
+        repairSolution.run(section.solutionId);
+        if (documentRepaired) productSqlite.prepare("UPDATE change_impact_plans SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE solution_id = ? AND status = 'failed' AND execution_started_at IS NOT NULL").run(section.solutionId);
+      }
+      return sections.length;
+    }).immediate();
+  }
+
+  async reactivateConfiguredFormal(provider: string) {
+    return productSqlite.prepare("UPDATE formal_documents SET status = 'pending', last_error_code = NULL, updated_at = CURRENT_TIMESTAMP WHERE status = 'awaiting_configuration' AND provider = ?").run(provider).changes;
+  }
+
   async recoverStaleRendering() {
     return productSqlite.prepare("UPDATE product_solutions SET status = 'recovering', render_lease_owner = NULL, render_lease_until = NULL, render_next_attempt_at = CURRENT_TIMESTAMP, render_error_code = 'STALE_RENDER_RECOVERED', updated_at = CURRENT_TIMESTAMP WHERE stage = 'rendering' AND status = 'rendering' AND render_lease_until < CURRENT_TIMESTAMP").run().changes;
   }

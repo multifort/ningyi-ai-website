@@ -19,6 +19,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     recordProjectEvent({ solutionId, userId: auth.session.userId, type: "user_fact_removed", summary: "撤销了一条用户确认" });
   })();
   const unified = rebuildUnifiedKnowledge(solutionId);
-  const formal = initializeFormalDocument(solutionId);
+  const formal = await initializeFormalDocument(solutionId);
   return NextResponse.json({ success: true, data: { factId, status: "superseded", knowledge: { factCount: unified.facts.length, conflictCount: unified.knowledge.stats.conflictCount }, formalStatus: formal?.status || null } });
 }

@@ -6,9 +6,9 @@ import { modelExecutionWindow } from "./model-execution-window";
 import { formalWorkRepository } from "./product-data-ports";
 
 export async function processFormalBatch(requestedLimit = 1) {
-  const recovered = recoverStaleFormalWork();
-  const repairedFormal = repairExhaustedFormalWork();
-  const reactivatedConfiguration = reactivateConfiguredFormalDocuments();
+  const recovered = await recoverStaleFormalWork();
+  const repairedFormal = await repairExhaustedFormalWork();
+  const reactivatedConfiguration = await reactivateConfiguredFormalDocuments();
   const recoveredRendering = await recoverStaleRendering();
   const repairedRendering = await repairExhaustedRendering();
   const requeuedIncompleteDeliveries = await requeueIncompleteCompletedDeliveries();

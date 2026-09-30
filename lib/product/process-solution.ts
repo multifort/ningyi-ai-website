@@ -50,7 +50,7 @@ export async function processSolution(solutionId: string, userId: string, option
     await repository.commitParsed({ solutionId, workerId: options.workerId, blocks, mediaRoutes, facts, summary, pendingMedia: pendingMedia.length > 0 });
     const unified = rebuildUnifiedKnowledge(solutionId);
     const freeAnalysis = await generateFreeAnalysis(solutionId, userId, unified.facts.slice(0, 24));
-    const formalDocument = pendingMedia.length ? null : initializeFormalDocument(solutionId);
+    const formalDocument = pendingMedia.length ? null : await initializeFormalDocument(solutionId);
     await fs.rm(workRoot, { recursive: true, force: true });
     workRoot = null;
     return { blockCount: blocks.length, factCount: unified.facts.length, conflictCount: unified.knowledge.stats.conflictCount, mediaTaskCount: mediaRoutes.length, pendingMediaTaskCount: pendingMedia.length, summary: unified.summary, freeAnalysisOrigin: freeAnalysis.origin, freeAnalysisModel: freeAnalysis.model, formalStatus: formalDocument?.status || null };

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sol
   const mediaRecovery = productSqlite.prepare(`SELECT status, attempt_count AS attemptCount, error_code AS errorCode,
     next_attempt_at AS nextAttemptAt, failed_at AS failedAt FROM media_analysis_tasks WHERE solution_id = ? AND status IN ('awaiting_configuration','failed')
     ORDER BY CASE status WHEN 'failed' THEN 0 ELSE 1 END, updated_at LIMIT 1`).get(solutionId) as any;
-  const formal = formalStatus(solutionId) as any;
+  const formal = await formalStatus(solutionId);
   const recovery = solutionRecoveryStatus(solution, run, mediaRecovery, formal);
   return NextResponse.json({ success: true, data: { solutionId, title: solution.title, status: solution.status, stage: solution.stage, headline: recovery?.headline || headlines[solution.stage] || "方案正在处理中", requiresUserAction: false, automaticRecovery: Boolean(recovery), recovery, processingRun: run || null, mediaAnalysis: media, intake: intake || null, inputFingerprint: projectInputFingerprint(solutionId, auth.session.userId), activity: listProjectEvents(solutionId, auth.session.userId), formalDocument: formal, consistency: projectConsistencyStatus(solutionId), deliverableOutcomes: deliverableOutcomeCatalog(solutionId, auth.session.userId), deliverables: await listDeliverables(solutionId, auth.session.userId), files } });
 }

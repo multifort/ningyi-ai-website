@@ -83,7 +83,7 @@ async function repairFailedMediaTasks() {
 async function continueAfterMedia(solutionId: string, userId: string) {
   const unified = rebuildUnifiedKnowledge(solutionId);
   await generateFreeAnalysis(solutionId, userId, unified.facts.slice(0, 24));
-  initializeFormalDocument(solutionId);
+  await initializeFormalDocument(solutionId);
   await mediaTaskRepository().advanceToFormalAnalysis(solutionId);
 }
 
