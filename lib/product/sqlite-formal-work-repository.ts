@@ -1,7 +1,25 @@
 import { productSqlite } from "./db";
-import type { FormalDocumentState, FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
+import type { FormalDocumentState, FormalSectionContextData, FormalWork, FormalWorkRepository, RenderClaim } from "./formal-work-repository";
 
 export class SqliteFormalWorkRepository implements FormalWorkRepository {
+  async sectionContextData(solutionId: string, sectionKey: string): Promise<FormalSectionContextData> {
+    return productSqlite.transaction(() => {
+      const blocks = productSqlite.prepare(`SELECT id, blockType, text FROM (
+        SELECT id, block_type AS blockType, canonical_text AS text, created_at AS createdAt FROM source_blocks WHERE solution_id = ?
+        UNION ALL
+        SELECT id, 'user_confirmed_fact' AS blockType, text, created_at AS createdAt FROM project_user_facts WHERE solution_id = ? AND status = 'active'
+      ) ORDER BY createdAt, id`).all(solutionId, solutionId) as FormalSectionContextData["blocks"];
+      const position = productSqlite.prepare("SELECT section_index AS sectionIndex FROM formal_sections WHERE solution_id = ? AND section_key = ?").get(solutionId, sectionKey) as { sectionIndex: number } | undefined;
+      const prior = productSqlite.prepare(`SELECT title, summary, structured_items_json AS structuredItemsJson FROM formal_sections
+        WHERE solution_id = ? AND section_index < ? AND status = 'validated' ORDER BY section_index`).all(solutionId, position?.sectionIndex ?? Number.MAX_SAFE_INTEGER) as FormalSectionContextData["prior"];
+      const retry = productSqlite.prepare(`SELECT a.attempt_no AS attemptNo, a.error_code AS errorCode, a.quality_json AS qualityJson
+        FROM formal_section_attempts a JOIN formal_sections s ON s.id = a.section_id
+        WHERE s.solution_id = ? AND s.section_key = ? AND a.status = 'failed'
+        ORDER BY a.attempt_no DESC LIMIT 1`).get(solutionId, sectionKey) as FormalSectionContextData["retry"];
+      return { blocks, prior, retry };
+    })();
+  }
+
   async initializeDocument(input: Parameters<FormalWorkRepository["initializeDocument"]>[0]) {
     productSqlite.transaction(() => {
       productSqlite.prepare("INSERT OR IGNORE INTO formal_documents (solution_id, provider, model, total_sections) VALUES (?, ?, ?, ?)").run(input.solutionId, input.provider, input.model, input.outline.length);

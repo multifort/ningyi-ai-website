@@ -1,6 +1,11 @@
 export type FormalWork = { solutionId: string; userId: string };
 export type RenderClaim = { status: "idle" } | { status: "contended"; solutionId: string } | { status: "claimed"; work: FormalWork };
 export type FormalOutlineSection = { id: string; sectionIndex: number; sectionKey: string; title: string };
+export type FormalSectionContextData = {
+  blocks: Array<{ id: string; blockType: string; text: string }>;
+  prior: Array<{ title: string; summary: string | null; structuredItemsJson: string | null }>;
+  retry?: { attemptNo: number; errorCode: string | null; qualityJson: string | null };
+};
 export type FormalDocumentState = {
   status: string;
   provider: string;
@@ -22,6 +27,7 @@ export type FormalDocumentState = {
 };
 
 export interface FormalWorkRepository {
+  sectionContextData(solutionId: string, sectionKey: string): Promise<FormalSectionContextData>;
   initializeDocument(input: { solutionId: string; provider: string; model: string; configured: boolean; outline: FormalOutlineSection[] }): Promise<void>;
   documentState(solutionId: string): Promise<FormalDocumentState | undefined>;
   markAwaitingConfiguration(solutionId: string): Promise<void>;

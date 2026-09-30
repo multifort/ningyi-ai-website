@@ -61,7 +61,7 @@ export async function continueFormalDocument(solutionId: string, userId: string,
   const attemptNo = totalAttempts.count + 1;
   const attemptId = randomUUID();
   ensureUnifiedKnowledge(solutionId);
-  const context = buildSectionContext(solutionId, next.sectionKey, next.title);
+  const context = await buildSectionContext(solutionId, next.sectionKey, next.title);
   const contextHash = createHash("sha256").update(context.text).digest("hex");
   const callId = randomUUID();
   const candidate = formalCandidateMetadata(state.model);
@@ -211,15 +211,8 @@ function formalProviderConfigured(provider: string) {
   return false;
 }
 
-function buildSectionContext(solutionId: string, sectionKey: string, title: string) {
-  const blocks = productSqlite.prepare(`SELECT id, blockType, text FROM (
-      SELECT id, block_type AS blockType, canonical_text AS text, created_at AS createdAt FROM source_blocks WHERE solution_id = ?
-      UNION ALL
-      SELECT id, 'user_confirmed_fact' AS blockType, text, created_at AS createdAt FROM project_user_facts WHERE solution_id = ? AND status = 'active'
-    ) ORDER BY createdAt, id`).all(solutionId, solutionId) as Array<{ id: string; blockType: string; text: string }>;
-  const sectionPosition = productSqlite.prepare("SELECT section_index AS sectionIndex FROM formal_sections WHERE solution_id = ? AND section_key = ?").get(solutionId, sectionKey) as { sectionIndex: number } | undefined;
-  const currentIndex = sectionPosition?.sectionIndex ?? Number.MAX_SAFE_INTEGER;
-  const prior = productSqlite.prepare("SELECT title, summary FROM formal_sections WHERE solution_id = ? AND section_index < ? AND status = 'validated' ORDER BY section_index").all(solutionId, currentIndex) as Array<{ title: string; summary: string }>;
+async function buildSectionContext(solutionId: string, sectionKey: string, title: string) {
+  const { blocks, prior, retry } = await formalWorkRepository().sectionContextData(solutionId, sectionKey);
   const keywords = sectionKeywords[sectionKey] || [];
   const ranked = blocks.map((block, index) => ({
     ...block,
@@ -241,15 +234,10 @@ function buildSectionContext(solutionId: string, sectionKey: string, title: stri
     selectedIds.push(block.id);
     chars += item.length;
   }
-  const priorItems = productSqlite.prepare("SELECT structured_items_json AS structuredItemsJson FROM formal_sections WHERE solution_id = ? AND section_index < ? AND status = 'validated' ORDER BY section_index").all(solutionId, currentIndex) as Array<{ structuredItemsJson: string | null }>;
-  const itemCatalog = priorItems.flatMap((item) => {
+  const itemCatalog = prior.flatMap((item) => {
     try { const parsed = JSON.parse(item.structuredItemsJson || "[]"); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
   }).map((item: any) => `${item.code} | ${item.kind} | ${item.title}`).join("\n").slice(-5000);
   const continuity = prior.map((item) => `${item.title}：${item.summary}`).join("\n").slice(-5000);
-  const retry = productSqlite.prepare(`SELECT a.attempt_no AS attemptNo, a.error_code AS errorCode, a.quality_json AS qualityJson
-    FROM formal_section_attempts a JOIN formal_sections s ON s.id = a.section_id
-    WHERE s.solution_id = ? AND s.section_key = ? AND a.status = 'failed'
-    ORDER BY a.attempt_no DESC LIMIT 1`).get(solutionId, sectionKey) as { attemptNo: number; errorCode: string | null; qualityJson: string | null } | undefined;
   const retryFeedback = retry ? readableRetryFeedback(retry) : "无；这是本章第一次生成。";
   const projectModelContext = projectModelSectionContext(solutionId, sectionKey);
   return {
